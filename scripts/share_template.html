@@ -74,7 +74,7 @@
   .stamp b { font-size: 15px; font-variant-numeric: tabular-nums; }
 
   .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .stat.vis .n { height: 34px; } .stat.vis .n iframe { display: block; width: 100%; height: 34px; border: 0; }
+  .stat.vis .n { color: var(--accent2); }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; }
   .stat .n { font-family: var(--f-display); font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; }
   .stat .l { color: var(--muted); font-size: 12.5px; }
@@ -166,7 +166,7 @@
     <div class="stat go"><div class="n" id="sDep">-</div><div class="l">7일 안에 출항하는 배</div></div>
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
-    <div class="stat vis"><div class="n" id="sVisit"></div><div class="l">누적 방문자</div></div>
+    <div class="stat vis"><div class="n" id="sVisit">-</div><div class="l">누적 방문자</div></div>
   </section>
 
   <form class="search" id="searchForm" autocomplete="off">
@@ -341,20 +341,9 @@ render();
 <script data-goatcounter="https://kiwoongpark.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script>
-// 누적 방문자 카드: GoatCounter 사이트 전체(TOTAL) 방문 수를 카드 숫자 자리에 표시
-(function () {
-  var tries = 0, t = setInterval(function () {
-    if (window.goatcounter && window.goatcounter.visit_count) {
-      clearInterval(t);
-      window.goatcounter.visit_count({
-        append: "#sVisit", type: "html", path: "TOTAL", no_branding: true,
-        style: "html,body{margin:0;padding:0;background:transparent}" +
-               "div{width:auto;height:auto;border:0;text-align:left}" +
-               "#gcvc-for,#gcvc-by,br{display:none}" +
-               "#gcvc-views{font:28px/1.2 Jua,'Malgun Gothic',sans-serif;font-variant-numeric:tabular-nums;color:#7b68ee}" +
-               "@media (prefers-color-scheme:dark){#gcvc-views{color:#a597ff}}"
-      });
-    } else if (++tries > 50) { clearInterval(t); document.getElementById("sVisit").textContent = "-"; }
-  }, 100);
-})();
+// 누적 방문자 카드: GoatCounter 사이트 전체(TOTAL) 방문자 수를 공개 카운터 JSON에서 읽어 표시
+fetch("https://kiwoongpark.goatcounter.com/counter/TOTAL.json")
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(d => { document.getElementById("sVisit").textContent = d.count_unique; })
+  .catch(() => {});
 </script>
