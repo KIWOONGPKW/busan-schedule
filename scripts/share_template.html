@@ -166,7 +166,7 @@
     <div class="stat go"><div class="n" id="sDep">-</div><div class="l">7일 안에 출항하는 배</div></div>
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
-    <div class="stat vis"><div class="n" id="sVisit">-</div><div class="l">누적 방문자</div></div>
+    <div class="stat vis"><div class="n" id="sVisit">-</div><div class="l">누적 조회수</div></div>
   </section>
 
   <form class="search" id="searchForm" autocomplete="off">
@@ -341,9 +341,9 @@ render();
 <script data-goatcounter="https://kiwoongpark.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 <script>
-// 누적 방문자 카드: GoatCounter 사이트 전체(TOTAL) 방문자 수를 공개 카운터 JSON에서 읽어 표시
+// 누적 조회수 카드: GoatCounter 사이트 전체(TOTAL) 조회수를 공개 카운터 JSON에서 읽어 표시
 fetch("https://kiwoongpark.goatcounter.com/counter/TOTAL.json")
   .then(r => r.ok ? r.json() : Promise.reject(r.status))
-  .then(d => { document.getElementById("sVisit").textContent = d.count_unique; })
+  .then(d => { document.getElementById("sVisit").textContent = d.count; })
   .catch(() => {});
 </script>
