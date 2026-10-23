@@ -1,0 +1,38 @@
+name: 일정 갱신
+
+on:
+  schedule:
+    - cron: "7 * * * *"   # 매시 7분 (UTC 기준이지만 매시간이라 상관없음)
+  workflow_dispatch:       # Actions 탭에서 수동 실행
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TZ: Asia/Seoul            # 조회 기간·갱신 시각을 한국 시간으로
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 일정 수집 후 페이지 생성
+        run: |
+          python scripts/build_share.py --no-desktop
+          cp "scripts/share/부산항_선박스케줄.html" index.html
+      - name: 변경 있으면 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -m "일정 갱신 $(date '+%Y-%m-%d %H:%M')"
+          git push
