@@ -2,7 +2,7 @@ name: 일정 갱신
 
 on:
   schedule:
-    - cron: "7 * * * *"   # 매시 7분 (UTC 기준이지만 매시간이라 상관없음)
+    - cron: "7 10,22 * * *"  # 12시간마다: 한국 시간 07:07, 19:07 (UTC 22:07, 10:07)
   workflow_dispatch:       # Actions 탭에서 수동 실행
 
 permissions:
