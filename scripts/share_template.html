@@ -73,8 +73,7 @@
            padding: 8px 14px; font-size: 12.5px; line-height: 1.5; }
   .stamp b { font-size: 15px; font-variant-numeric: tabular-nums; }
 
-  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .stat.vis .n { color: var(--accent2); }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; }
   .stat .n { font-family: var(--f-display); font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; }
   .stat .l { color: var(--muted); font-size: 12.5px; }
@@ -141,7 +140,7 @@
   .notes { color: var(--muted); font-size: 12.5px; line-height: 1.8; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
   .notes b { color: var(--ink); }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
-  @media (max-width: 640px) { .stats { grid-template-columns: 1fr 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px; } }
+  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px; } }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } button:hover { transform: none; } }
 </style>
 
@@ -166,7 +165,6 @@
     <div class="stat go"><div class="n" id="sDep">-</div><div class="l">7일 안에 출항하는 배</div></div>
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
-    <div class="stat vis"><div class="n" id="sVisit">-</div><div class="l">누적 조회수</div></div>
   </section>
 
   <form class="search" id="searchForm" autocomplete="off">
@@ -337,13 +335,4 @@ $("#moreBtn").addEventListener("click", () => { ui.limit += PAGE; render(); });
 
 summary();
 render();
-</script>
-<script data-goatcounter="https://kiwoongpark.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
-<script>
-// 누적 조회수 카드: GoatCounter 사이트 전체(TOTAL) 조회수를 공개 카운터 JSON에서 읽어 표시
-fetch("https://kiwoongpark.goatcounter.com/counter/TOTAL.json")
-  .then(r => r.ok ? r.json() : Promise.reject(r.status))
-  .then(d => { document.getElementById("sVisit").textContent = d.count; })
-  .catch(() => {});
 </script>
