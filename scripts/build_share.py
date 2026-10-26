@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
+import news
 import terminals
 
 ROOT = Path(__file__).resolve().parent
@@ -29,13 +30,19 @@ def main():
         for code, found in ex.map(grab, terminals.FETCHERS):
             rows += [{"t": code, **r} for r in found]
 
+    try:  # 뉴스가 막혀도 스케줄은 나가야 한다
+        articles, news_error = news.fetch_news(), ""
+    except Exception as e:  # noqa: BLE001
+        articles, news_error = [], f"{type(e).__name__}: {e}"[:160]
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "terminals": terminals.TERMINALS, "errors": errors, "rows": rows}
+            "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
+            "news": articles, "news_error": news_error}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(page, encoding="utf-8")
-    print(f"{OUT}  ({len(rows)}건, 실패: {list(errors) or '없음'}, {OUT.stat().st_size // 1024}KB)")
+    print(f"{OUT}  ({len(rows)}건, 뉴스 {len(articles)}건, 실패: {list(errors) or '없음'}, {OUT.stat().st_size // 1024}KB)")
 
     # 로그인 없이 더블클릭으로 여는 단독 파일 (카톡·메일·USB로 전달용) -> 바탕화면에도 복사
     standalone = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'

@@ -145,10 +145,41 @@
   .notes { color: var(--muted); font-size: 12.5px; line-height: 1.8; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
   .notes b { color: var(--ink); }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
+
+  /* 항만 소식: 넓은 화면은 오른쪽 칸(스크롤 따라옴), 좁은 화면은 접힌 한 줄 */
+  .news { display: none; }
+  .nhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .nhead b { font-family: var(--f-display); font-weight: 400; font-size: 18px; }
+  .nlist { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+  .nlist li + li { border-top: 1px solid var(--line); }
+  .nitem { display: block; padding: 10px 14px; color: inherit; text-decoration: none; }
+  .nitem:hover { background: var(--hover); }
+  .nitem:focus-visible { outline: 3px solid var(--accent2); outline-offset: -3px; }
+  .nmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .nmeta .badge { font-size: 11px; padding: 1px 7px; }
+  .ndate { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; margin-left: auto; }
+  .ntitle { font-size: 13px; font-weight: 600; line-height: 1.45; }
+  .nitem.alert .ntitle { font-weight: 700; }
+  .nfoot { padding: 8px 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
+  .nfoot a { color: inherit; }
+  .newsbar { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .newsbar summary { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; list-style: none; font-size: 13px; }
+  .newsbar summary::-webkit-details-marker { display: none; }
+  .newsbar summary::after { content: "▾"; margin-left: auto; color: var(--muted); }
+  .newsbar[open] summary::after { content: "▴"; }
+  .newsbar summary .lead { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .newsbar .nlist { max-height: 320px; border-top: 1px solid var(--line); }
+  @media (min-width: 1500px) {
+    .page { display: grid; grid-template-columns: minmax(0, 1180px) 290px; justify-content: center; gap: 4px; padding-right: 16px; }
+    .page > .wrap { margin: 0; max-width: none; width: 100%; }
+    .news { display: flex; flex-direction: column; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); }
+    .newsbar { display: none; }
+  }
   @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px; } }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } button:hover { transform: none; } }
 </style>
 
+<div class="page">
 <div class="wrap">
   <header class="hero">
     <div class="brand">
@@ -171,6 +202,11 @@
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
   </section>
+
+  <details class="newsbar" id="newsBar" hidden>
+    <summary><b>부산항 영향 소식</b><span id="newsBarTags"></span><span class="lead" id="newsBarLead"></span></summary>
+    <ul class="nlist" id="newsBarList"></ul>
+  </details>
 
   <form class="search" id="searchForm" autocomplete="off">
     <input id="q" placeholder="선명 검색 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="선명 검색">
@@ -218,6 +254,13 @@
     · 일정은 수시로 바뀌어요. 선적 전에는 반드시 선사·터미널에서 최신 일정을 확인해 주세요. 찾는 배가 없으면 <span class="badge b-warn">수동 확인 필요</span>예요.<br>
     · 출처: PNC 부산신항만, HJNC 한진부산, HPNT HMM PSA, DGT 동원글로벌터미널 (신항) · BPTC 신선대·감만, HKTL 한국허치슨 신감만·감만1 (북항)
   </div>
+</div>
+
+<aside class="news panel" aria-label="항만 소식">
+  <div class="nhead"><b>부산항 영향 소식</b><span class="muted">파업 · 기상 · 사고</span></div>
+  <ul class="nlist" id="newsList"></ul>
+  <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · 최근 14일, 부산항 화물 스케줄에 영향 줄 만한 기사만 골라요</div>
+</aside>
 </div>
 
 <script>
@@ -339,6 +382,29 @@ document.querySelectorAll(".fchip[data-p]").forEach((b) => b.addEventListener("c
 }));
 $("#moreBtn").addEventListener("click", () => { ui.limit += PAGE; render(); });
 
+const TAG_CLS = { "파업": "b-bad", "기상": "b-blue", "사고": "b-warn", "운영": "b-warn" };
+function renderNews() {
+  const list = DATA.news || [];
+  const item = (a) => {
+    const d = toDate(a.date);
+    return `<li><a class="nitem alert" href="${esc(a.url)}" target="_blank" rel="noopener">
+      <div class="nmeta">${a.tags.map((t) => `<span class="badge ${TAG_CLS[t] || "b-gray"}">${esc(t)}</span>`).join("")}
+        ${a.busan ? `<span class="badge b-gray">부산항</span>` : ""}
+        <span class="ndate">${d && !isNaN(d) ? `${d.getMonth() + 1}/${d.getDate()}` : ""}</span></div>
+      <div class="ntitle">${esc(a.title)}</div></a></li>`;
+  };
+  const empty = DATA.news_error
+    ? `<li class="nitem muted">쉬핑가제트에 접속하지 못해 소식을 확인하지 못했어요.</li>`
+    : `<li class="nitem muted">최근 14일 동안 부산항 스케줄에 영향 줄 만한 소식이 없어요.</li>`;
+  const html = list.length ? list.map(item).join("") : empty;
+  $("#newsList").innerHTML = html;
+  $("#newsBarList").innerHTML = html;
+  $("#newsBarTags").innerHTML = list.length ? `<span class="badge b-bad">${list.length}건</span>` : `<span class="badge b-ok">특이사항 없음</span>`;
+  $("#newsBarLead").textContent = list.length ? list[0].title : "";
+  $("#newsBar").hidden = false;
+}
+
 summary();
 render();
+renderNews();
 </script>
