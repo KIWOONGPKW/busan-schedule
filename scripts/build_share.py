@@ -31,13 +31,13 @@ def main():
             rows += [{"t": code, **r} for r in found]
 
     try:  # 뉴스가 막혀도 스케줄은 나가야 한다
-        articles, news_error = news.fetch_news(), ""
+        articles, news_errors = news.fetch_news()
     except Exception as e:  # noqa: BLE001
-        articles, news_error = [], f"{type(e).__name__}: {e}"[:160]
+        articles, news_errors = [], {"쉬핑가제트": str(e), "부산항만공사": str(e)}
 
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
-            "news": articles, "news_error": news_error}
+            "news": articles, "news_error": ", ".join(news_errors)}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)

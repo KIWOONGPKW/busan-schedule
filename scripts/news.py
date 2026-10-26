@@ -1,4 +1,5 @@
-"""코리아쉬핑가제트(ksg.co.kr) 최근 기사 중 부산항 화물 스케줄에 영향 줄 만한 소식만 골라낸다.
+"""코리아쉬핑가제트(ksg.co.kr) 기사와 부산항만공사(busanpa.com) 공지 중
+부산항 화물 스케줄에 영향 줄 만한 소식만 골라낸다.
 
   파업·기상: 전국 단위여도 부산항 일정이 흔들리니 그대로 싣는다
   사고·운영(적체·장애 등): 부산항 관련 기사일 때만 싣는다
@@ -6,7 +7,9 @@
 사이트 검색은 본문 전체를 엉성하게 뒤져서 쓸모가 없다 -> 항만·물류·해운·해양종합 목록
 최근 몇 페이지(카테고리당 10건/페이지)를 받아 제목+요약으로 직접 분류한다.
 
-  GET /news/news_list.jsp?page=N&bbsID=news&bbsCategory=KSG&categoryCode=XXX -> HTML (<ul class="new_list">)
+  KSG : GET /news/news_list.jsp?page=N&bbsID=news&bbsCategory=KSG&categoryCode=XXX -> HTML (<ul class="new_list">)
+  BPA : GET /board/list.bpa?boardId=BBS_XXX&menuCd=DOM_XXX -> HTML (예전 /kor/Board.do 링크는 404)
+        선박대피협의회 회의결과는 기상악화 때 선박 대피 결정이라 전부 싣고, 공지·보도자료는 제목으로 거른다
 """
 import html
 import re
@@ -16,6 +19,12 @@ from datetime import datetime, timedelta
 from terminals import _fetch
 
 BASE = "https://www.ksg.co.kr"
+BPA = "https://www.busanpa.com"
+BPA_BOARDS = {  # boardId: (menuCd, 게시판 이름, 거르지 않고 붙일 태그)
+    "BBS_0000029": ("DOM_000000105001003000", "선박대피협의회", ["기상"]),
+    "BBS_0000027": ("DOM_000000105001001000", "공지사항", None),
+    "BBS_0000031": ("DOM_000000105002001000", "보도자료", None),
+}
 CATEGORIES = {"RKC": "항만", "XHJ": "물류", "LPG": "해운", "GOG": "해양/종합"}
 PAGES = 4
 DAYS, LIMIT = 14, 15
@@ -37,7 +46,20 @@ FOREIGN = re.compile(r"美|中|日|英|獨|佛|印|濠|미국|중국|일본|대�
 BUSAN = re.compile(r"부산항|부산신항|부산 신항|부산북항|부산 북항|부산항만공사|BPA\b|신항\s*\d|북항\s*\d")
 
 
-def _list_page(code, page):
+def _clean(x):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", x))).strip()
+
+
+def _tags(title):
+    if any(w in title for w in NOT_EVENT):
+        return []
+    tags = [t for t, words in TAGS.items() if any(w in title for w in words)]
+    if "파업" in tags and FOREIGN.search(title):
+        tags.remove("파업")
+    return tags
+
+
+def _ksg_page(code, page):
     q = f"page={page}&bbsID=news&bbsCategory=KSG&categoryCode={code}"
     s = _fetch(f"{BASE}/news/news_list.jsp?{q}")
     s = s.split('class="new_list"', 1)[-1].split('class="paging"', 1)[0]  # 옆 칸 '많이 본 기사' 등 제외
@@ -45,42 +67,62 @@ def _list_page(code, page):
     for m in re.finditer(r'<dt><a href="/news/main_newsView\.jsp\?pNum=(\d+)">(.*?)</a>.*?class="date">([^<]*)<'
                          r'.*?<dd>(.*?)</(?:dd|dl)>', s, re.S):
         pnum, title, date, summary = m.groups()
-        clean = lambda x: re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", x))).strip()
-        out.append({"id": pnum, "title": clean(title), "date": date.strip()[:16],
-                    "summary": clean(summary)[:140], "cat": CATEGORIES[code],
-                    "url": f"{BASE}/news/main_newsView.jsp?pNum={pnum}"})
+        title, summary = _clean(title), _clean(summary)
+        tags = _tags(title)
+        busan = bool(BUSAN.search(f"{title} {summary}"))
+        # 사고·운영은 부산항 기사일 때만, 파업·기상은 전국 단위도
+        if tags and (busan or ANYWHERE & set(tags)):
+            out.append({"id": f"ksg{pnum}", "title": title, "date": date.strip()[:16], "busan": busan, "tags": tags,
+                        "source": "쉬핑가제트", "cat": CATEGORIES[code],
+                        "url": f"{BASE}/news/main_newsView.jsp?pNum={pnum}"})
+    return out
+
+
+def _bpa_board(board_id):
+    menu, name, fixed = BPA_BOARDS[board_id]
+    s = _fetch(f"{BPA}/board/list.bpa?boardId={board_id}&menuCd={menu}")
+    out = []
+    # 한 줄: 제목 링크 ... 작성자 ... <span>YYYY-MM-DD</span>
+    for m in re.finditer(r'href="/board/view\.bpa\?[^"]*?dataSid=(\d+)"[^>]*>(.*?)</a>'
+                         r'((?:(?!view\.bpa).)*?)<span>(\d{4}-\d{2}-\d{2})</span>', s, re.S):
+        sid, title, _, date = m.groups()
+        title = _clean(title)
+        tags = fixed or _tags(title)
+        if tags:
+            out.append({"id": f"bpa{sid}", "title": title, "date": f"{date} 00:00", "busan": True, "tags": tags,
+                        "source": "부산항만공사", "cat": name,
+                        "url": f"{BPA}/board/view.bpa?boardId={board_id}&menuCd={menu}&dataSid={sid}"})
     return out
 
 
 def fetch_news():
-    jobs = [(c, p) for c in CATEGORIES for p in range(1, PAGES + 1)]
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        pages = list(ex.map(lambda j: _list_page(*j), jobs))
-    seen, picked = set(), []
-    now = datetime.now()
-    for item in (a for pg in pages for a in pg):
-        if item["id"] in seen:
-            continue
-        seen.add(item["id"])
-        title = item["title"]
-        tags = [t for t, words in TAGS.items() if any(w in title for w in words)]
-        if any(w in title for w in NOT_EVENT):
-            tags = []
-        if "파업" in tags and FOREIGN.search(title):
-            tags.remove("파업")
-        busan = bool(BUSAN.search(f'{item["title"]} {item["summary"]}'))
+    """(기사 목록, {출처: 오류}) - 한쪽 사이트가 막혀도 다른 쪽 소식은 싣는다."""
+    jobs = {("쉬핑가제트", f"{c}-{p}"): (_ksg_page, c, p) for c in CATEGORIES for p in range(1, PAGES + 1)}
+    jobs.update({("부산항만공사", b): (_bpa_board, b) for b in BPA_BOARDS})
+    items, errors = [], {}
+
+    def run(key):
+        fn, *args = jobs[key]
         try:
-            age = now - datetime.strptime(item["date"], "%Y-%m-%d %H:%M")
-        except ValueError:
-            continue
-        if age > timedelta(days=DAYS) or not (busan or ANYWHERE & set(tags)):
-            continue
-        if tags:
-            picked.append({**item, "tags": tags, "busan": busan})
-    picked.sort(key=lambda a: a["date"], reverse=True)
-    return picked[:LIMIT]
+            return fn(*args)
+        except Exception as e:  # noqa: BLE001
+            errors.setdefault(key[0], f"{type(e).__name__}: {e}"[:160])
+            return []
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        for found in ex.map(run, jobs):
+            items += found
+    cutoff = (datetime.now() - timedelta(days=DAYS)).strftime("%Y-%m-%d %H:%M")
+    seen, picked = set(), []
+    for a in sorted(items, key=lambda a: a["date"], reverse=True):
+        if a["id"] not in seen and a["date"] >= cutoff:
+            seen.add(a["id"])
+            picked.append(a)
+    return picked[:LIMIT], errors
 
 
 if __name__ == "__main__":
-    for a in fetch_news():
-        print(a["date"], a["tags"], "부산" if a["busan"] else "", a["title"])
+    found, errs = fetch_news()
+    for a in found:
+        print(a["date"], a["source"], a["tags"], "부산" if a["busan"] else "", a["title"])
+    print("오류:", errs or "없음")

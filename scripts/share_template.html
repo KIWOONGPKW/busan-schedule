@@ -148,7 +148,7 @@
 
   /* 항만 소식: 넓은 화면은 오른쪽 칸(스크롤 따라옴), 좁은 화면은 접힌 한 줄 */
   .news { display: none; }
-  .nhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .nhead { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
   .nhead b { font-family: var(--f-display); font-weight: 400; font-size: 18px; }
   .nlist { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
   .nlist li + li { border-top: 1px solid var(--line); }
@@ -206,7 +206,7 @@
   <details class="newsbar" id="newsBar" hidden>
     <summary><b>부산항 영향 소식</b><span id="newsBarTags"></span><span class="lead" id="newsBarLead"></span></summary>
     <ul class="nlist" id="newsBarList"></ul>
-    <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · 최근 14일, 부산항 화물 스케줄에 영향 줄 만한 기사만 골라요</div>
+    <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 화물 스케줄에 영향 줄 만한 소식만 골라요<span id="newsBarErr"></span></div>
   </details>
 
   <form class="search" id="searchForm" autocomplete="off">
@@ -253,15 +253,15 @@
     · <b>예상 도착</b>은 터미널 접안(예정)일시, <b>예상 출항</b>은 출항(예정)일시예요. 각 터미널 선석배정 현황(공개 화면)을 조회 기준 시각에 모은 자료예요.<br>
     · <b>반입 가능일</b>(반입 시작)은 공개 화면 기준으로 HJNC·HPNT·DGT만 제공해요. PNC·BPTC·HKTL은 반입 마감일만 있어 "미공개"로 표시돼요.<br>
     · 일정은 수시로 바뀌어요. 선적 전에는 반드시 선사·터미널에서 최신 일정을 확인해 주세요. 찾는 배가 없으면 <span class="badge b-warn">수동 확인 필요</span>예요.<br>
-    · <b>부산항 영향 소식</b>은 <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a>(ksg.co.kr) 기사 중 파업 · 기상 · 사고 · 운영 차질 소식만 골라 보여드려요. 기사 저작권은 코리아쉬핑가제트에 있어요.<br>
+    · <b>부산항 영향 소식</b>은 <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a>(ksg.co.kr) 기사와 <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a>(busanpa.com) 공지 · 선박대피협의회 결과 · 보도자료 중 파업 · 기상 · 사고 · 운영 차질 소식만 골라 보여드려요. 기사와 공지의 저작권은 각 출처에 있어요.<br>
     · 출처: PNC 부산신항만, HJNC 한진부산, HPNT HMM PSA, DGT 동원글로벌터미널 (신항) · BPTC 신선대·감만, HKTL 한국허치슨 신감만·감만1 (북항)
   </div>
 </div>
 
 <aside class="news panel" aria-label="항만 소식">
-  <div class="nhead"><b>부산항 영향 소식</b><span class="muted">출처: 쉬핑가제트</span></div>
+  <div class="nhead"><b>부산항 영향 소식</b><span class="muted">출처: 쉬핑가제트 · 부산항만공사</span></div>
   <ul class="nlist" id="newsList"></ul>
-  <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · 최근 14일, 부산항 화물 스케줄에 영향 줄 만한 기사만 골라요</div>
+  <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 화물 스케줄에 영향 줄 만한 소식만 골라요<span id="newsErr"></span></div>
 </aside>
 </div>
 
@@ -393,11 +393,12 @@ function renderNews() {
       <div class="nmeta">${a.tags.map((t) => `<span class="badge ${TAG_CLS[t] || "b-gray"}">${esc(t)}</span>`).join("")}
         ${a.busan ? `<span class="badge b-gray">부산항</span>` : ""}
         <span class="ndate">${d && !isNaN(d) ? `${d.getMonth() + 1}/${d.getDate()}` : ""}</span></div>
-      <div class="ntitle">${esc(a.title)}</div><div class="muted">쉬핑가제트 · ${esc(a.cat || "")}</div></a></li>`;
+      <div class="ntitle">${esc(a.title)}</div><div class="muted">${esc(a.source || "쉬핑가제트")} · ${esc(a.cat || "")}</div></a></li>`;
   };
-  const empty = DATA.news_error
-    ? `<li class="nitem muted">쉬핑가제트에 접속하지 못해 소식을 확인하지 못했어요.</li>`
-    : `<li class="nitem muted">최근 14일 동안 부산항 스케줄에 영향 줄 만한 소식이 없어요.</li>`;
+  const empty = `<li class="nitem muted">최근 14일 동안 부산항 스케줄에 영향 줄 만한 소식이 없어요.</li>`;
+  const err = DATA.news_error ? ` · <b>${esc(DATA.news_error)}</b> 접속 실패로 일부 소식이 빠졌을 수 있어요` : "";
+  $("#newsErr").innerHTML = err;
+  $("#newsBarErr").innerHTML = err;
   const html = list.length ? list.map(item).join("") : empty;
   $("#newsList").innerHTML = html;
   $("#newsBarList").innerHTML = html;
