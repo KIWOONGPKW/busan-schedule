@@ -1,4 +1,4 @@
-"""공유용 HTML 만들기: 5개 터미널 일정을 지금 시점으로 모아 한 파일에 담는다.
+"""공유용 HTML 만들기: 6개 터미널 일정을 지금 시점으로 모아 한 파일에 담는다.
 
 실행: python build_share.py  ->  share/busan-vessel-schedule.html
 (화주 등 내부 데이터는 넣지 않고, 터미널이 공개한 선석배정 일정만 담는다)
@@ -25,7 +25,7 @@ def main():
             errors[code] = f"{type(e).__name__}: {e}"[:160]
             return code, []
 
-    with ThreadPoolExecutor(max_workers=5) as ex:
+    with ThreadPoolExecutor(max_workers=6) as ex:
         for code, found in ex.map(grab, terminals.FETCHERS):
             rows += [{"t": code, **r} for r in found]
 

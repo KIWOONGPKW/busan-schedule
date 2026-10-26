@@ -14,6 +14,7 @@
     --c-pnc: #e0532f; --c-pnc-bg: #ffe5dc; --c-hjnc: #2468c4; --c-hjnc-bg: #dfeeff;
     --c-hpnt: #1b8a50; --c-hpnt-bg: #ddf6e7; --c-bptc: #6b4bd6; --c-bptc-bg: #eee6ff;
     --c-hktl: #a86600; --c-hktl-bg: #fff0cc;
+    --c-dgt: #0f7f8c; --c-dgt-bg: #d8f4f6;
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
     --shadow: 0 6px 22px rgba(123, 104, 238, .10);
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
@@ -29,6 +30,7 @@
       --c-pnc: #ff9f85; --c-pnc-bg: #44291f; --c-hjnc: #8cbcff; --c-hjnc-bg: #1f3150;
       --c-hpnt: #6fe0a3; --c-hpnt-bg: #1b3a2b; --c-bptc: #bba8ff; --c-bptc-bg: #33295a;
       --c-hktl: #ffcc66; --c-hktl-bg: #44351a;
+      --c-dgt: #66d4de; --c-dgt-bg: #163a3e;
       --hero-a: #222d52; --hero-b: #3f4d80; --hero-c: #9a6a4f; --hero-ink: #fff7f2;
       --shadow: 0 6px 22px rgba(0, 0, 0, .35); color-scheme: dark;
     }
@@ -42,6 +44,7 @@
     --c-pnc: #ff9f85; --c-pnc-bg: #44291f; --c-hjnc: #8cbcff; --c-hjnc-bg: #1f3150;
     --c-hpnt: #6fe0a3; --c-hpnt-bg: #1b3a2b; --c-bptc: #bba8ff; --c-bptc-bg: #33295a;
     --c-hktl: #ffcc66; --c-hktl-bg: #44351a;
+    --c-dgt: #66d4de; --c-dgt-bg: #163a3e;
     --hero-a: #222d52; --hero-b: #3f4d80; --hero-c: #9a6a4f; --hero-ink: #fff7f2;
     --shadow: 0 6px 22px rgba(0, 0, 0, .35); color-scheme: dark;
   }
@@ -101,10 +104,12 @@
   .chip { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-radius: 999px; padding: 2px 10px 2px 6px; white-space: nowrap; }
   .chip i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
   .t-PNC { color: var(--c-pnc); } .t-HJNC { color: var(--c-hjnc); } .t-HPNT { color: var(--c-hpnt); }
+  .t-DGT { color: var(--c-dgt); }
   .t-BPTC { color: var(--c-bptc); } .t-HKTL { color: var(--c-hktl); }
   .chip.t-PNC, .fchip.t-PNC[aria-pressed="true"] { background: var(--c-pnc-bg); }
   .chip.t-HJNC, .fchip.t-HJNC[aria-pressed="true"] { background: var(--c-hjnc-bg); }
   .chip.t-HPNT, .fchip.t-HPNT[aria-pressed="true"] { background: var(--c-hpnt-bg); }
+  .chip.t-DGT, .fchip.t-DGT[aria-pressed="true"] { background: var(--c-dgt-bg); }
   .chip.t-BPTC, .fchip.t-BPTC[aria-pressed="true"] { background: var(--c-bptc-bg); }
   .chip.t-HKTL, .fchip.t-HKTL[aria-pressed="true"] { background: var(--c-hktl-bg); }
 
@@ -178,6 +183,7 @@
     <button type="button" class="fchip t-PNC" data-t="PNC" aria-pressed="false">PNC</button>
     <button type="button" class="fchip t-HJNC" data-t="HJNC" aria-pressed="false">HJNC</button>
     <button type="button" class="fchip t-HPNT" data-t="HPNT" aria-pressed="false">HPNT</button>
+    <button type="button" class="fchip t-DGT" data-t="DGT" aria-pressed="false">DGT</button>
     <span class="muted">신항</span>
     <button type="button" class="fchip t-BPTC" data-t="BPTC" aria-pressed="false">BPTC</button>
     <button type="button" class="fchip t-HKTL" data-t="HKTL" aria-pressed="false">HKTL</button>
@@ -208,9 +214,9 @@
 
   <div class="notes">
     · <b>예상 도착</b>은 터미널 접안(예정)일시, <b>예상 출항</b>은 출항(예정)일시예요. 각 터미널 선석배정 현황(공개 화면)을 조회 기준 시각에 모은 자료예요.<br>
-    · <b>반입 가능일</b>(반입 시작)은 공개 화면 기준으로 HJNC·HPNT만 제공해요. PNC·BPTC·HKTL은 반입 마감일만 있어 "미공개"로 표시돼요.<br>
+    · <b>반입 가능일</b>(반입 시작)은 공개 화면 기준으로 HJNC·HPNT·DGT만 제공해요. PNC·BPTC·HKTL은 반입 마감일만 있어 "미공개"로 표시돼요.<br>
     · 일정은 수시로 바뀌어요. 선적 전에는 반드시 선사·터미널에서 최신 일정을 확인해 주세요. 찾는 배가 없으면 <span class="badge b-warn">수동 확인 필요</span>예요.<br>
-    · 출처: PNC 부산신항만, HJNC 한진부산, HPNT HMM PSA (신항) · BPTC 신선대·감만, HKTL 한국허치슨 신감만·감만1 (북항)
+    · 출처: PNC 부산신항만, HJNC 한진부산, HPNT HMM PSA, DGT 동원글로벌터미널 (신항) · BPTC 신선대·감만, HKTL 한국허치슨 신감만·감만1 (북항)
   </div>
 </div>
 
@@ -280,7 +286,7 @@ function render() {
   $("#capCount").textContent = `${rows.length}척${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
   if (!rows.length) {
     $("#rows").innerHTML = q
-      ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) 5개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
+      ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) 6개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
       : `<tr><td colspan="6" class="empty">조건에 맞는 일정이 없어요.</td></tr>`;
     $("#moreWrap").hidden = true;
     return;

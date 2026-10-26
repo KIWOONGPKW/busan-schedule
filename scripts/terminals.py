@@ -1,4 +1,4 @@
-"""부산항 4개 터미널 선석배정 현황 조회 모듈.
+"""부산항 6개 터미널 선석배정 현황 조회 모듈.
 
 각 터미널 사이트는 선명 검색 기능이 없고 '기간별 전체 목록'만 제공한다.
 그래서 기간(오늘-20일 ~ 오늘+40일) 목록을 한 번 받아온 뒤, 선명/항차로 직접 찾는다.
@@ -6,6 +6,7 @@
   PNC  : POST /info/CMS/Ship/Info.pnc  -> HTML 표 (행 색상 class로 상태 구분)
   HJNC : GET  /esvc/vessel/berthScheduleT/data -> JSON (세션 쿠키 필요)
   HPNT : GET  /infoservice/vessel/vslScheduleList.jsp -> HTML 표 (POST는 400)
+  DGT  : POST /DGT/esvc/vessel/vesselSchedule -> JSON (세션 쿠키 + CSRF 토큰 필요)
   BPTC : POST /Berth_status_text_servlet_sw_kr -> HTML 표 (EUC-KR)   [북항]
   HKTL : GET  custom.hktl.com/jsp/T01/sunsuk.jsp -> HTML 표 (EUC-KR, 20건 페이지) [북항]
          (자성대에서 신감만·감만1로 이전한 한국허치슨터미널)
@@ -27,6 +28,7 @@ TERMINALS = {
     "PNC": "PNC 부산신항만 (신항)",
     "HJNC": "HJNC 한진부산 (신항)",
     "HPNT": "HPNT HMM PSA (신항)",
+    "DGT": "DGT 동원글로벌터미널 (신항)",
     "BPTC": "BPTC 신선대·감만 (북항)",
     "HKTL": "HKTL 허치슨 신감만·감만1 (북항)",
 }
@@ -137,6 +139,33 @@ def fetch_hpnt():
     return out
 
 
+def fetch_dgt():
+    base = "https://www.dgtbusan.com/DGT/esvc/vessel"
+    op = _opener(http.cookiejar.CookieJar())
+    page = _fetch(f"{base}/berthScheduleT", opener=op)  # 세션 쿠키 + CSRF 토큰 발급
+    token = re.search(r'name="_csrf" content="([^"]+)"', page).group(1)
+    header = re.search(r'name="_csrf_header" content="([^"]+)"', page).group(1)
+    start, end = _range()
+    body = json.dumps({"fromDate": start.strftime("%Y%m%d"), "toDate": end.strftime("%Y%m%d"),
+                       "vessel": "", "voyage": "", "route": ""}).encode()
+    req = urllib.request.Request(f"{base}/vesselSchedule", data=body, headers={
+        "User-Agent": UA, "Content-Type": "application/json", "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest", "Referer": f"{base}/berthScheduleT", header: token})
+    with op.open(req, timeout=TIMEOUT) as r:
+        rows = json.loads(r.read().decode("utf-8", "replace"))["vesselSchedules"]
+    status_map = {"DEPARTURED": "출항", "DEPARTED": "출항", "WORKING": "접안", "ARRIVED": "접안", "PLANNED": "예정"}
+    out = []
+    for r in rows:
+        out.append({"vessel": r.get("vesselName") or "",
+                    "voyages": [f"{r.get('vesselCode')}-{r.get('voyageSeq')}/{r.get('voyageYear')}",
+                                "/".join(dict.fromkeys(v for v in (r.get("inVoyage"), r.get("outVoyage")) if v))],
+                    "operator": r.get("carrier") or "", "etb": _dt(r.get("atb") or r.get("etb")),
+                    "etd": _dt(r.get("atd") or r.get("etd")), "berth": r.get("berthNo") or "",
+                    "yard_open": _dt(r.get("cyOpen")), "yard_close": _dt(r.get("cctDate")),
+                    "status": status_map.get((r.get("status") or "").upper(), r.get("status") or "예정")})
+    return out
+
+
 def fetch_bptc():
     start, end = _range()
     page = _fetch("https://info.bptc.co.kr/Berth_status_text_servlet_sw_kr", encoding="cp949", data={
@@ -187,7 +216,8 @@ def fetch_hktl():
     return out
 
 
-FETCHERS = {"PNC": fetch_pnc, "HJNC": fetch_hjnc, "HPNT": fetch_hpnt, "BPTC": fetch_bptc, "HKTL": fetch_hktl}
+FETCHERS = {"PNC": fetch_pnc, "HJNC": fetch_hjnc, "HPNT": fetch_hpnt, "DGT": fetch_dgt,
+           "BPTC": fetch_bptc, "HKTL": fetch_hktl}
 
 
 # ---------------------------------------------------------------- 선박 매칭
