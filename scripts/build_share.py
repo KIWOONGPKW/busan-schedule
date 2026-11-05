@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
+import empties
 import news
 import terminals
 import tracking
@@ -41,10 +42,16 @@ def main():
     except Exception as e:  # noqa: BLE001
         tracked, track_errors = [], {"추적": str(e)[:160]}
 
+    try:  # 공컨 현황이 막혀도 스케줄은 나가야 한다
+        yards, empty_errors = empties.fetch_empties({r["operator"] for r in rows if r["t"] == "HJNC" and r["operator"]})
+    except Exception as e:  # noqa: BLE001
+        yards, empty_errors = [], {"HJNC": str(e)[:160], "BPTC": str(e)[:160]}
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
-            "tracking": tracked, "track_terminals": [t for t in tracking.SUPPORTED if t not in track_errors], "track_error": ", ".join(track_errors)}
+            "tracking": tracked, "track_terminals": [t for t in tracking.SUPPORTED if t not in track_errors], "track_error": ", ".join(track_errors),
+            "empties": yards, "empty_error": ", ".join(empty_errors)}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)
