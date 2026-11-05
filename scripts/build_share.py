@@ -47,7 +47,17 @@ def main():
     except Exception as e:  # noqa: BLE001
         yards, empty_errors = [], {"HJNC": str(e)[:160], "BPTC": str(e)[:160]}
 
+    def load(name, key):  # 사용자가 고치는 표: 잘못 고쳐도 페이지는 나가야 한다
+        try:
+            return json.loads((ROOT / name).read_text(encoding="utf-8"))[key], ""
+        except Exception as e:  # noqa: BLE001
+            return ({} if key == "routes" else []), f"{name} 읽기 실패: {e}"[:160]
+
+    transit, transit_err = load("transit_times.json", "ports")
+    routes, routes_err = load("routes.json", "routes")
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "transit": transit, "routes": routes, "dest_error": " · ".join(filter(None, [transit_err, routes_err])),
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "tracking": tracked, "track_terminals": [t for t in tracking.SUPPORTED if t not in track_errors], "track_error": ", ".join(track_errors),

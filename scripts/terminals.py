@@ -95,7 +95,7 @@ def fetch_pnc():
             continue
         cls = re.search(r"bgCol\d", attrs)
         out.append({"vessel": c[1], "voyages": [c[2], c[3]], "operator": c[4],
-                    "etb": _dt(c[7]), "etd": _dt(c[8]), "berth": c[9], "yard_open": "", "yard_close": _dt(c[10]),
+                    "etb": _dt(c[7]), "etd": _dt(c[8]), "berth": c[9], "yard_open": "", "yard_close": _dt(c[10]), "route": c[5],
                     "status": status_by_class.get(cls.group() if cls else "", "예정")})
     return out
 
@@ -117,7 +117,7 @@ def fetch_hjnc():
         out.append({"vessel": r.get("VSL_NM") or "", "voyages": [r.get("VOY_NO") or "", r.get("OPR_VOY") or ""],
                     "operator": r.get("PTNR_CODE") or "", "etb": _dt(r.get("ETB") or r.get("ATA")),
                     "etd": _dt(r.get("ATD")), "berth": r.get("BERTH_NO") or "",
-                    "yard_open": _dt(r.get("YARD_OPEN")), "yard_close": _dt(r.get("YARD_CLOSE")),
+                    "yard_open": _dt(r.get("YARD_OPEN")), "yard_close": _dt(r.get("YARD_CLOSE")), "route": r.get("OUT_LANE") or "",
                     "status": status_map.get(r.get("STATUS"), r.get("STATUS") or "예정")})
     return out
 
@@ -138,7 +138,7 @@ def fetch_hpnt():
         if len(c) < 15:
             continue
         out.append({"vessel": c[4], "voyages": [c[2], c[3]], "operator": c[1],
-                    "etb": _dt(c[8]), "etd": _dt(c[9]), "berth": c[0], "yard_open": _dt(c[6]), "yard_close": _dt(c[7]),
+                    "etb": _dt(c[8]), "etd": _dt(c[9]), "berth": c[0], "yard_open": _dt(c[6]), "yard_close": _dt(c[7]), "route": c[5],
                     "status": status_map.get(c[14].upper(), c[14] or "예정")})
     return out
 
@@ -166,6 +166,7 @@ def fetch_dgt():
                     "operator": r.get("carrier") or "", "etb": _dt(r.get("atb") or r.get("etb")),
                     "etd": _dt(r.get("atd") or r.get("etd")), "berth": r.get("berthNo") or "",
                     "yard_open": _dt(r.get("cyOpen")), "yard_close": _dt(r.get("cctDate")),
+                    "route": r.get("route") or r.get("serviceLane") or "",
                     "status": status_map.get((r.get("status") or "").upper(), r.get("status") or "예정")})
     return out
 
@@ -187,7 +188,7 @@ def fetch_pnit():
             continue
         # 선석 | 선사 | 모선항차 | 선사항차 | 접안위치 | 선명 | 항로 | 반입마감 | 접안 | 출항 | ... | 상태
         out.append({"vessel": c[5], "voyages": [c[2], c[3]], "operator": c[1],
-                    "etb": _dt(c[8]), "etd": _dt(c[9]), "berth": c[0], "yard_open": "", "yard_close": _dt(c[7]),
+                    "etb": _dt(c[8]), "etd": _dt(c[9]), "berth": c[0], "yard_open": "", "yard_close": _dt(c[7]), "route": c[6],
                     "status": status_map.get(c[14].upper(), c[14] or "예정")})
     return out
 
@@ -209,7 +210,7 @@ def fetch_bnct():
                                 "/".join(dict.fromkeys(v for v in (r.get("OPERVSLVVDIN"), r.get("OPERVSLVVDOUT")) if v))],
                     "operator": r.get("OPERATOR") or "", "etb": _dt(r.get("ATBDATE") or r.get("ETBDATE")),
                     "etd": _dt(r.get("ATDDATE") or r.get("ETDDATE")), "berth": r.get("BERTHNO") or "",
-                    "yard_open": "", "yard_close": _dt(r.get("CCTDATE")), "status": status})
+                    "yard_open": "", "yard_close": _dt(r.get("CCTDATE")), "route": r.get("ROUTE") or "", "status": status})
     return out
 
 
@@ -231,7 +232,7 @@ def fetch_bptc():
         status = "출항" if (atc and etd and etd <= now) else "접안" if ata and ata <= now else "예정"
         out.append({"vessel": c[3], "voyages": [c[2]], "operator": c[5],
                     "etb": ata or _dt(c[6]), "etd": etd, "berth": f"{c[0]} {c[1]}",
-                    "yard_open": "", "yard_close": _dt(c[10]),
+                    "yard_open": "", "yard_close": _dt(c[10]), "route": c[15] if len(c) > 15 else "",
                     "status": status})
     return out
 
@@ -256,7 +257,7 @@ def fetch_hktl():
                     continue
                 seen.add((c[0], c[4]))
                 out.append({"vessel": c[11], "voyages": [c[0], c[1].strip("/ ")], "operator": c[12],
-                            "etb": _dt(c[4]), "etd": _dt(c[6]), "berth": c[2], "yard_open": "", "yard_close": _dt(c[7]),
+                            "etb": _dt(c[4]), "etd": _dt(c[6]), "berth": c[2], "yard_open": "", "yard_close": _dt(c[7]), "route": c[13],
                             "status": status_by_color.get(color.upper(), "예정")})
             if len(rows) < 20:
                 break

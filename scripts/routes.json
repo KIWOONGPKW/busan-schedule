@@ -1,0 +1,15 @@
+{
+  "_안내": "터미널이 주는 항로(서비스) 코드 → 그 노선이 부산 다음에 들르는 목적항 코드(transit_times.json의 code). 터미널 화면에는 기항지가 없어서 이 표로 판단해요. 선사 서비스 노선표로 확인한 노선은 확인을 true로 바꿔 주세요(false면 화면에 '노선 추정' 표시). 표에 없는 노선의 배는 목적지 검색에 안 나와요.",
+  "routes": {
+    "PVS2": {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "흥아·장금, 선명(HEUNG-A BANGKOK, SAWASDEE THAILAND)으로 추정"},
+    "KHS1": {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "흥아·고려·장금, 선명(HEUNG-A HOCHIMINH, KMTC BANGKOK)으로 추정"},
+    "VTS":  {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "고려·장금, 노선명(Vietnam-Thailand)으로 추정"},
+    "VTX":  {"ports": ["VNSGN", "THLCH"], "확인": false, "메모": "남성·SM, 선명(POS LAEMCHABANG)으로 추정"},
+    "KHX1": {"ports": ["VNHPH"], "확인": false, "메모": "흥아, 선명(HEUNG-A HAIPHONG)으로 추정"},
+    "KHP":  {"ports": ["VNHPH"], "확인": false, "메모": "고려·남성, 노선명(Korea-Haiphong)으로 추정"},
+    "KPX":  {"ports": ["THLCH"], "확인": false, "메모": "고려·남성, 선명(KMTC LAEM CHABANG)으로 추정"},
+    "NFS":  {"ports": ["MYPKG"], "확인": false, "메모": "고려·남성·PIL, 선명(KMTC PENANG, KOTA GAYA)으로 추정"},
+    "PCI":  {"ports": ["INMAA"], "확인": false, "메모": "흥아·장금, 선명(CHENNAI VOYAGER)으로 추정"},
+    "CI5":  {"ports": ["INMAA", "INNSA"], "확인": false, "메모": "고려·IAL·WHL, 선명(TIGER CHENNAI, KMTC JEBEL ALI)으로 추정"}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "_안내": "부산 출항 → 목적항 평균 운송 일수(T/T). days 숫자만 고치면 돼요. days를 null로 두면 화면에 '운송기간 미등록'으로 나와요. aliases는 검색어(한글·영문·약칭)예요.",
+  "ports": [
+    {"code": "VNSGN", "name": "호치민", "aliases": ["호치민", "HOCHIMINH", "HO CHI MINH", "HCM", "SAIGON", "사이공", "CAT LAI", "캇라이"], "days": 9},
+    {"code": "VNHPH", "name": "하이퐁", "aliases": ["하이퐁", "HAIPHONG", "HAI PHONG"], "days": 4},
+    {"code": "THLCH", "name": "람차방", "aliases": ["람차방", "램차방", "LAEM CHABANG", "LAEMCHABANG", "LCB"], "days": 9},
+    {"code": "THBKK", "name": "방콕", "aliases": ["방콕", "BANGKOK", "BKK"], "days": 10},
+    {"code": "PHMNL", "name": "마닐라", "aliases": ["마닐라", "MANILA", "MNL"], "days": 13},
+    {"code": "SGSIN", "name": "싱가포르", "aliases": ["싱가포르", "싱가폴", "SINGAPORE", "SIN"], "days": 14},
+    {"code": "IDJKT", "name": "자카르타", "aliases": ["자카르타", "JAKARTA", "TANJUNG PRIOK", "JKT"], "days": 14},
+    {"code": "MYPKG", "name": "포트켈랑", "aliases": ["포트켈랑", "포트클랑", "PORT KELANG", "PORT KLANG", "PKG"], "days": 13},
+    {"code": "CNSHA", "name": "상해", "aliases": ["상해", "상하이", "SHANGHAI", "SHA"], "days": 2},
+    {"code": "CNNGB", "name": "닝보", "aliases": ["닝보", "NINGBO", "NGB"], "days": 3},
+    {"code": "INNSA", "name": "나바샤바", "aliases": ["나바샤바", "NHAVA SHEVA", "NHAVASHEVA", "JNPT", "뭄바이", "MUMBAI"], "days": 21},
+    {"code": "INMAA", "name": "첸나이", "aliases": ["첸나이", "CHENNAI", "MADRAS", "MAA"], "days": 18},
+    {"code": "LKCMB", "name": "콜롬보", "aliases": ["콜롬보", "COLOMBO", "CMB"], "days": 18},
+    {"code": "PKKHI", "name": "카라치", "aliases": ["카라치", "KARACHI", "KHI"], "days": 25},
+    {"code": "MXZLO", "name": "만사니요", "aliases": ["만사니요", "만자니요", "MANZANILLO", "ZLO"], "days": 21},
+    {"code": "USLAX", "name": "LA (로스앤젤레스)", "aliases": ["LA", "엘에이", "로스앤젤레스", "LOS ANGELES"], "days": null},
+    {"code": "USLGB", "name": "롱비치", "aliases": ["롱비치", "LONG BEACH", "LGB"], "days": null}
+  ]
+}
