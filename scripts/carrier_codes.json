@@ -1,39 +1,220 @@
 {
- "_안내": "선사 이름 ↔ 터미널 자료의 선사 약자(codes) ↔ 공식 스케줄 조회 페이지(schedule). 선사 칩 이름(port_carriers.json)은 여기 이름과 같아야 연결돼요. 표에 없는 약자는 화면에 약자 그대로 나와요.",
+ "_안내": "선사 이름 ↔ 터미널 자료의 선사 약자(codes) ↔ 공식 스케줄 조회 페이지(schedule). 선사 칩 이름(port_carriers.json)은 여기 이름과 같아야 연결돼요. 표에 없는 약자는 화면에 약자 그대로 나와요. p2p가 있으면 {from}=KRPUS, {to}=도착 항구 UN/LOCODE를 채운 조회 주소로 열어요(없으면 schedule 조회 화면).",
  "carriers": {
-  "MAERSK":          {"codes": ["MAE", "MSK", "MCC"], "schedule": "https://www.maersk.com/schedules/"},
-  "MSC":             {"codes": ["MSC"], "schedule": "https://www.msc.com/en/search-a-schedule"},
-  "CMA CGM":         {"codes": ["CMA", "CNC"], "schedule": "https://www.cma-cgm.com/ebusiness/schedules"},
-  "APL":             {"codes": ["APL", "APC"], "schedule": "https://www.apl.com/ebusiness/schedules"},
-  "COSCO":           {"codes": ["COS", "COH", "CSL"], "schedule": "https://elines.coscoshipping.com/ebusiness/sailingSchedule/searchByCity"},
-  "OOCL":            {"codes": ["OOL"], "schedule": "https://www.oocl.com/eng/ourservices/eservices/sailingschedule/Pages/default.aspx"},
-  "HAPAG-LLOYD":     {"codes": ["HLC"], "schedule": "https://www.hapag-lloyd.com/en/online-business/schedule/interactive-schedule.html"},
-  "ONE":             {"codes": ["ONE"], "schedule": "https://ecomm.one-line.com/one-ecom/schedule/point-to-point-schedule"},
-  "HMM":             {"codes": ["HMM"], "schedule": "https://www.hmm21.com/"},
-  "YANG MING":       {"codes": ["YML"], "schedule": "https://www.yangming.com/e-service/schedule/PointToPoint.aspx"},
-  "EVERGREEN":       {"codes": ["EMC", "EMA"], "schedule": "https://www.shipmentlink.com/"},
-  "ZIM":             {"codes": ["ZIM"], "schedule": "https://www.zim.com/schedules/point-to-point"},
-  "SM LINE":         {"codes": ["SML"], "schedule": "https://www.smlines.com/"},
-  "KMTC":            {"codes": ["KMD"], "schedule": "https://www.ekmtc.com/"},
-  "SINOKOR":         {"codes": ["SKR"], "schedule": "https://www.sinokor.co.kr/"},
-  "HEUNG-A":         {"codes": ["HAS"], "schedule": "https://www.heungaline.com/"},
-  "SITC":            {"codes": ["SIT"], "schedule": "https://www.sitcline.com/"},
-  "TS LINES":        {"codes": ["TSL"], "schedule": "https://www.tslines.com/"},
-  "WAN HAI":         {"codes": ["WHL"], "schedule": "https://www.wanhai.com/"},
-  "PIL":             {"codes": ["PIL"], "schedule": "https://www.pilship.com/"},
-  "INTERASIA":       {"codes": ["IAL"], "schedule": "https://www.interasia.cc/"},
-  "NAMSUNG":         {"codes": ["NSL", "NSS"], "schedule": "https://www.namsung.co.kr/"},
-  "PAN OCEAN":       {"codes": ["PCL"], "schedule": "https://www.panocean.com/"},
-  "CK LINE":         {"codes": ["CKL"], "schedule": "https://www.ckline.co.kr/"},
-  "DONGJIN":         {"codes": ["DJS"], "schedule": ""},
-  "DONGYOUNG":       {"codes": ["DYS"], "schedule": ""},
-  "EASLINE":         {"codes": ["EAS"], "schedule": ""},
-  "X-PRESS FEEDERS": {"codes": ["XPR"], "schedule": "https://www.x-pressfeeders.com/"},
-  "EMIRATES LINE":   {"codes": ["ESL"], "schedule": ""},
-  "RCL":             {"codes": ["RCL"], "schedule": "https://www.rclgroup.com/"},
-  "BEN LINE":        {"codes": ["BEN"], "schedule": ""},
-  "FESCO":           {"codes": ["FES"], "schedule": "https://www.fesco.ru/en/"},
-  "CHINA UNITED LINES": {"codes": ["CUL"], "schedule": ""},
-  "SWIRE SHIPPING":  {"codes": ["SWI", "SWL"], "schedule": ""}
+  "MAERSK": {
+   "codes": [
+    "MAE",
+    "MSK",
+    "MCC"
+   ],
+   "schedule": "https://www.maersk.com/schedules/"
+  },
+  "MSC": {
+   "codes": [
+    "MSC"
+   ],
+   "schedule": "https://www.msc.com/en/search-a-schedule"
+  },
+  "CMA CGM": {
+   "codes": [
+    "CMA",
+    "CNC"
+   ],
+   "schedule": "https://www.cma-cgm.com/ebusiness/schedules",
+   "p2p": "https://www.cma-cgm.com/ebusiness/schedules/routing-finder?POL={from}&POD={to}"
+  },
+  "APL": {
+   "codes": [
+    "APL",
+    "APC"
+   ],
+   "schedule": "https://www.apl.com/ebusiness/schedules",
+   "p2p": "https://www.apl.com/ebusiness/schedules/routing-finder?POL={from}&POD={to}"
+  },
+  "COSCO": {
+   "codes": [
+    "COS",
+    "COH",
+    "CSL"
+   ],
+   "schedule": "https://elines.coscoshipping.com/ebusiness/sailingSchedule/searchByCity"
+  },
+  "OOCL": {
+   "codes": [
+    "OOL"
+   ],
+   "schedule": "https://www.oocl.com/eng/ourservices/eservices/sailingschedule/Pages/default.aspx"
+  },
+  "HAPAG-LLOYD": {
+   "codes": [
+    "HLC"
+   ],
+   "schedule": "https://www.hapag-lloyd.com/en/online-business/schedule/interactive-schedule.html"
+  },
+  "ONE": {
+   "codes": [
+    "ONE"
+   ],
+   "schedule": "https://ecomm.one-line.com/one-ecom/schedule/point-to-point-schedule"
+  },
+  "HMM": {
+   "codes": [
+    "HMM"
+   ],
+   "schedule": "https://www.hmm21.com/"
+  },
+  "YANG MING": {
+   "codes": [
+    "YML"
+   ],
+   "schedule": "https://www.yangming.com/e-service/schedule/PointToPoint.aspx"
+  },
+  "EVERGREEN": {
+   "codes": [
+    "EMC",
+    "EMA"
+   ],
+   "schedule": "https://www.shipmentlink.com/"
+  },
+  "ZIM": {
+   "codes": [
+    "ZIM"
+   ],
+   "schedule": "https://www.zim.com/schedules/point-to-point"
+  },
+  "SM LINE": {
+   "codes": [
+    "SML"
+   ],
+   "schedule": "https://www.smlines.com/"
+  },
+  "KMTC": {
+   "codes": [
+    "KMD"
+   ],
+   "schedule": "https://www.ekmtc.com/"
+  },
+  "SINOKOR": {
+   "codes": [
+    "SKR"
+   ],
+   "schedule": "https://www.sinokor.co.kr/"
+  },
+  "HEUNG-A": {
+   "codes": [
+    "HAS"
+   ],
+   "schedule": "https://www.heungaline.com/"
+  },
+  "SITC": {
+   "codes": [
+    "SIT"
+   ],
+   "schedule": "https://www.sitcline.com/"
+  },
+  "TS LINES": {
+   "codes": [
+    "TSL"
+   ],
+   "schedule": "https://www.tslines.com/"
+  },
+  "WAN HAI": {
+   "codes": [
+    "WHL"
+   ],
+   "schedule": "https://www.wanhai.com/"
+  },
+  "PIL": {
+   "codes": [
+    "PIL"
+   ],
+   "schedule": "https://www.pilship.com/"
+  },
+  "INTERASIA": {
+   "codes": [
+    "IAL"
+   ],
+   "schedule": "https://www.interasia.cc/"
+  },
+  "NAMSUNG": {
+   "codes": [
+    "NSL",
+    "NSS"
+   ],
+   "schedule": "https://www.namsung.co.kr/"
+  },
+  "PAN OCEAN": {
+   "codes": [
+    "PCL"
+   ],
+   "schedule": "https://www.panocean.com/"
+  },
+  "CK LINE": {
+   "codes": [
+    "CKL"
+   ],
+   "schedule": "https://www.ckline.co.kr/"
+  },
+  "DONGJIN": {
+   "codes": [
+    "DJS"
+   ],
+   "schedule": ""
+  },
+  "DONGYOUNG": {
+   "codes": [
+    "DYS"
+   ],
+   "schedule": ""
+  },
+  "EASLINE": {
+   "codes": [
+    "EAS"
+   ],
+   "schedule": ""
+  },
+  "X-PRESS FEEDERS": {
+   "codes": [
+    "XPR"
+   ],
+   "schedule": "https://www.x-pressfeeders.com/"
+  },
+  "EMIRATES LINE": {
+   "codes": [
+    "ESL"
+   ],
+   "schedule": ""
+  },
+  "RCL": {
+   "codes": [
+    "RCL"
+   ],
+   "schedule": "https://www.rclgroup.com/"
+  },
+  "BEN LINE": {
+   "codes": [
+    "BEN"
+   ],
+   "schedule": ""
+  },
+  "FESCO": {
+   "codes": [
+    "FES"
+   ],
+   "schedule": "https://www.fesco.ru/en/"
+  },
+  "CHINA UNITED LINES": {
+   "codes": [
+    "CUL"
+   ],
+   "schedule": ""
+  },
+  "SWIRE SHIPPING": {
+   "codes": [
+    "SWI",
+    "SWL"
+   ],
+   "schedule": ""
+  }
  }
 }

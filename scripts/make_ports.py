@@ -36,6 +36,8 @@ def region(cc, sub, c):
         return "미주 동안"
     if cc == "CA":
         return "미주 서안" if sub == "BC" or (c and c[1] < -110) else "미주 동안"
+    if cc == "EG":  # 수에즈 남쪽(홍해)은 홍해·이집트, 나머지는 지중해 동부·이집트
+        return "홍해·이집트" if (c and c[0] < 30.5) else "지중해 동부·이집트"
     if cc == "RU":
         if sub in ("PRI", "KHA", "SAK", "KAM", "MAG", "CHU", "SA", "AMU") or (c and c[1] > 100):
             return "러시아 극동"
@@ -43,11 +45,12 @@ def region(cc, sub, c):
             return "흑해"
         if c or sub:
             return "유럽"
-        return ""  # 좌표·지역 정보가 없으면 모름 (아래 RU_FAR_EAST로 보완)
+        return "유럽"  # 좌표·지역 정보가 없으면 유럽(발트) 기본, 극동 주요 항구는 RU_FAR_EAST로 보완
     return r
 
 
 # 좌표가 빠진 러시아 극동 주요 항구
+EG_RED_SEA = {"EGSOK", "EGAIS", "EGSGA", "EGADA", "EGSUZ", "EGHRG", "EGQSR"}  # 좌표 빠진 이집트 홍해 쪽 항구
 RU_FAR_EAST = {"RUVVO", "RUNJK", "RUVYP", "RUKOR", "RUPKC", "RUMAG", "RUVNN", "RUZRB"}
 ports, seen = [], set()
 with open(src, encoding="utf-8", newline="") as f:
@@ -65,6 +68,8 @@ with open(src, encoding="utf-8", newline="") as f:
         reg = region(cc, (r.get("Subdivision") or "").strip().upper(), coords(r.get("Coordinates")))
         if code in RU_FAR_EAST:
             reg = "러시아 극동"
+        if code in EG_RED_SEA:
+            reg = "홍해·이집트"
         ports.append([code, name, cc, reg])
 ports.sort()
 data = {"v": "UN/LOCODE (UNECE) via github.com/datasets/un-locode, Function=1 (port)", "p": ports}

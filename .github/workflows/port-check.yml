@@ -1,0 +1,40 @@
+name: 목적지 검색 전수 점검
+
+on:
+  schedule:
+    - cron: "20 0 * * *"   # 매일 1번: 한국 시간 오전 9시 20분 (GitHub 사정으로 몇 분 늦을 수 있음)
+  workflow_dispatch:       # Actions 탭에서 수동 실행
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: 전체 항구 검색 점검
+        id: check
+        run: |
+          set +e
+          node scripts/check_ports.js index.html ports.json port_check.md
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat port_check.md >> "$GITHUB_STEP_SUMMARY"
+      - name: 문제 항구가 있으면 Issue 남기기 (이미 열린 점검 Issue가 있으면 댓글로)
+        if: steps.check.outputs.code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="목적지 검색 점검: 결과 없는 항구 발견"
+          num=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --body-file port_check.md
+          else
+            gh issue create --title "$title" --body-file port_check.md
+          fi
+          exit 1

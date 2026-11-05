@@ -3,6 +3,7 @@
 실행: python build_share.py  ->  share/busan-vessel-schedule.html
 (화주 등 내부 데이터는 넣지 않고, 터미널이 공개한 선석배정 일정만 담는다)
 """
+import hashlib
 import json
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -79,6 +80,7 @@ def main():
 
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
+            "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
             "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,

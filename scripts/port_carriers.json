@@ -712,7 +712,6 @@
    "HAPAG-LLOYD",
    "ONE",
    "HMM",
-   "YANG MING",
    "ZIM"
   ],
   "ROCND": [
@@ -817,6 +816,42 @@
    "EVERGREEN",
    "YANG MING",
    "KMTC"
+  ],
+  "EGEDK": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "ZIM"
+  ],
+  "EGPSE": [
+   "MAERSK",
+   "COSCO",
+   "OOCL",
+   "MSC",
+   "CMA CGM",
+   "HAPAG-LLOYD",
+   "ONE",
+   "EVERGREEN"
+  ],
+  "EGSOK": [
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "MAERSK",
+   "RCL"
+  ],
+  "EGAIS": [
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "MAERSK",
+   "RCL"
   ]
  }
 }
