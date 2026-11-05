@@ -11,6 +11,7 @@ from pathlib import Path
 
 import news
 import terminals
+import tracking
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "share" / "busan-vessel-schedule.html"
@@ -35,14 +36,21 @@ def main():
     except Exception as e:  # noqa: BLE001
         articles, news_errors = [], {"쉬핑가제트": str(e), "부산항만공사": str(e)}
 
+    try:  # 컨테이너 추적이 막혀도 스케줄은 나가야 한다
+        tracked, track_errors = tracking.track(rows)
+    except Exception as e:  # noqa: BLE001
+        tracked, track_errors = [], {"추적": str(e)[:160]}
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
-            "news": articles, "news_error": ", ".join(news_errors)}
+            "news": articles, "news_error": ", ".join(news_errors),
+            "tracking": tracked, "track_terminals": tracking.SUPPORTED, "track_error": ", ".join(track_errors)}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(page, encoding="utf-8")
-    print(f"{OUT}  ({len(rows)}건, 뉴스 {len(articles)}건, 실패: {list(errors) or '없음'}, {OUT.stat().st_size // 1024}KB)")
+    print(f"{OUT}  ({len(rows)}건, 뉴스 {len(articles)}건, 컨테이너 {len(tracked)}개, "
+          f"실패: {list(errors) + list(track_errors) or '없음'}, {OUT.stat().st_size // 1024}KB)")
 
     # 로그인 없이 더블클릭으로 여는 단독 파일 (카톡·메일·USB로 전달용) -> 바탕화면에도 복사
     standalone = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'

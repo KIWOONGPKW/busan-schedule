@@ -153,6 +153,26 @@
   .notes b { color: var(--ink); } .notes a { color: inherit; }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
 
+  /* 컨테이너 추적: 번호 입력 → 적재 선박·출항 여부 카드 */
+  .track .caption { align-items: center; }
+  .track form { display: flex; gap: 8px; padding: 12px 16px 0; }
+  .track input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
+                 border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
+  .track input::placeholder { text-transform: none; color: var(--muted); }
+  .track input:focus { outline: none; border-color: var(--accent); }
+  .tlist { list-style: none; margin: 0; padding: 12px 16px 14px; display: grid; gap: 10px;
+           grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .tcard { border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; background: var(--zebra); min-width: 0; }
+  .tcard.hit { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .tcard .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tcard .cno { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  .tcard .ship { margin-top: 6px; font-weight: 700; }
+  .tcard dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0 0; font-size: 12.5px; }
+  .tcard dt { color: var(--muted); } .tcard dd { margin: 0; min-width: 0; }
+  .thelp { padding: 0 16px 14px; font-size: 12.5px; color: var(--muted); }
+  .thelp a, .tmsg a { color: var(--accent2); font-weight: 700; }
+  .tmsg { margin: 12px 16px 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
+
   /* 항만 소식: 넓은 화면은 오른쪽 칸(스크롤 따라옴), 좁은 화면은 접힌 한 줄 */
   .news { display: none; }
   .nhead { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
@@ -215,6 +235,17 @@
     <ul class="nlist" id="newsBarList"></ul>
     <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 스케줄 영향 소식 · 항로 시황 · 부산항 주요 소식을 골라요<span id="newsBarErr"></span></div>
   </details>
+
+  <section class="panel track" aria-label="컨테이너 추적">
+    <div class="caption"><b>컨테이너 추적</b><span class="muted" id="trackCount"></span></div>
+    <form id="trackForm" autocomplete="off">
+      <input id="tq" placeholder="컨테이너 번호 (예: BEAU4348542)" aria-label="컨테이너 번호" maxlength="15">
+      <button class="go" type="submit">추적</button>
+    </form>
+    <div class="tmsg" id="trackMsg" hidden></div>
+    <ul class="tlist" id="trackList"></ul>
+    <div class="thelp" id="trackHelp"></div>
+  </section>
 
   <form class="search" id="searchForm" autocomplete="off">
     <input id="q" placeholder="선명 검색 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="선명 검색">
@@ -430,7 +461,56 @@ function renderNews() {
   $("#newsBar").hidden = false;
 }
 
+const LIST_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/containers.txt";
+const TRACK_BADGE = {
+  departed: `<span class="badge b-ok">출항 완료</span>`, loaded: `<span class="badge b-blue">선적 완료 · 출항 대기</span>`,
+  yard: `<span class="badge b-warn">터미널 반입 · 선적 대기</span>`, out: `<span class="badge b-gray">육상 반출</span>`,
+  none: `<span class="badge b-bad">조회 안 됨</span>`,
+};
+function trackCard(c, hit) {
+  const head = `<div class="top"><span class="cno">${esc(c.no)}</span>${TRACK_BADGE[c.result] || ""}</div>
+    ${c.memo ? `<div class="muted">${esc(c.memo)}</div>` : ""}`;
+  if (c.result === "none") {
+    return `<li class="tcard ${hit ? "hit" : ""}">${head}<div class="muted" style="margin-top:6px">
+      ${esc((DATA.track_terminals || []).join("·"))} 터미널에서 찾지 못했어요. 다른 터미널 반입이거나 아직 반입 전일 수 있어요.</div></li>`;
+  }
+  const ship = c.vessel || c.voy ? `<div class="ship">${esc(c.vessel || "-")} <span class="muted">${esc(c.voy)}</span></div>` : "";
+  const rows = [
+    ["터미널", `<span class="chip t-${esc(c.t)}"><i></i>${esc(c.t)}</span>${c.berth ? ` 선석 ${esc(c.berth)}` : ""}`],
+    ["반입", fmt(c.in_at)],
+    ["선적", c.loaded_at ? fmt(c.loaded_at) : `<span class="muted">아직</span>`],
+    ["출항", c.etd ? fmt(c.etd) + (c.result === "departed" ? "" : dday(c.etd)) : `<span class="muted">일정 없음</span>`],
+    ["양하항", c.pod ? esc(c.pod) : `<span class="muted">-</span>`],
+  ];
+  return `<li class="tcard ${hit ? "hit" : ""}">${head}${ship}
+    <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+    ${c.old ? `<div class="muted" style="margin-top:4px">※ ${RECENT_NOTE}</div>` : ""}</li>`;
+}
+const RECENT_NOTE = "최근 기록이 없어 예전 기록을 보여드려요";
+function renderTrack(q) {
+  const list = DATA.tracking || [];
+  const key = norm(q);
+  const hit = key ? list.find((c) => c.no === key) : null;
+  const msg = $("#trackMsg");
+  msg.hidden = true;
+  if (key && !hit) {
+    msg.innerHTML = /^[A-Z]{4}\d{7}$/.test(key)
+      ? `<b>${esc(key)}</b>는 아직 추적 목록에 없어요. <a href="${LIST_EDIT}" target="_blank" rel="noopener">추적 목록에 추가하기 ↗</a> — 저장하면 몇 분 뒤 이 화면에 나와요.`
+      : `컨테이너 번호는 영문 4자리 + 숫자 7자리예요 (예: BEAU4348542).`;
+    msg.hidden = false;
+  }
+  const shown = hit ? [hit, ...list.filter((c) => c !== hit)] : list;
+  $("#trackList").innerHTML = shown.map((c) => trackCard(c, c === hit)).join("")
+    || `<li class="muted">추적 중인 컨테이너가 없어요.</li>`;
+  $("#trackCount").textContent = list.length ? `${list.length}개 추적 중 · ${DATA.generated_at} 기준` : "";
+  const err = DATA.track_error ? ` · <b>${esc(DATA.track_error)}</b> 조회 실패` : "";
+  $("#trackHelp").innerHTML = `조회 터미널: ${esc((DATA.track_terminals || []).join(" · "))} (다른 터미널은 준비 중) · 2시간마다 갱신
+    · <a href="${LIST_EDIT}" target="_blank" rel="noopener">추적 목록 고치기 ↗</a>${err}`;
+}
+$("#trackForm").addEventListener("submit", (e) => { e.preventDefault(); renderTrack($("#tq").value); });
+
 summary();
 render();
 renderNews();
+renderTrack("");
 </script>
