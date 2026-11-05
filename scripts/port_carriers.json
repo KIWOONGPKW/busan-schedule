@@ -795,6 +795,28 @@
    "COSCO",
    "HAPAG-LLOYD",
    "ONE"
+  ],
+  "AEDXB": [
+   "HMM",
+   "ONE",
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "EVERGREEN",
+   "YANG MING",
+   "KMTC"
+  ],
+  "SARUH": [
+   "HMM",
+   "ONE",
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "EVERGREEN",
+   "YANG MING",
+   "KMTC"
   ]
  }
 }

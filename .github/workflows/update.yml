@@ -5,7 +5,7 @@ on:
     - cron: "7,37 * * * *"  # 30분마다: 매시 07분·37분 (GitHub 사정으로 몇 분 늦을 수 있음)
   workflow_dispatch:       # Actions 탭에서 수동 실행
   push:                    # 노선·항구·IMO 표를 고치면 바로 갱신
-    paths: [scripts/transit_times.json, scripts/routes.json, scripts/vessels_imo.json, scripts/port_carriers.json]
+    paths: [scripts/transit_times.json, scripts/routes.json, scripts/vessels_imo.json, scripts/port_carriers.json, scripts/carrier_codes.json]
 
 permissions:
   contents: write

@@ -191,8 +191,16 @@
   .dsec h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent2); font-weight: 700; }
   .dsec h3 small { color: var(--muted); font-weight: 400; margin-left: 6px; }
   .ccarr { display: flex; flex-wrap: wrap; gap: 6px; }
-  .ccarr span { font-size: 12.5px; font-weight: 700; padding: 3px 11px; border-radius: 999px; background: var(--gray-soft); border: 1px solid var(--line); }
-  .ccarr span.live { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .cchip { display: inline-flex; align-items: stretch; border-radius: 999px; background: var(--gray-soft); border: 1px solid var(--line); overflow: hidden; }
+  .cchip button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 700; padding: 3px 8px 3px 11px; color: var(--ink); }
+  .cchip button:disabled { cursor: default; color: var(--muted); }
+  .cchip button small { font-weight: 700; opacity: .75; }
+  .cchip a { display: inline-flex; align-items: center; padding: 0 9px 0 5px; font-size: 12px; font-weight: 700; color: var(--accent2); text-decoration: none; cursor: pointer; }
+  .cchip a:hover { background: var(--hover); }
+  .cchip button:focus-visible, .cchip a:focus-visible { outline: 3px solid var(--accent2); outline-offset: -3px; }
+  .cchip:hover { border-color: var(--accent2); }
+  .cchip.live { background: var(--ok-soft); border-color: transparent; } .cchip.live button { color: var(--ok); }
+  .cchip.on { background: var(--ink); border-color: var(--ink); } .cchip.on button { color: var(--bg); } .cchip.on a { color: var(--bg); }
   .dsec.sched { padding: 0; } .dsec.sched h3 { padding: 10px 16px 0; }
   .dsec.sched .table-wrap { margin-top: 8px; border-top: 1px solid var(--line); }
   .dempty { margin: 4px 16px 12px; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
@@ -793,13 +801,15 @@ const PORTS = (DATA.transit || []).filter((p) => p && p.code && p.name);
 const PCARR = DATA.port_carriers || {};
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
 const DEST_DAYS = 21;
-// 터미널 선사 코드 → 영문 선사명 (②칩·③표 공통)
-const CARRIER = { MAE: "MAERSK", MCC: "MAERSK", HLC: "HAPAG-LLOYD", MSC: "MSC", ONE: "ONE", HMM: "HMM", YML: "YANG MING",
-  EMC: "EVERGREEN", EMA: "EVERGREEN", OOL: "OOCL", COS: "COSCO", COH: "COSCO", CMA: "CMA CGM", APL: "APL", APC: "APL", ZIM: "ZIM",
-  SML: "SM LINE", KMD: "KMTC", SKR: "SINOKOR", HAS: "HEUNG-A", SIT: "SITC", TSL: "TS LINES", WHL: "WAN HAI", PIL: "PIL",
-  IAL: "INTERASIA", DJS: "DONGJIN", NSL: "NAMSUNG", NSS: "NAMSUNG", PCL: "PAN OCEAN", CKL: "CK LINE", EAS: "EASLINE",
-  DYS: "DONGYOUNG", XPR: "X-PRESS FEEDERS", ESL: "EMIRATES LINE", RCL: "RCL", BEN: "BEN LINE", FES: "FESCO", BTL: "BTL" };
-const carrierName = (c) => CARRIER[(c || "").trim()] || (c || "-").trim();
+const TS_PER_CARRIER = 3;
+const LAST_ETD = DATA.rows.map((r) => toDate(r.etd)).filter((d) => d && !isNaN(d)).reduce((a, d) => (!a || d > a ? d : a), null);  // 환적 가능(예상): 선사별로 보여줄 가까운 부산 출항 수
+// 터미널 선사 약자 → 영문 선사명, 선사명 → 공식 스케줄 페이지 (carrier_codes.json)
+const CARRIER = {}, CSCHED = {};
+Object.entries(DATA.carriers || {}).forEach(([name, v]) => {
+  (v.codes || []).forEach((c) => { CARRIER[String(c).trim().toUpperCase()] = name; });
+  if (v.schedule) CSCHED[name] = v.schedule;
+});
+const carrierName = (c) => CARRIER[(c || "").trim().toUpperCase()] || (c || "-").trim();
 const dnorm = (s) => String(s || "").toUpperCase().replace(/[\s\-_.,()·/]/g, "");
 const portKeys = (p) => [p.code, p.name, ...(p.ko || []), ...(p.aliases || [])].map(dnorm);
 const toRange = (d) => (Array.isArray(d) && Number.isFinite(d[0]) ? [d[0], Number.isFinite(d[1]) ? d[1] : d[0]]
@@ -860,9 +870,12 @@ function findPort(q) {
   return allPorts().find((p) => portKeys(p).includes(k)) || suggest(q, 1)[0] || null;
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
-function renderDest(q) {
+const destUi = { q: "", carrier: "" };
+function renderDest(q, keepFilter) {
   const msg = $("#destMsg"), say = (html) => { msg.innerHTML = html; msg.hidden = !html; };
   $("#destResult").hidden = true; $("#destCount").textContent = "";
+  if (!keepFilter || destUi.q !== q) destUi.carrier = "";
+  destUi.q = q;
   if (!q.trim()) { say(""); return; }
   const port = findPort(q);
   if (!port && !ALL.list) { say("항구 목록을 불러오는 중이에요…"); loadAllPorts().then(() => renderDest(q)); return; }
@@ -873,38 +886,75 @@ function renderDest(q) {
     return;
   }
   say("");
-  // 같은 지역(group) 항구는 함께 (예: LONG BEACH ↔ LOS ANGELES)
+  // 같은 지역(group) 항구는 함께 (예: LONG BEACH ↔ LOS ANGELES, DUBAI ↔ JEBEL ALI)
   const ports = PORTS.filter((p) => p === port || (port.group && p.group === port.group));
   const codes = new Set(ports.map((p) => p.code));
   const range = dayRange(port);
-  const end = new Date(today.getTime() + (DEST_DAYS + 1) * 86400e3);
-  const rows = DATA.rows.filter((r) => {
-    const d = toDate(r.etd), rt = ROUTES[(r.route || "").trim().toUpperCase()];
-    return d && d >= now && d < end && rt && (rt.ports || []).some((c) => codes.has(c));
-  }).sort(byEtd);
-  const weekly = rows.length ? Math.max(1, Math.round(rows.length / (DEST_DAYS / 7))) : 0;
-  // ① 요약
+  // 기간: 기본 3주, 터미널 자료가 더 먼 날짜까지 있으면 그 날짜까지 자동 포함
+  const end = new Date(Math.max(today.getTime() + (DEST_DAYS + 1) * 86400e3, LAST_ETD ? LAST_ETD.getTime() + 60e3 : 0));
+  const spanDays = Math.round((end - today) / 86400e3);
+  const spanTxt = spanDays > DEST_DAYS + 1 ? `앞으로 ${spanDays}일 (자료 끝 ${dayFmt(LAST_ETD)}까지)` : "앞으로 3주";
+  const soon = (r) => { const d = toDate(r.etd); return d && d >= now && d < end; };
+  const routeOf = (r) => ROUTES[(r.route || "").trim().toUpperCase()];
+  const listed = [...new Set(ports.flatMap((p) => PCARR[p.code] || []))];
+  // ① 노선이 이 항구로 연결된 배
+  let rows = DATA.rows.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
+  let mode = rows.length ? "route" : "";
+  // ② 없으면: 이용 가능 선사의 앞으로 3주 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
+  if (!rows.length) {
+    const L = new Set(listed);
+    // 방향: 미주·중남미는 동향(E), 그 외(동남아·인도·중동·지중해·유럽·아프리카)는 서향·남향(W/S) 항차만. 방향 글자 없으면 포함
+    const east = /^(미주|중남미)/.test(port.region || "");
+    const dirOk = (r) => { const m = (r.voyages[r.voyages.length - 1] || "").trim().toUpperCase().match(/([NSEW])\s*$/);
+      return !m || (east ? m[1] === "E" : m[1] === "W" || m[1] === "S"); };
+    const cand = DATA.rows.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
+    // 선사별로 가까운 3항차만
+    const per = {};
+    rows = cand.filter((r) => { const c = carrierName(r.operator); per[c] = (per[c] || 0) + 1; return per[c] <= TS_PER_CARRIER; });
+    if (rows.length) mode = "ts";
+  }
+  const regWeekly = (DATA.region_weekly || {})[port.region];
+  const weekly = mode === "route" ? Math.max(1, Math.round(rows.length / (spanDays / 7))) : Number.isFinite(regWeekly) ? regWeekly : 0;
+  const weeklyTxt = weekly ? `주 <b>${weekly}</b>회${mode === "route" ? "" : " (지역 평균)"}` : "주 운항 정보 없음";
   const others = ports.filter((p) => p !== port).map((p) => p.name).join(", ");
+  // ① 요약
   $("#destSum").innerHTML = `<span class="route">BUSAN<span class="arrow">→</span>${esc(port.name)}</span>
     <span class="meta">${esc(port.country || "")} · ${esc(port.code)}${others ? ` (+ ${esc(others)})` : ""}</span>
-    <span class="meta">예상 소요 <b>${range ? "약 " + esc(routesTxt(port)) : "확인 필요"}</b> · ${weekly ? `주 <b>${weekly}</b>항차` : "주 항차 확인 필요"}</span>`;
-  // ② 이용 가능한 선사: 표에 적힌 선사 + 3주 일정에서 실제로 확인된 선사(초록)
-  const live = new Set(rows.map((r) => carrierName(r.operator)));
-  const listed = [...new Set(ports.flatMap((p) => PCARR[p.code] || []))];
-  const all = [...new Set([...listed, ...live])];
-  $("#destCarr").innerHTML = all.length
-    ? all.map((c) => `<span class="${live.has(c) ? "live" : ""}" title="${live.has(c) ? "3주 안 부산 출항 배 확인됨" : "부산발 서비스 선사"}">${esc(c)}</span>`).join("")
-    : `<span>선사 정보 없음</span>`;
+    <span class="meta">예상 소요 <b>${range ? "약 " + esc(routesTxt(port)) : "확인 필요"}</b> · ${weeklyTxt}</span>`;
+  // ② 이용 가능한 선사 칩: 누르면 그 선사 배만 (다시 누르면 해제), ↗ 공식 스케줄 페이지
+  const count = {};
+  rows.forEach((r) => { const c = carrierName(r.operator); count[c] = (count[c] || 0) + 1; });
+  const all = [...new Set([...listed, ...(mode === "route" ? Object.keys(count) : [])])];
+  if (destUi.carrier && !all.includes(destUi.carrier)) destUi.carrier = "";
+  $("#destCarr").innerHTML = all.length ? all.map((c) => {
+    const on = destUi.carrier === c, n = count[c] || 0;
+    return `<span class="cchip${n ? " live" : ""}${on ? " on" : ""}"><button type="button" data-carrier="${esc(c)}" aria-pressed="${on}"
+      title="${on ? "필터 해제" : `${c} 배만 보기`}">${esc(c)}${n ? ` <small>${n}</small>` : ""}</button>${CSCHED[c]
+      ? `<a href="${esc(CSCHED[c])}" target="_blank" rel="noopener" title="${esc(c)} 공식 스케줄 조회 (새 탭)" aria-label="${esc(c)} 공식 스케줄 조회">↗</a>` : ""}</span>`;
+  }).join("") : `<span class="cchip"><button type="button" disabled>선사 정보 없음</button></span>`;
   // ③ 진행 가능한 스케줄
-  $("#destSchedN").textContent = `앞으로 3주 · 출항일 빠른 순${rows.length ? ` · ${rows.length}척` : ""}`;
-  $("#destEmpty").hidden = !!rows.length; $("#destTableWrap").hidden = !rows.length;
-  $("#destRows").innerHTML = rows.map((r) => {
+  const shown = destUi.carrier ? rows.filter((r) => carrierName(r.operator) === destUi.carrier) : rows;
+  $("#destSchedN").textContent = mode === "route" ? `${spanTxt} · 출항일 빠른 순 · 노선 확인 ${shown.length}척`
+    : mode === "ts" ? `${spanTxt} · 출항일 빠른 순 · 환적 가능 (예상) · 선사별 가까운 ${TS_PER_CARRIER}항차 · ${shown.length}척`
+    : spanTxt;
+  const empty = $("#destEmpty");
+  if (!rows.length) {
+    empty.innerHTML = `${spanTxt} 안에 확인된 배가 없어요 · ${weeklyTxt} · 소요 <b>${range ? "약 " + esc(routesTxt(port)) : "확인 필요"}</b><br>위 선사의 공개 스케줄(↗)을 확인해 주세요`;
+  } else if (!shown.length) {
+    empty.innerHTML = `${esc(destUi.carrier)}의 이 기간 부산 출항 배가 없어요. 칩을 다시 누르면 전체가 보여요.`;
+  } else if (mode === "ts") {
+    empty.innerHTML = `이 항구로 바로 연결된 노선은 아직 확인되지 않아, 이용 가능 선사의 부산 출항 배를 보여드려요. 환적 연결 여부·도착일은 선사 확인 필요`;
+  }
+  empty.hidden = !!shown.length && mode !== "ts";
+  $("#destTableWrap").hidden = !shown.length;
+  $("#destRows").innerHTML = shown.map((r) => {
     const etd = toDate(r.etd);
     const add = (n) => dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + n));
     const eta = !range ? `<span class="muted">확인 필요</span>`
       : `<span class="eta">${range[0] === range[1] ? add(range[0]) : `${add(range[0])}~${add(range[1])}`}</span><span class="est">예상</span>`;
+    const tag = mode === "ts" ? ` <span class="badge b-warn" title="이 선사의 부산 출항 배 — 환적 연결 여부는 선사 확인 필요">환적 가능 (예상)</span>` : "";
     return `<tr>
-      <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}</div></td>
+      <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}${tag}</div></td>
       <td>${esc(carrierName(r.operator))}</td>
       <td><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span>${bondLine(r)}</td>
       <td>${fmt(r.etd)}${dday(r.etd)}</td>
@@ -916,6 +966,11 @@ function renderDest(q) {
   $("#destCount").textContent = `BUSAN → ${port.name}`;
   $("#destResult").hidden = false;
 }
+$("#destCarr").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-carrier]"); if (!b) return;
+  destUi.carrier = destUi.carrier === b.dataset.carrier ? "" : b.dataset.carrier;
+  renderDest(destUi.q, true);
+});
 // 자동완성 목록 (2글자 이상)
 const dac = { items: [], idx: -1 };
 function acShow(q) {
