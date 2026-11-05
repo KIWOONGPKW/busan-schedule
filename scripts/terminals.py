@@ -167,6 +167,7 @@ def fetch_dgt():
                     "etd": _dt(r.get("atd") or r.get("etd")), "berth": r.get("berthNo") or "",
                     "yard_open": _dt(r.get("cyOpen")), "yard_close": _dt(r.get("cctDate")),
                     "route": r.get("route") or r.get("serviceLane") or "",
+                    "callsign": r.get("callSign") or "",
                     "status": status_map.get((r.get("status") or "").upper(), r.get("status") or "예정")})
     return out
 

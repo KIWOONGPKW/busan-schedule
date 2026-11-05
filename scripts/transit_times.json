@@ -1,302 +1,822 @@
 {
-  "_안내": "부산 출항 → 목적항 평균 운송 일수(T/T). days 숫자만 고치면 돼요. days가 null이면 화면에 '운송기간 미등록'. aliases는 검색어(한글·영문·약칭), group이 같은 항구는 함께 검색돼요(예: LA 검색 → 롱비치 배도). 근거는 일수의 출처예요.",
-  "ports": [
-    {
-      "code": "VNSGN",
-      "name": "호치민",
-      "aliases": [
-        "호치민",
-        "HOCHIMINH",
-        "HO CHI MINH",
-        "HCM",
-        "SAIGON",
-        "사이공",
-        "CAT LAI",
-        "캇라이"
-      ],
-      "days": 9
-    },
-    {
-      "code": "VNHPH",
-      "name": "하이퐁",
-      "aliases": [
-        "하이퐁",
-        "HAIPHONG",
-        "HAI PHONG"
-      ],
-      "days": 4
-    },
-    {
-      "code": "THLCH",
-      "name": "람차방",
-      "aliases": [
-        "람차방",
-        "램차방",
-        "LAEM CHABANG",
-        "LAEMCHABANG",
-        "LCB"
-      ],
-      "days": 9
-    },
-    {
-      "code": "THBKK",
-      "name": "방콕",
-      "aliases": [
-        "방콕",
-        "BANGKOK",
-        "BKK"
-      ],
-      "days": 10
-    },
-    {
-      "code": "PHMNL",
-      "name": "마닐라",
-      "aliases": [
-        "마닐라",
-        "MANILA",
-        "MNL"
-      ],
-      "days": 13
-    },
-    {
-      "code": "SGSIN",
-      "name": "싱가포르",
-      "aliases": [
-        "싱가포르",
-        "싱가폴",
-        "SINGAPORE",
-        "SIN"
-      ],
-      "days": 14
-    },
-    {
-      "code": "IDJKT",
-      "name": "자카르타",
-      "aliases": [
-        "자카르타",
-        "JAKARTA",
-        "TANJUNG PRIOK",
-        "JKT"
-      ],
-      "days": 14
-    },
-    {
-      "code": "MYPKG",
-      "name": "포트켈랑",
-      "aliases": [
-        "포트켈랑",
-        "포트클랑",
-        "PORT KELANG",
-        "PORT KLANG",
-        "PKG"
-      ],
-      "days": 13
-    },
-    {
-      "code": "CNSHA",
-      "name": "상해",
-      "aliases": [
-        "상해",
-        "상하이",
-        "SHANGHAI",
-        "SHA"
-      ],
-      "days": 2
-    },
-    {
-      "code": "CNNGB",
-      "name": "닝보",
-      "aliases": [
-        "닝보",
-        "NINGBO",
-        "NGB"
-      ],
-      "days": 3
-    },
-    {
-      "code": "INNSA",
-      "name": "나바샤바",
-      "aliases": [
-        "나바샤바",
-        "NHAVA SHEVA",
-        "NHAVASHEVA",
-        "JNPT",
-        "뭄바이",
-        "MUMBAI"
-      ],
-      "days": 21
-    },
-    {
-      "code": "INMAA",
-      "name": "첸나이",
-      "aliases": [
-        "첸나이",
-        "CHENNAI",
-        "MADRAS",
-        "MAA"
-      ],
-      "days": 18
-    },
-    {
-      "code": "LKCMB",
-      "name": "콜롬보",
-      "aliases": [
-        "콜롬보",
-        "COLOMBO",
-        "CMB"
-      ],
-      "days": 18
-    },
-    {
-      "code": "PKKHI",
-      "name": "카라치",
-      "aliases": [
-        "카라치",
-        "KARACHI",
-        "KHI"
-      ],
-      "days": 25
-    },
-    {
-      "code": "MXZLO",
-      "name": "만사니요",
-      "aliases": [
-        "만사니요",
-        "만자니요",
-        "MANZANILLO",
-        "ZLO"
-      ],
-      "days": 21
-    },
-    {
-      "code": "USLAX",
-      "name": "LA (로스앤젤레스)",
-      "aliases": [
-        "LA",
-        "엘에이",
-        "로스앤젤레스",
-        "LOS ANGELES",
-        "LAX"
-      ],
-      "group": "LA·롱비치",
-      "days": 14,
-      "근거": "Gemini TP9/WC6 부산→롱비치 14일 (https://www.mundomaritimo.cl/noticias/editor/53335) — 같은 산페드로만 항만이라 LA도 같은 일수"
-    },
-    {
-      "code": "USLGB",
-      "name": "롱비치",
-      "aliases": [
-        "롱비치",
-        "LONG BEACH",
-        "LGB"
-      ],
-      "group": "LA·롱비치",
-      "days": 14,
-      "근거": "Gemini TP9/WC6 부산→롱비치 14일 (https://www.mundomaritimo.cl/noticias/editor/53335)"
-    },
-    {
-      "code": "USOAK",
-      "name": "오클랜드",
-      "aliases": [
-        "오클랜드",
-        "OAKLAND",
-        "OAK"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USSEA",
-      "name": "시애틀",
-      "aliases": [
-        "시애틀",
-        "SEATTLE",
-        "SEA"
-      ],
-      "group": "시애틀·타코마",
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USTIW",
-      "name": "타코마",
-      "aliases": [
-        "타코마",
-        "TACOMA",
-        "TIW"
-      ],
-      "group": "시애틀·타코마",
-      "days": null,
-      "근거": "선사 공개 일수 미확인 (시애틀과 같은 NWSA 항만이라 함께 검색)"
-    },
-    {
-      "code": "CAVAN",
-      "name": "밴쿠버",
-      "aliases": [
-        "밴쿠버",
-        "VANCOUVER",
-        "VAN"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USPDX",
-      "name": "포틀랜드",
-      "aliases": [
-        "포틀랜드",
-        "PORTLAND",
-        "PDX"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USNYC",
-      "name": "뉴욕",
-      "aliases": [
-        "뉴욕",
-        "NEW YORK",
-        "NYC",
-        "뉴저지",
-        "NEW JERSEY"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USSAV",
-      "name": "사바나",
-      "aliases": [
-        "사바나",
-        "서배너",
-        "SAVANNAH",
-        "SAV"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USCHS",
-      "name": "찰스턴",
-      "aliases": [
-        "찰스턴",
-        "CHARLESTON",
-        "CHS"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    },
-    {
-      "code": "USJAX",
-      "name": "잭슨빌",
-      "aliases": [
-        "잭슨빌",
-        "JACKSONVILLE",
-        "JAX"
-      ],
-      "days": null,
-      "근거": "선사 공개 일수 미확인"
-    }
-  ]
+ "_안내": "부산 출항 → 목적항 소요일 범위 [최소, 최대](직항·환적 포함). 숫자만 고치면 돼요. 검색은 영문 항구명(name)·UN/LOCODE(code)·한글(ko)·별칭(aliases)으로 돼요. group이 같은 항구는 함께 검색(LA ↔ 롱비치). 근거에 일수 출처를 적었어요.",
+ "ports": [
+  {
+   "code": "USLAX",
+   "name": "LOS ANGELES",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "LA",
+    "엘에이",
+    "로스앤젤레스"
+   ],
+   "aliases": [
+    "LAX"
+   ],
+   "days": [
+    11,
+    14
+   ],
+   "group": "LALB",
+   "근거": "부산→롱비치 14일(Gemini TP9, mundomaritimo.cl/noticias/editor/53335) 기준 범위"
+  },
+  {
+   "code": "USLGB",
+   "name": "LONG BEACH",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "롱비치"
+   ],
+   "aliases": [
+    "LGB"
+   ],
+   "days": [
+    11,
+    14
+   ],
+   "group": "LALB",
+   "근거": "부산→롱비치 14일(Gemini TP9, mundomaritimo.cl/noticias/editor/53335) 기준 범위"
+  },
+  {
+   "code": "USOAK",
+   "name": "OAKLAND",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "오클랜드"
+   ],
+   "aliases": [
+    "OAK"
+   ],
+   "days": [
+    13,
+    17
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USSEA",
+   "name": "SEATTLE",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "시애틀"
+   ],
+   "aliases": [
+    "SEA"
+   ],
+   "days": [
+    10,
+    13
+   ],
+   "group": "NWSA",
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USTIW",
+   "name": "TACOMA",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "타코마"
+   ],
+   "aliases": [
+    "TIW"
+   ],
+   "days": [
+    10,
+    13
+   ],
+   "group": "NWSA",
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "CAVAN",
+   "name": "VANCOUVER",
+   "country": "CA",
+   "region": "미주 서안",
+   "ko": [
+    "밴쿠버"
+   ],
+   "aliases": [
+    "VAN"
+   ],
+   "days": [
+    10,
+    13
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USPDX",
+   "name": "PORTLAND",
+   "country": "US",
+   "region": "미주 서안",
+   "ko": [
+    "포틀랜드"
+   ],
+   "aliases": [
+    "PDX"
+   ],
+   "days": [
+    12,
+    16
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USNYC",
+   "name": "NEW YORK",
+   "country": "US",
+   "region": "미주 동안",
+   "ko": [
+    "뉴욕",
+    "뉴저지"
+   ],
+   "aliases": [
+    "NYC",
+    "NEW JERSEY"
+   ],
+   "days": [
+    28,
+    35
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USSAV",
+   "name": "SAVANNAH",
+   "country": "US",
+   "region": "미주 동안",
+   "ko": [
+    "사바나",
+    "서배너"
+   ],
+   "aliases": [
+    "SAV"
+   ],
+   "days": [
+    26,
+    33
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USCHS",
+   "name": "CHARLESTON",
+   "country": "US",
+   "region": "미주 동안",
+   "ko": [
+    "찰스턴"
+   ],
+   "aliases": [
+    "CHS"
+   ],
+   "days": [
+    27,
+    34
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USJAX",
+   "name": "JACKSONVILLE",
+   "country": "US",
+   "region": "미주 동안",
+   "ko": [
+    "잭슨빌"
+   ],
+   "aliases": [
+    "JAX"
+   ],
+   "days": [
+    29,
+    36
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USORF",
+   "name": "NORFOLK",
+   "country": "US",
+   "region": "미주 동안",
+   "ko": [
+    "노퍽",
+    "노폭"
+   ],
+   "aliases": [
+    "ORF"
+   ],
+   "days": [
+    28,
+    35
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "USHOU",
+   "name": "HOUSTON",
+   "country": "US",
+   "region": "미주 걸프",
+   "ko": [
+    "휴스턴"
+   ],
+   "aliases": [
+    "HOU"
+   ],
+   "days": [
+    28,
+    36
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "MXZLO",
+   "name": "MANZANILLO",
+   "country": "MX",
+   "region": "중남미",
+   "ko": [
+    "만사니요",
+    "만자니요"
+   ],
+   "aliases": [
+    "ZLO"
+   ],
+   "days": [
+    21,
+    25
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "MXLZC",
+   "name": "LAZARO CARDENAS",
+   "country": "MX",
+   "region": "중남미",
+   "ko": [
+    "라사로카르데나스",
+    "라자로카르데나스"
+   ],
+   "aliases": [
+    "LZC"
+   ],
+   "days": [
+    18,
+    23
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "VNSGN",
+   "name": "HO CHI MINH",
+   "country": "VN",
+   "region": "동남아",
+   "ko": [
+    "호치민",
+    "사이공",
+    "캇라이"
+   ],
+   "aliases": [
+    "HOCHIMINH",
+    "HCM",
+    "SAIGON",
+    "CAT LAI",
+    "CAI MEP"
+   ],
+   "days": [
+    9,
+    11
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "VNHPH",
+   "name": "HAIPHONG",
+   "country": "VN",
+   "region": "동남아",
+   "ko": [
+    "하이퐁"
+   ],
+   "aliases": [
+    "HAI PHONG"
+   ],
+   "days": [
+    4,
+    6
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "THLCH",
+   "name": "LAEM CHABANG",
+   "country": "TH",
+   "region": "동남아",
+   "ko": [
+    "람차방",
+    "램차방"
+   ],
+   "aliases": [
+    "LAEMCHABANG",
+    "LCB"
+   ],
+   "days": [
+    9,
+    11
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "THBKK",
+   "name": "BANGKOK",
+   "country": "TH",
+   "region": "동남아",
+   "ko": [
+    "방콕"
+   ],
+   "aliases": [
+    "BKK"
+   ],
+   "days": [
+    10,
+    12
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "PHMNL",
+   "name": "MANILA",
+   "country": "PH",
+   "region": "동남아",
+   "ko": [
+    "마닐라"
+   ],
+   "aliases": [
+    "MNL"
+   ],
+   "days": [
+    13,
+    15
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "SGSIN",
+   "name": "SINGAPORE",
+   "country": "SG",
+   "region": "동남아",
+   "ko": [
+    "싱가포르",
+    "싱가폴"
+   ],
+   "aliases": [
+    "SIN"
+   ],
+   "days": [
+    14,
+    16
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "IDJKT",
+   "name": "JAKARTA",
+   "country": "ID",
+   "region": "동남아",
+   "ko": [
+    "자카르타"
+   ],
+   "aliases": [
+    "TANJUNG PRIOK",
+    "JKT"
+   ],
+   "days": [
+    14,
+    16
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "IDSUB",
+   "name": "SURABAYA",
+   "country": "ID",
+   "region": "동남아",
+   "ko": [
+    "수라바야"
+   ],
+   "aliases": [
+    "SUB"
+   ],
+   "days": [
+    15,
+    18
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "MYPKG",
+   "name": "PORT KELANG",
+   "country": "MY",
+   "region": "동남아",
+   "ko": [
+    "포트켈랑",
+    "포트클랑"
+   ],
+   "aliases": [
+    "PORT KLANG",
+    "PKG"
+   ],
+   "days": [
+    13,
+    15
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "MYPEN",
+   "name": "PENANG",
+   "country": "MY",
+   "region": "동남아",
+   "ko": [
+    "페낭"
+   ],
+   "aliases": [
+    "PEN"
+   ],
+   "days": [
+    14,
+    18
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "CNSHA",
+   "name": "SHANGHAI",
+   "country": "CN",
+   "region": "중국",
+   "ko": [
+    "상해",
+    "상하이"
+   ],
+   "aliases": [
+    "SHA"
+   ],
+   "days": [
+    2,
+    4
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "CNNGB",
+   "name": "NINGBO",
+   "country": "CN",
+   "region": "중국",
+   "ko": [
+    "닝보"
+   ],
+   "aliases": [
+    "NGB"
+   ],
+   "days": [
+    3,
+    5
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "INNSA",
+   "name": "NHAVA SHEVA",
+   "country": "IN",
+   "region": "인도",
+   "ko": [
+    "나바샤바",
+    "뭄바이"
+   ],
+   "aliases": [
+    "NHAVASHEVA",
+    "JNPT",
+    "MUMBAI"
+   ],
+   "days": [
+    21,
+    25
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "INMUN",
+   "name": "MUNDRA",
+   "country": "IN",
+   "region": "인도",
+   "ko": [
+    "문드라"
+   ],
+   "aliases": [
+    "MUN"
+   ],
+   "days": [
+    21,
+    26
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "INMAA",
+   "name": "CHENNAI",
+   "country": "IN",
+   "region": "인도",
+   "ko": [
+    "첸나이"
+   ],
+   "aliases": [
+    "MADRAS",
+    "MAA"
+   ],
+   "days": [
+    18,
+    22
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "LKCMB",
+   "name": "COLOMBO",
+   "country": "LK",
+   "region": "인도",
+   "ko": [
+    "콜롬보"
+   ],
+   "aliases": [
+    "CMB"
+   ],
+   "days": [
+    18,
+    22
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "PKKHI",
+   "name": "KARACHI",
+   "country": "PK",
+   "region": "인도",
+   "ko": [
+    "카라치"
+   ],
+   "aliases": [
+    "KHI"
+   ],
+   "days": [
+    25,
+    29
+   ],
+   "근거": "사용자 기본값 기준 범위"
+  },
+  {
+   "code": "AEJEA",
+   "name": "JEBEL ALI",
+   "country": "AE",
+   "region": "중동",
+   "ko": [
+    "제벨알리",
+    "두바이"
+   ],
+   "aliases": [
+    "DUBAI",
+    "JEA"
+   ],
+   "days": [
+    20,
+    26
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "SADMM",
+   "name": "DAMMAM",
+   "country": "SA",
+   "region": "중동",
+   "ko": [
+    "담맘"
+   ],
+   "aliases": [
+    "DMM"
+   ],
+   "days": [
+    23,
+    29
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "SAJED",
+   "name": "JEDDAH",
+   "country": "SA",
+   "region": "중동",
+   "ko": [
+    "제다"
+   ],
+   "aliases": [
+    "JED"
+   ],
+   "days": [
+    22,
+    30
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "QAHMD",
+   "name": "HAMAD",
+   "country": "QA",
+   "region": "중동",
+   "ko": [
+    "하마드",
+    "도하"
+   ],
+   "aliases": [
+    "DOHA"
+   ],
+   "days": [
+    23,
+    29
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "OMSOH",
+   "name": "SOHAR",
+   "country": "OM",
+   "region": "중동",
+   "ko": [
+    "소하르"
+   ],
+   "aliases": [
+    "SOH"
+   ],
+   "days": [
+    20,
+    26
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요"
+  },
+  {
+   "code": "NLRTM",
+   "name": "ROTTERDAM",
+   "country": "NL",
+   "region": "유럽",
+   "ko": [
+    "로테르담"
+   ],
+   "aliases": [
+    "RTM"
+   ],
+   "days": [
+    33,
+    45
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (홍해 대신 희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "DEHAM",
+   "name": "HAMBURG",
+   "country": "DE",
+   "region": "유럽",
+   "ko": [
+    "함부르크"
+   ],
+   "aliases": [
+    "HAM"
+   ],
+   "days": [
+    35,
+    47
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "BEANR",
+   "name": "ANTWERP",
+   "country": "BE",
+   "region": "유럽",
+   "ko": [
+    "앤트워프"
+   ],
+   "aliases": [
+    "ANR"
+   ],
+   "days": [
+    34,
+    46
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "GBFXT",
+   "name": "FELIXSTOWE",
+   "country": "GB",
+   "region": "유럽",
+   "ko": [
+    "펠릭스토우"
+   ],
+   "aliases": [
+    "FXT"
+   ],
+   "days": [
+    33,
+    45
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "GBLGP",
+   "name": "LONDON GATEWAY",
+   "country": "GB",
+   "region": "유럽",
+   "ko": [
+    "런던게이트웨이",
+    "런던"
+   ],
+   "aliases": [
+    "LONDON",
+    "LGP"
+   ],
+   "days": [
+    33,
+    45
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "FRLEH",
+   "name": "LE HAVRE",
+   "country": "FR",
+   "region": "유럽",
+   "ko": [
+    "르아브르"
+   ],
+   "aliases": [
+    "LEH"
+   ],
+   "days": [
+    32,
+    44
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "ESVLC",
+   "name": "VALENCIA",
+   "country": "ES",
+   "region": "유럽",
+   "ko": [
+    "발렌시아"
+   ],
+   "aliases": [
+    "VLC"
+   ],
+   "days": [
+    28,
+    42
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "ITGOA",
+   "name": "GENOA",
+   "country": "IT",
+   "region": "유럽",
+   "ko": [
+    "제노바"
+   ],
+   "aliases": [
+    "GOA",
+    "GENOVA"
+   ],
+   "days": [
+    29,
+    43
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  },
+  {
+   "code": "GRPIR",
+   "name": "PIRAEUS",
+   "country": "GR",
+   "region": "유럽",
+   "ko": [
+    "피레우스"
+   ],
+   "aliases": [
+    "PIR"
+   ],
+   "days": [
+    26,
+    40
+   ],
+   "근거": "주요 항로 일반 소요 범위(직항·환적 포함, 참고용) — 선사 스케줄로 확인 필요 (희망봉 우회 시 긴 쪽)"
+  }
+ ]
 }

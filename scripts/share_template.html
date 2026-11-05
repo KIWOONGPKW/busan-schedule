@@ -161,58 +161,47 @@
           background: var(--blue-soft); color: var(--blue); font-variant-numeric: tabular-nums; }
   .dday.soon { background: var(--bad-soft); color: var(--bad); }
   .empty { text-align: center; color: var(--muted); padding: 44px 16px; font-size: 15px; }
+  [hidden] { display: none !important; }  /* display를 지정한 칸(더 보기 등)도 hidden이면 확실히 숨김 */
   .more { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
   .notes { color: var(--muted); font-size: 12.5px; line-height: 1.8; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
   .notes b { color: var(--ink); } .notes a { color: inherit; }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
 
-  /* 컨테이너 부산항 선적여부: 번호 입력 → 적재 선박·출항 여부 카드 */
-  .track .caption { align-items: center; }
   .ct { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
   .ct svg { height: 26px; width: auto; color: var(--accent2); flex: none; }
-  .track form { display: flex; gap: 8px; padding: 12px 16px 0; }
-  .track input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
-                 border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
-  .track input::placeholder { text-transform: none; color: var(--muted); }
-  .track input:focus { outline: none; border-color: var(--accent); }
-  .tlist { list-style: none; margin: 0; padding: 12px 16px 14px; display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
-  .tcard { border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; background: var(--zebra); min-width: 0; }
-  .tcard.hit { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
-  .tcard .l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
-  .tcard .l1 .badge { margin-left: auto; }
-  .tcard .l2 { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin-top: 2px; font-size: 12.5px; }
-  .tcard .arrow, .tcard .sep, .tcard .k { color: var(--muted); }
-  .tcard .cno { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-  .tcard .ship { font-weight: 700; }
 
-  /* 부산발 목적지 검색: 목적항 입력 → 3주 안 출항하는 그 방향 배 + 예상 도착 */
+  /* 부산발 목적지 검색: 영문 항구명·UN/LOCODE(한글도) → ① 요약 ② 이용 가능한 선사 ③ 3주 스케줄 */
   .dest .caption { align-items: center; }
-  .dest form { display: flex; gap: 8px; padding: 12px 16px 0; }
-  .dest input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
-                border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; }
-  .dest input::placeholder { color: var(--muted); }
+  .dest form { display: flex; gap: 8px; padding: 12px 16px 12px; }
+  .dq-wrap { position: relative; flex: 1; min-width: 0; }
+  .dest input { width: 100%; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
+                border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
+  .dest input::placeholder { color: var(--muted); text-transform: none; }
   .dest input:focus { outline: none; border-color: var(--accent); }
-  .dchips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 12px; }
-  .dchips button { font-size: 12.5px; padding: 3px 11px; }
-  .dchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: transparent; }
-  .dest .dgrid { display: grid; grid-template-columns: minmax(0, 1fr) 230px; border-top: 1px solid var(--line); }
-  .dest .dgrid .table-wrap { min-width: 0; }
-  .dcarr { border-left: 1px solid var(--line); background: var(--zebra); min-width: 0; }
-  .dch { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--head); }
-  .dch b { color: var(--accent2); font-size: 13px; }
-  .dcarr ul { list-style: none; margin: 0; padding: 0; }
-  .dcarr li { padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .dcarr li .cn { display: flex; justify-content: space-between; gap: 6px; font-weight: 700; }
-  .dcarr li .cn span { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .dcarr li .cs { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  @media (max-width: 900px) { .dest .dgrid { grid-template-columns: minmax(0, 1fr); } .dcarr { border-left: 0; border-top: 1px solid var(--line); } }
+  .dac { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none;
+         background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); max-height: 300px; overflow-y: auto; }
+  .dac li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .dac li b { font-weight: 700; } .dac li span { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dac li[aria-selected="true"], .dac li:hover { background: var(--hover); }
+  .dsum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--head); }
+  .dsum .route { font-family: var(--f-display); font-size: 20px; line-height: 1.2; }
+  .dsum .route .arrow { margin: 0 6px; }
+  .dsum .meta { color: var(--muted); font-size: 13.5px; } .dsum .meta b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .dsec { padding: 10px 16px 12px; border-top: 1px solid var(--line); }
+  .dsec h3 { margin: 0 0 8px; font-size: 13px; color: var(--accent2); font-weight: 700; }
+  .dsec h3 small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .ccarr { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ccarr span { font-size: 12.5px; font-weight: 700; padding: 3px 11px; border-radius: 999px; background: var(--gray-soft); border: 1px solid var(--line); }
+  .ccarr span.live { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .dsec.sched { padding: 0; } .dsec.sched h3 { padding: 10px 16px 0; }
+  .dsec.sched .table-wrap { margin-top: 8px; border-top: 1px solid var(--line); }
+  .dempty { margin: 4px 16px 12px; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
   table.dtable { min-width: 860px; }
   table.dtable td { padding: 10px 14px; }
   .eta { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .est { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 700; padding: 0 7px; border-radius: 999px;
          background: var(--warn-soft); color: var(--warn); vertical-align: 1px; }
   .dest .tmsg { margin-top: 0; margin-bottom: 12px; }
-  .dest .thelp { padding-top: 10px; }
   .dnote { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--zebra); }
 
   /* 선박 위치: VesselFinder 공식 퍼가기 지도 + 선명 옆 지도/위치 버튼 */
@@ -221,6 +210,12 @@
   .vbtn { display: inline-block; font: inherit; font-size: 11.5px; font-weight: 700; line-height: 1.5; padding: 1px 8px; border-radius: 999px;
           border: 1px solid var(--line); background: var(--panel); color: var(--accent2); text-decoration: none; cursor: pointer; white-space: nowrap; }
   .vbtn:hover { border-color: var(--accent2); transform: none; }
+  /* 위치 버튼 안내 말풍선: 버튼 위쪽에 띄워 아래 항차 글자를 가리지 않게 */
+  .vbtn.tip { position: relative; }
+  .vbtn.tip::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%);
+                     white-space: nowrap; font-size: 11.5px; font-weight: 700; padding: 4px 8px; border-radius: 8px; z-index: 30;
+                     background: var(--ink); color: var(--bg); box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .12s; }
+  .vbtn.tip:hover::after, .vbtn.tip:focus-visible::after { opacity: 1; }
   .vbtn.on { background: var(--accent2); color: #fff; border-color: transparent; }
   .vmhint { padding: 9px 16px; font-size: 13px; color: var(--muted); }
   .vmap .caption { align-items: center; flex-wrap: nowrap; }
@@ -337,44 +332,40 @@
     <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 스케줄 영향 소식 · 항로 시황 · 부산항 주요 소식을 골라요<span id="newsBarErr"></span></div>
   </details>
 
-  <section class="panel track" aria-label="컨테이너 부산항 선적여부">
-    <div class="caption"><span class="ct"><b>컨테이너 부산항 선적여부</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><rect x="16" y="14" width="9" height="11" rx="1.2"/><rect x="26" y="14" width="9" height="11" rx="1.2"/><rect x="36" y="14" width="9" height="11" rx="1.2"/><rect x="21" y="4" width="9" height="10" rx="1.2"/><rect x="31" y="4" width="9" height="10" rx="1.2"/><path d="M4 25h48l-6 10H11z"/><path d="M1 32c3.5 2.6 6 2.6 9.5 0s6-2.6 9.5 0 6 2.6 9.5 0 6-2.6 9.5 0 6 2.6 9.5 0 6-2.6 9.5 0V37H1z" opacity=".45"/></svg></span><span class="muted" id="trackCount"></span></div>
-    <form id="trackForm" autocomplete="off">
-      <input id="tq" placeholder="컨테이너 번호 (예: BEAU4348542)" aria-label="컨테이너 번호" maxlength="15">
-      <button class="go" type="submit">조회</button>
-    </form>
-    <div class="tmsg" id="trackMsg" hidden></div>
-    <ul class="tlist" id="trackList"></ul>
-    <div class="thelp" id="trackHelp"></div>
-  </section>
-
   <section class="panel dest" aria-label="부산발 목적지 검색">
     <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="muted" id="destCount"></span></div>
-    <form id="destForm" autocomplete="off">
-      <input id="dq" placeholder="목적지 (예: 호치민 / VNSGN / 하이퐁 / LA)" aria-label="목적지 도시명 또는 항구코드">
+    <form id="destForm" autocomplete="off" role="search">
+      <div class="dq-wrap">
+        <input id="dq" placeholder="Port name (e.g. LONG BEACH, HO CHI MINH, NHAVA SHEVA, USLGB)" aria-label="목적 항구 (영문 항구명, UN/LOCODE, 한글)"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dqList">
+        <ul class="dac" id="dqList" role="listbox" hidden></ul>
+      </div>
       <button class="go" type="submit">찾기</button>
     </form>
-    <div class="dchips" id="destChips"></div>
     <div class="tmsg" id="destMsg" hidden></div>
-    <div class="dgrid" id="destTableWrap" hidden>
-    <div class="table-wrap">
-      <table class="dtable">
-        <thead><tr>
-          <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
-          <th>선사<small>CARRIER</small></th>
-          <th>터미널<small>TERMINAL</small></th>
-          <th>부산 출항<small>ETD</small></th>
-          <th>반입 마감<small>CLOSING</small></th>
-          <th>최종 목적지 예상 도착<small>ETA</small></th>
-          <th>운송기간<small>T/T</small></th>
-        </tr></thead>
-        <tbody id="destRows"></tbody>
-      </table>
+    <div id="destResult" hidden>
+      <div class="dsum" id="destSum"></div>
+      <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
+      <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 3주 · 출항일 빠른 순</small></h3>
+        <div class="dempty" id="destEmpty" hidden>3주 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
+        <div class="table-wrap" id="destTableWrap">
+          <table class="dtable">
+            <thead><tr>
+              <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
+              <th>선사<small>CARRIER</small></th>
+              <th>터미널<small>TERMINAL</small></th>
+              <th>부산 출항<small>ETD</small></th>
+              <th>반입 마감<small>CLOSING</small></th>
+              <th>예상 도착<small>ETA</small></th>
+              <th>소요일<small>T/T</small></th>
+            </tr></thead>
+            <tbody id="destRows"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <aside class="dcarr" aria-label="가용 선사"><div class="dch"><b>가용 선사</b><span class="muted" id="destCarrN"></span></div><ul id="destCarr"></ul></aside>
-    </div>
-    <div class="thelp" id="destHelp"></div>
-    <div class="dnote">예상 도착일은 평균 운송기간 기준 참고용, 선사 확정 스케줄 확인 필요</div>
+    <div class="thelp" id="destHelp" hidden></div>
+    <div class="dnote">예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요</div>
   </section>
 
   <form class="search" id="searchForm" autocomplete="off">
@@ -501,15 +492,17 @@ function yardCell(r) {
 
 // ---------------------------------------------------------------- 선박 위치 (VesselFinder 공식 기능만 사용, 스크래핑 없음)
 // 선명 클릭 → 지도 칸을 펼쳐 그 배를 가운데 두고 확대 (공식 퍼가기 지도 aismap.js를 싣는 vfmap.html)
-// 터미널 정보에는 IMO·MMSI가 없어 scripts/vessels.json(선명 → IMO/MMSI)에 있는 배만 지도에 찍는다.
+// 터미널 정보에는 IMO·MMSI가 없어 scripts/vessels_imo.json(선명: IMO)에 있는 배만 지도에 찍는다.
 // 번호가 없는 배는 지도를 띄우지 않고 VesselFinder 검색 버튼(새 탭)만 보여준다.
 const VFMAP = "https://kiwoongpkw.github.io/busan-schedule/vfmap.html";
 const VIDS = Object.fromEntries(Object.entries(DATA.vessel_ids || {}).map(([k, v]) => [norm(k), v || {}]));
 const vid = (name) => VIDS[norm(name)] || {};
 const ROWKEY = new Map();  // 버튼 → 행 (항차·터미널 표시용)
+// IMO가 있으면 그 배 상세 화면, 없으면 선명 검색 화면 (MMSI만 있으면 MMSI로 검색)
 function vfLink(name) {
   const id = vid(name);
   return id.imo ? `https://www.vesselfinder.com/vessels/details/${encodeURIComponent(id.imo)}`
+    : id.mmsi ? `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(id.mmsi)}`
     : `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}`;
 }
 function vesselName(r) {
@@ -517,7 +510,9 @@ function vesselName(r) {
   return `<button type="button" class="vname" data-vmap="${esc(k)}" title="지도에서 위치 보기">${esc(r.vessel)}</button>`;
 }
 function vesselTools(r) {
-  return `<span class="vtools"><a class="vbtn" href="${vfLink(r.vessel)}" target="_blank" rel="noopener" title="VesselFinder에서 선명 검색 (새 탭)">위치 ↗</a></span>`;
+  const id = vid(r.vessel), has = !!(id.imo || id.mmsi);
+  const tip = has ? "VesselFinder 지도에서 보기" : "VesselFinder에서 선명 검색";
+  return `<span class="vtools"><a class="vbtn tip" href="${vfLink(r.vessel)}" target="_blank" rel="noopener" data-tip="${tip}" aria-label="${tip} (새 탭)">위치 ↗</a></span>`;
 }
 function closeMap() {
   $("#vmapBody").hidden = true; $("#vmapHint").hidden = false; $("#vmapFrame").hidden = true; $("#vmapFrame").src = "about:blank";
@@ -539,7 +534,7 @@ function showMap(key) {
     $("#vmapFrame").hidden = true; $("#vmapFrame").src = "about:blank";
     $("#vmapNone").innerHTML = `<span class="badge b-gray">위치 정보 없음</span>
       <a class="go" href="${vfLink(r.vessel)}" target="_blank" rel="noopener">VesselFinder에서 검색 ↗</a>
-      <span class="muted">IMO·MMSI 번호가 등록되지 않은 배예요 · <a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">번호 등록하기</a></span>`;
+      <span class="muted">IMO·MMSI 번호가 등록되지 않은 배예요 · <a href="${REPO_EDIT}vessels_imo.json" target="_blank" rel="noopener">번호 등록하기</a></span>`;
     $("#vmapNone").hidden = false;
   }
 }
@@ -788,150 +783,135 @@ function renderEq() {
   document.querySelectorAll("[data-eq]").forEach((b) => b.addEventListener("click", () => { eqUi.view = b.dataset.eq; renderEq(); }));
 }
 
-const LIST_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/containers.txt";
-const TRACK_BADGE = {
-  departed: `<span class="badge b-ok">출항 완료</span>`, loaded: `<span class="badge b-blue">선적 완료 · 출항 대기</span>`,
-  yard: `<span class="badge b-warn">터미널 반입 · 선적 대기</span>`, out: `<span class="badge b-gray">육상 반출</span>`,
-  none: `<span class="badge b-bad">조회 안 됨</span>`,
-};
-function trackCard(c, hit) {
-  const badge = TRACK_BADGE[c.result] || "";
-  const sep = `<span class="sep">·</span>`;
-  const memo = c.memo ? `${sep}<span class="muted">${esc(c.memo)}</span>` : "";
-  if (c.result === "none") {
-    return `<li class="tcard ${hit ? "hit" : ""}"><div class="l1"><span class="cno">${esc(c.no)}</span>${memo}${badge}</div>
-      <div class="l2 muted">${esc((DATA.track_terminals || []).join("·"))} 터미널에서 찾지 못했어요. 아직 반입 전이거나 번호가 다를 수 있어요.</div></li>`;
-  }
-  // 1줄: 번호 · 선박 항차 · 터미널 선석 · 양하항 ····· 상태 / 2줄: 반입 → 선적 → 출항
-  const l1 = [`<span class="cno">${esc(c.no)}</span>`];
-  if (c.vessel || c.voy) l1.push(`<span><span class="ship">${esc(c.vessel || "-")}</span> <span class="muted">${esc(c.voy)}</span></span>`);
-  l1.push(`<span><span class="chip t-${esc(c.t)}"><i></i>${esc(c.t)}</span>${c.berth ? ` 선석 ${esc(c.berth)}` : ""}</span>`);
-  if (c.pod) l1.push(`<span><span class="k">양하항</span> ${esc(c.pod)}</span>`);
-  const l2 = [`<span><span class="k">반입</span> ${fmt(c.in_at)}</span>`,
-    `<span><span class="k">선적</span> ${c.loaded_at ? fmt(c.loaded_at) : `<span class="muted">아직</span>`}</span>`,
-    `<span><span class="k">출항</span> ${c.etd ? fmt(c.etd) + (c.result === "departed" ? "" : dday(c.etd).replace(/<\/?div>/g, " ")) : `<span class="muted">일정 없음</span>`}</span>`];
-  return `<li class="tcard ${hit ? "hit" : ""}"><div class="l1">${l1.join(sep)}${memo}${badge}</div>
-    <div class="l2">${l2.join(`<span class="arrow">→</span>`)}${c.old ? `<span class="muted">· ※ ${RECENT_NOTE}</span>` : ""}</div></li>`;
-}
-const RECENT_NOTE = "최근 기록이 없어 예전 기록을 보여드려요";
-function renderTrack(q) {
-  const list = DATA.tracking || [];
-  const key = norm(q);
-  const hit = key ? list.find((c) => c.no === key) : null;
-  const msg = $("#trackMsg");
-  msg.hidden = true;
-  if (key && !hit) {
-    msg.innerHTML = /^[A-Z]{4}\d{7}$/.test(key)
-      ? `<b>${esc(key)}</b>는 아직 조회 목록에 없어요. <a href="${LIST_EDIT}" target="_blank" rel="noopener">조회 목록에 추가하기 ↗</a> — 저장하면 몇 분 뒤 이 화면에 나와요.`
-      : `컨테이너 번호는 영문 4자리 + 숫자 7자리예요 (예: BEAU4348542).`;
-    msg.hidden = false;
-  }
-  const shown = hit ? [hit, ...list.filter((c) => c !== hit)] : list;
-  $("#trackList").innerHTML = shown.map((c) => trackCard(c, c === hit)).join("")
-    || `<li class="muted">조회 중인 컨테이너가 없어요.</li>`;
-  $("#trackCount").textContent = list.length ? `${list.length}개 조회 중 · ${DATA.generated_at} 기준` : "";
-  const err = DATA.track_error ? ` · <b>${esc(DATA.track_error)}</b> 조회 실패` : "";
-  $("#trackHelp").innerHTML = `컨테이너 번호로 조회되는 터미널: ${esc((DATA.track_terminals || []).join(" · "))} · 30분마다 갱신
-    · <a href="${LIST_EDIT}" target="_blank" rel="noopener">조회 목록 고치기 ↗</a>${err}`;
-}
-$("#trackForm").addEventListener("submit", (e) => { e.preventDefault(); renderTrack($("#tq").value); });
 
 // ---------------------------------------------------------------- 부산발 목적지 검색
-// 터미널 화면에는 항로(서비스) 코드만 있고 기항지가 없어서, routes.json(노선 → 목적항)으로 방향을 판단한다.
-// 예상 도착 = 부산 출항일 + transit_times.json의 평균 운송 일수
+// 항구 표(transit_times.json): 영문 항구명·UN/LOCODE·한글로 검색, 소요일은 [최소, 최대] 범위(직항·환적 포함)
+// ① 요약  ② 이용 가능한 선사(port_carriers.json + 터미널 일정에서 확인된 선사)  ③ 3주 안 부산 출항 스케줄
+// ③은 터미널 항로 코드를 routes.json(노선 → 목적항, 출처 있는 것만)으로 판단. 경유·환적항은 표시하지 않음
 const REPO_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/";
-const PORTS = DATA.transit || [];
+const PORTS = (DATA.transit || []).filter((p) => p && p.code && p.name);
+const PCARR = DATA.port_carriers || {};
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
 const DEST_DAYS = 21;
-// 터미널 선사 코드 → 이름 (가용 선사 표시용, 없는 코드는 코드 그대로)
-const CARRIER = { MAE: "머스크", MCC: "MCC(머스크)", HLC: "하팍로이드", MSC: "MSC", ONE: "ONE", HMM: "HMM", YML: "양밍",
-  EMC: "에버그린", EMA: "에버그린", OOL: "OOCL", COS: "COSCO", COH: "COSCO", CMA: "CMA CGM", APL: "APL", APC: "APL", ZIM: "ZIM",
-  SML: "SM상선", KMD: "고려해운", SKR: "장금상선", HAS: "흥아라인", SIT: "SITC", TSL: "TS라인", WHL: "완하이", PIL: "PIL",
-  IAL: "인터아시아", DJS: "동진상선", NSL: "남성해운", NSS: "남성해운", PCL: "팬오션", CKL: "천경해운", EAS: "이스턴해운",
-  DYS: "동영해운", XPR: "X-Press Feeders", ESL: "Emirates Line", RCL: "RCL", BEN: "BEN LINE", SNL: "SNL", POL: "POS", FES: "FESCO" };
+// 터미널 선사 코드 → 영문 선사명 (②칩·③표 공통)
+const CARRIER = { MAE: "MAERSK", MCC: "MAERSK", HLC: "HAPAG-LLOYD", MSC: "MSC", ONE: "ONE", HMM: "HMM", YML: "YANG MING",
+  EMC: "EVERGREEN", EMA: "EVERGREEN", OOL: "OOCL", COS: "COSCO", COH: "COSCO", CMA: "CMA CGM", APL: "APL", APC: "APL", ZIM: "ZIM",
+  SML: "SM LINE", KMD: "KMTC", SKR: "SINOKOR", HAS: "HEUNG-A", SIT: "SITC", TSL: "TS LINES", WHL: "WAN HAI", PIL: "PIL",
+  IAL: "INTERASIA", DJS: "DONGJIN", NSL: "NAMSUNG", NSS: "NAMSUNG", PCL: "PAN OCEAN", CKL: "CK LINE", EAS: "EASLINE",
+  DYS: "DONGYOUNG", XPR: "X-PRESS FEEDERS", ESL: "EMIRATES LINE", RCL: "RCL", BEN: "BEN LINE", FES: "FESCO", BTL: "BTL" };
+const carrierName = (c) => CARRIER[(c || "").trim()] || (c || "-").trim();
 const dnorm = (s) => String(s || "").toUpperCase().replace(/[\s\-_.,()·/]/g, "");
-const portName = (code) => (PORTS.find((p) => p.code === code) || {}).name || code;
-function findPorts(q) {
-  const k = dnorm(q);
-  if (!k) return [];
-  const keys = (p) => [p.code, p.name, ...(p.aliases || [])].map(dnorm);
-  const exact = PORTS.filter((p) => keys(p).includes(k));
-  const found = exact.length ? exact
-    : k.length < 2 ? [] : PORTS.filter((p) => keys(p).some((x) => x.startsWith(k) || (k.length >= 3 && x.includes(k))));
-  // 같은 지역(group)으로 묶인 항구는 함께 검색 (예: LA ↔ 롱비치)
-  const groups = new Set(found.map((p) => p.group).filter(Boolean));
-  return PORTS.filter((p) => found.includes(p) || (p.group && groups.has(p.group)));
+const portKeys = (p) => [p.code, p.name, ...(p.ko || []), ...(p.aliases || [])].map(dnorm);
+const dayRange = (p) => { const d = Array.isArray(p.days) ? p.days : Number.isFinite(p.days) ? [p.days, p.days] : null;
+  return d && Number.isFinite(d[0]) ? [d[0], Number.isFinite(d[1]) ? d[1] : d[0]] : null; };
+const rangeTxt = (r) => (r ? (r[0] === r[1] ? `${r[0]}일` : `${r[0]}~${r[1]}일`) : "");
+// 자동완성 후보: 코드·이름이 같으면 맨 앞, 시작하면 다음, 포함하면 뒤
+function suggest(q) {
+  const k = dnorm(q); if (k.length < 2) return [];
+  const score = (p) => { const ks = portKeys(p);
+    return ks[0] === k || ks[1] === k ? 0 : ks.some((x) => x.startsWith(k)) ? 1 : ks.some((x) => x.includes(k)) ? 2 : 9; };
+  return PORTS.map((p) => [score(p), p]).filter(([sc]) => sc < 9).sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name)).map(([, p]) => p).slice(0, 8);
+}
+function findPort(q) {
+  const k = dnorm(q); if (!k) return null;
+  return PORTS.find((p) => portKeys(p).includes(k)) || suggest(q)[0] || null;
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
 function renderDest(q) {
-  const msg = $("#destMsg"), wrap = $("#destTableWrap");
-  const say = (html) => { msg.innerHTML = html; msg.hidden = !html; };
-  const ports = findPorts(q);
-  document.querySelectorAll("#destChips button").forEach((b) => b.setAttribute("aria-pressed", String(ports.some((p) => p.code === b.dataset.code))));
-  wrap.hidden = true; $("#destCount").textContent = "";
+  const msg = $("#destMsg"), say = (html) => { msg.innerHTML = html; msg.hidden = !html; };
+  $("#destResult").hidden = true; $("#destCount").textContent = "";
   if (!q.trim()) { say(""); return; }
-  if (!ports.length) {
-    say(`"${esc(q)}"은(는) 목적항 표에 없어요. <a href="${REPO_EDIT}transit_times.json" target="_blank" rel="noopener">transit_times.json</a>에 항구를 추가하면 검색돼요.`);
-    return;
-  }
+  const port = findPort(q);
+  if (!port) { say(`"${esc(q)}" 항구를 찾지 못했어요. 영문 항구명(예: LONG BEACH)이나 UN/LOCODE(예: USLGB)로 검색해 주세요.`); return; }
+  say("");
+  // 같은 지역(group) 항구는 함께 (예: LONG BEACH ↔ LOS ANGELES)
+  const ports = PORTS.filter((p) => p === port || (port.group && p.group === port.group));
   const codes = new Set(ports.map((p) => p.code));
+  const range = dayRange(port);
   const end = new Date(today.getTime() + (DEST_DAYS + 1) * 86400e3);
   const rows = DATA.rows.filter((r) => {
     const d = toDate(r.etd), rt = ROUTES[(r.route || "").trim().toUpperCase()];
     return d && d >= now && d < end && rt && (rt.ports || []).some((c) => codes.has(c));
   }).sort(byEtd);
-  const label = ports.map((p) => `${p.name}(${p.code})`).join(", ");
-  if (!rows.length) {
-    say(`${esc(label)} 방향으로 3주 안에 부산에서 출항하는 배를 찾지 못했어요. 이 목적지로 가는 노선이 <a href="${REPO_EDIT}routes.json" target="_blank" rel="noopener">routes.json</a>에 아직 없을 수 있어요. 선사 공개 스케줄로 확인해 주세요.`);
-    return;
-  }
-  say("");
-  $("#destCount").textContent = `${label} · ${rows.length}척 · 3주 안 출항`;
+  const weekly = rows.length ? Math.max(1, Math.round(rows.length / (DEST_DAYS / 7))) : 0;
+  // ① 요약
+  const others = ports.filter((p) => p !== port).map((p) => p.name).join(", ");
+  $("#destSum").innerHTML = `<span class="route">BUSAN<span class="arrow">→</span>${esc(port.name)}</span>
+    <span class="meta">${esc(port.country || "")} · ${esc(port.code)}${others ? ` (+ ${esc(others)})` : ""}</span>
+    <span class="meta">예상 소요 <b>${range ? "약 " + rangeTxt(range) : "확인 필요"}</b> · ${weekly ? `주 <b>${weekly}</b>항차` : "주 항차 확인 필요"}</span>`;
+  // ② 이용 가능한 선사: 표에 적힌 선사 + 3주 일정에서 실제로 확인된 선사(초록)
+  const live = new Set(rows.map((r) => carrierName(r.operator)));
+  const listed = [...new Set(ports.flatMap((p) => PCARR[p.code] || []))];
+  const all = [...new Set([...listed, ...live])];
+  $("#destCarr").innerHTML = all.length
+    ? all.map((c) => `<span class="${live.has(c) ? "live" : ""}" title="${live.has(c) ? "3주 안 부산 출항 배 확인됨" : "부산발 서비스 선사"}">${esc(c)}</span>`).join("")
+    : `<span>선사 정보 없음</span>`;
+  // ③ 진행 가능한 스케줄
+  $("#destSchedN").textContent = `앞으로 3주 · 출항일 빠른 순${rows.length ? ` · ${rows.length}척` : ""}`;
+  $("#destEmpty").hidden = !!rows.length; $("#destTableWrap").hidden = !rows.length;
   $("#destRows").innerHTML = rows.map((r) => {
-    const rt = ROUTES[r.route.trim().toUpperCase()];
-    // 한 노선이 여러 목적항을 들르면, 검색한 항구 중 T/T가 가장 짧은 곳 기준
-    const hit = ports.filter((p) => rt.ports.includes(p.code)).sort((a, b) => (a.days ?? 999) - (b.days ?? 999))[0];
-    const days = Number.isFinite(hit.days) ? hit.days : null;
     const etd = toDate(r.etd);
-    const eta = days == null ? `<span class="muted">운송기간 미등록</span>`
-      : `<span class="eta">${dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + days))}</span><span class="est">예상</span>`;
-    const guess = rt["확인"] ? "" : ` <span class="badge b-warn" title="${esc(rt["메모"] || "선사 노선표로 확인 전")}">노선 추정</span>`;
+    const add = (n) => dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + n));
+    const eta = !range ? `<span class="muted">확인 필요</span>`
+      : `<span class="eta">${range[0] === range[1] ? add(range[0]) : `${add(range[0])}~${add(range[1])}`}</span><span class="est">예상</span>`;
     return `<tr>
-      <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}</div>
-          <div class="muted">노선 ${esc(r.route)}${guess}</div></td>
-      <td>${esc(r.operator || "-")}</td>
+      <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}</div></td>
+      <td>${esc(carrierName(r.operator))}</td>
       <td><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span>${bondLine(r)}</td>
       <td>${fmt(r.etd)}${dday(r.etd)}</td>
       <td>${fmt(r.yard_close)}</td>
       <td>${eta}</td>
-      <td>${days == null ? `<span class="muted">운송기간 미등록</span>` : `<b>${days}일</b>`}</td>
+      <td>${range ? `<b>${rangeTxt(range)}</b>` : `<span class="muted">확인 필요</span>`}</td>
     </tr>`;
   }).join("");
-  // 우측: 이 목적지로 3주 안에 배가 있는 선사 (가장 빠른 출항 순)
-  const carr = {};
-  rows.forEach((r) => { const c = (r.operator || "-").trim(); (carr[c] = carr[c] || []).push(r); });
-  const list = Object.entries(carr).sort((a, b) => byEtd(a[1][0], b[1][0]));
-  $("#destCarrN").textContent = `${list.length}곳`;
-  $("#destCarr").innerHTML = list.map(([c, rs]) => `<li><div class="cn">${esc(CARRIER[c] && CARRIER[c] !== c ? `${CARRIER[c]} (${c})` : c)}<span>${rs.length}척</span></div>
-    <div class="cs">가장 빠른 출항 ${fmt(rs[0].etd).replace(/<[^>]+>/g, "")}</div></li>`).join("");
-  wrap.hidden = false;
+  $("#destCount").textContent = `BUSAN → ${port.name}`;
+  $("#destResult").hidden = false;
 }
-function destInit() {
-  $("#destChips").innerHTML = PORTS.map((p) => `<button type="button" data-code="${esc(p.code)}" aria-pressed="false">${esc(p.name)}</button>`).join("");
-  document.querySelectorAll("#destChips button").forEach((b) => b.addEventListener("click", () => { $("#dq").value = b.textContent; renderDest(b.textContent); }));
+// 자동완성 목록 (2글자 이상)
+const dac = { items: [], idx: -1 };
+function acShow(q) {
+  dac.items = suggest(q); dac.idx = -1;
+  const ul = $("#dqList");
+  ul.innerHTML = dac.items.map((p, i) => `<li role="option" id="dqOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(p.name)}, ${esc(p.country)}</b><span>${esc(p.code)}${p.ko && p.ko[0] ? " · " + esc(p.ko[0]) : ""}</span></li>`).join("");
+  ul.hidden = !dac.items.length; $("#dq").setAttribute("aria-expanded", String(!ul.hidden));
+}
+function acPick(i) {
+  const p = dac.items[i]; if (!p) return;
+  $("#dq").value = p.name; $("#dqList").hidden = true; $("#dq").setAttribute("aria-expanded", "false"); renderDest(p.code);
+}
+function acMove(d) {
+  if (!dac.items.length) return;
+  dac.idx = (dac.idx + d + dac.items.length) % dac.items.length;
+  document.querySelectorAll("#dqList li").forEach((li, i) => li.setAttribute("aria-selected", String(i === dac.idx)));
+  $("#dq").setAttribute("aria-activedescendant", `dqOpt${dac.idx}`);
+}
+$("#destForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (dac.idx >= 0 && !$("#dqList").hidden) { acPick(dac.idx); return; }
+  $("#dqList").hidden = true; renderDest($("#dq").value);
+});
+$("#dq").addEventListener("input", (e) => { acShow(e.target.value); if (!e.target.value.trim()) renderDest(""); });
+$("#dq").addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); }
+  else if (e.key === "Escape") { $("#dqList").hidden = true; }
+});
+$("#dqList").addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
+$("#dq").addEventListener("blur", () => setTimeout(() => { $("#dqList").hidden = true; }, 120));
+// 관리용 링크는 숨김 (주소 끝에 #admin을 붙여 열면 보임)
+if (location.hash === "#admin") {
   const unmapped = new Set(DATA.rows.filter((r) => r.route && !ROUTES[r.route.trim().toUpperCase()]).map((r) => r.route.trim().toUpperCase()));
-  const err = DATA.dest_error ? ` · <b>${esc(DATA.dest_error)}</b>` : "";
-  $("#destHelp").innerHTML = `노선 → 목적항 등록 ${Object.keys(ROUTES).length}개 · 미등록 노선 ${unmapped.size}개 (미등록 노선의 배는 안 나와요)
-    · <a href="${REPO_EDIT}routes.json" target="_blank" rel="noopener">노선표 고치기 ↗</a>
-    · <a href="${REPO_EDIT}transit_times.json" target="_blank" rel="noopener">운송 일수 고치기 ↗</a>${err}`;
+  $("#destHelp").innerHTML = `노선 → 목적항 등록 ${Object.keys(ROUTES).length}개 · 미등록 노선 ${unmapped.size}개
+    · <a href="${REPO_EDIT}routes.json" target="_blank" rel="noopener">routes.json</a>
+    · <a href="${REPO_EDIT}transit_times.json" target="_blank" rel="noopener">transit_times.json</a>
+    · <a href="${REPO_EDIT}port_carriers.json" target="_blank" rel="noopener">port_carriers.json</a>
+    · <a href="${REPO_EDIT}vessels_imo.json" target="_blank" rel="noopener">vessels_imo.json</a>${DATA.dest_error ? ` · <b>${esc(DATA.dest_error)}</b>` : ""}`;
+  $("#destHelp").hidden = false;
 }
-$("#destForm").addEventListener("submit", (e) => { e.preventDefault(); renderDest($("#dq").value); });
-$("#dq").addEventListener("input", (e) => { if (!e.target.value.trim()) renderDest(""); });
-destInit();
 
 $("#vmapClose").addEventListener("click", closeMap);
 $("#vmapHelp").innerHTML = `지도: <a href="https://www.vesselfinder.com/embed" target="_blank" rel="noopener">VesselFinder 무료 홈페이지 지도</a>(AIS 기준, 실시간과 차이 있을 수 있음)
-  · IMO 등록 ${Object.keys(VIDS).length}척 · <a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">IMO 번호 등록하기 ↗</a>${DATA.vessel_error ? ` · <b>${esc(DATA.vessel_error)}</b>` : ""}`;
+  · IMO 등록 ${Object.keys(VIDS).length}척 · <a href="${REPO_EDIT}vessels_imo.json" target="_blank" rel="noopener">IMO 번호 등록하기 ↗</a>${DATA.vessel_error ? ` · <b>${esc(DATA.vessel_error)}</b>` : ""}`;
 
 // ---------------------------------------------------------------- 야니 짖기
 // 소리: 저장소 맨 위에 yani_bark.mp3를 올리면 그 파일을 쓰고, 없으면 브라우저에서 직접 만든 소리(저작권 없음)
@@ -994,5 +974,4 @@ summary();
 render();
 renderPickup();
 renderNews();
-renderTrack("");
 </script>
