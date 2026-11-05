@@ -153,8 +153,10 @@
   .notes b { color: var(--ink); } .notes a { color: inherit; }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
 
-  /* 컨테이너 부산항선적여부: 번호 입력 → 적재 선박·출항 여부 카드 */
+  /* 컨테이너 부산항 선적여부: 번호 입력 → 적재 선박·출항 여부 카드 */
   .track .caption { align-items: center; }
+  .ct { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+  .ct svg { height: 26px; width: auto; color: var(--accent2); flex: none; }
   .track form { display: flex; gap: 8px; padding: 12px 16px 0; }
   .track input { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
                  border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
@@ -181,7 +183,10 @@
   .pcard .pn small { font-family: inherit; font-size: 13px; color: var(--muted); }
   .pcard .ps { font-size: 13px; font-variant-numeric: tabular-nums; }
   .pcard .pf { margin-top: 4px; font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+  a.pcard, a.pcard:hover { text-decoration: none; }
   .pcard.off { background: var(--panel); }
+  table.eq td.rmk, table.eq th.rmk { text-align: left; font-size: 12px; white-space: nowrap; }
+  table.eq td.rmk a { color: var(--accent2); font-weight: 700; }
   .pcard.off .pn { color: var(--muted); font-size: 18px; }
   .pcard .eqbox { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
   .pcard .eqbox div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px 8px; }
@@ -267,8 +272,8 @@
     <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 스케줄 영향 소식 · 항로 시황 · 부산항 주요 소식을 골라요<span id="newsBarErr"></span></div>
   </details>
 
-  <section class="panel track" aria-label="컨테이너 부산항선적여부">
-    <div class="caption"><b>컨테이너 부산항선적여부</b><span class="muted" id="trackCount"></span></div>
+  <section class="panel track" aria-label="컨테이너 부산항 선적여부">
+    <div class="caption"><span class="ct"><b>컨테이너 부산항 선적여부</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><rect x="16" y="14" width="9" height="11" rx="1.2"/><rect x="26" y="14" width="9" height="11" rx="1.2"/><rect x="36" y="14" width="9" height="11" rx="1.2"/><rect x="21" y="4" width="9" height="10" rx="1.2"/><rect x="31" y="4" width="9" height="10" rx="1.2"/><path d="M4 25h48l-6 10H11z"/><path d="M1 32c3.5 2.6 6 2.6 9.5 0s6-2.6 9.5 0 6 2.6 9.5 0 6-2.6 9.5 0 6 2.6 9.5 0 6-2.6 9.5 0V37H1z" opacity=".45"/></svg></span><span class="muted" id="trackCount"></span></div>
     <form id="trackForm" autocomplete="off">
       <input id="tq" placeholder="컨테이너 번호 (예: BEAU4348542)" aria-label="컨테이너 번호" maxlength="15">
       <button class="go" type="submit">조회</button>
@@ -304,7 +309,7 @@
   </div>
 
   <section class="panel pickup" id="pickup" aria-label="터미널별 픽업 가능 컨테이너">
-    <div class="caption"><b>터미널별 픽업 가능 컨테이너</b><span class="muted" id="pickupAt"></span></div>
+    <div class="caption"><span class="ct"><b>터미널 별 픽업 가능 컨테이너 <span class="muted" style="font-weight:400">(30분마다 재업)</span></b><svg class="ico" viewBox="0 0 54 40" fill="currentColor" aria-hidden="true"><rect x="3" y="22" width="22" height="14" rx="1.6"/><rect x="29" y="22" width="22" height="14" rx="1.6"/><rect x="16" y="6" width="22" height="14" rx="1.6"/></svg></span><span class="muted" id="pickupAt"></span></div>
     <div class="pgrid" id="pickupGrid"></div>
     <div class="eqwrap">
       <div class="eqtabs" role="group" aria-label="장비 현황표 보기"><span class="lbl">장비 현황표</span><span id="eqTabs"></span></div>
@@ -509,8 +514,16 @@ function renderNews() {
   $("#newsBar").hidden = false;
 }
 
-// 공컨 현황을 공개하는 곳만 숫자가 있고, 나머지는 '정보 미제공'
+// 공컨 현황을 공개하는 곳만 숫자가 있고, 나머지는 '정보미제공(로그인 필요)' — 카드를 누르면 그 터미널 로그인 화면으로
 const PICKUP_ORDER = ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT", "BPTC", "HKTL"];
+const PICKUP_LOGIN = {
+  PNC: "https://svc.pncport.com/info/CMS/Yard/EmptySum.pnc?mCode=MN048",
+  HPNT: "https://www.hpnt.co.kr/infoservice/yard/yardWorkStatus.jsp",
+  DGT: "https://www.dgtbusan.com/DGT/login",
+  PNIT: "https://www.pnitl.com/infoservice/yard/yardWorkStatus.jsp",
+  BNCT: "https://info.bnctkorea.com/esvc/onDock/cntrStockReport",
+  HKTL: "https://custom.hktl.com/jsp/join/login.jsp",
+};
 const n0 = (n) => Number(n || 0).toLocaleString("ko-KR");
 const boxSum = (b) => Object.values(b).reduce((a, v) => a + v, 0);
 function renderPickup() {
@@ -523,8 +536,14 @@ function renderPickup() {
     const head = `<div class="ph"><span class="chip t-${esc(t)}"><i></i>${esc(t)}</span><span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span></div>`;
     if (!mine.length) {
       const fail = errs.includes(t);
-      return `<button type="button" class="pcard off" data-t="${esc(t)}">${head}<div class="pn">${fail ? "조회 실패" : "정보 미제공"}</div>
-        <div class="ps muted">${fail ? "이번 갱신에서 터미널 사이트에 접속하지 못했어요" : "공컨 현황을 로그인 회원에게만 공개해요"}</div>${foot}</button>`;
+      if (!fail && PICKUP_LOGIN[t]) {
+        return `<a class="pcard off" href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">${head}
+          <div class="pn">정보미제공<small>(로그인 필요)</small></div>
+          <div class="ps" style="color:var(--bad);font-weight:700">공컨 현황을 로그인 회원에게만 공개해요</div>
+          <div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>로그인하고 보기 ↗</span></div></a>`;
+      }
+      return `<button type="button" class="pcard off" data-t="${esc(t)}">${head}<div class="pn">조회 실패</div>
+        <div class="ps muted">이번 갱신에서 터미널 사이트에 접속하지 못했어요</div>${foot}</button>`;
     }
     const sum = { s20: 0, s40: 0, sp: 0 };
     const lines = {};
@@ -540,12 +559,12 @@ function renderPickup() {
       <div class="eqbox"><div><span>20FT</span><b>${n0(sum.s20)}</b></div><div><span>40FT · 40HC · 45</span><b>${n0(sum.s40)}</b></div></div>
       ${sum.sp ? `<div class="ps muted">특수(냉동·OT·FR) ${n0(sum.sp)}대 포함</div>` : ""}${parts}<div class="ps muted">많은 선사: ${top || "-"}</div>${foot}</button>`;
   }).join("");
-  $("#pickupAt").textContent = `${DATA.generated_at} 기준 · 30분마다 갱신`;
+  $("#pickupAt").textContent = `${DATA.generated_at} 기준`;
   renderEq();
   const ok = PICKUP_ORDER.filter((t) => yards.some((y) => y.name.split(" ")[0] === t));
   $("#pickupHelp").innerHTML = `픽업 가능 = 터미널에서 지금 반출(픽업)할 수 있는 공컨테이너 수예요. 40FT에는 40HC·45 포함, 특수는 냉동·OT·FR 등이에요.
-    공개 터미널: ${esc(ok.join(" · ") || "-")} · 카드를 누르면 그 터미널 선박 목록이 나와요${errs ? ` · <b>${esc(errs)}</b> 조회 실패` : ""}`;
-  document.querySelectorAll(".pcard").forEach((b) => b.addEventListener("click", () => {
+    공개(로그인 불필요): ${esc(ok.join(" · ") || "-")} · 나머지는 정보미제공(로그인 필요)이라 카드를 누르면 터미널 로그인 화면으로 가요${errs ? ` · <b>${esc(errs)}</b> 조회 실패` : ""}`;
+  document.querySelectorAll("button.pcard").forEach((b) => b.addEventListener("click", () => {
     setTerms([b.dataset.t]); ui.limit = PAGE; showSched(true); render();
     $("#schedPanel").scrollIntoView({ behavior: "smooth", block: "start" });
   }));
@@ -554,9 +573,9 @@ function renderPickup() {
 // 장비 현황표: '터미널별' 합계 또는 야드 하나를 골라 선사별로
 const EQ_COLS = [["20", "20GP"], ["40", "40GP"], ["40HC", "40HC"], ["45", "45"], ["특수", "특수<small>RF·OT·FR</small>"]];
 const eqUi = { view: "ALL" };
-function eqRow(name, b, cls = "") {
-  const cells = EQ_COLS.map(([k]) => b[k] ? `<td>${n0(b[k])}</td>` : `<td class="z">-</td>`).join("");
-  return `<tr class="${cls}"><td>${name}</td>${cells}<td class="sum">${n0(boxSum(b))}</td></tr>`;
+function eqRow(name, b, cls = "", remark = "") {
+  const cells = EQ_COLS.map(([k]) => (b && b[k]) ? `<td>${n0(b[k])}</td>` : `<td class="z">-</td>`).join("");
+  return `<tr class="${cls}"><td>${name}</td>${cells}<td class="sum">${b ? n0(boxSum(b)) : "-"}</td><td class="rmk">${remark}</td></tr>`;
 }
 function addBox(to, b) { Object.entries(b).forEach(([k, v]) => { to[k] = (to[k] || 0) + v; }); return to; }
 function renderEq() {
@@ -564,19 +583,26 @@ function renderEq() {
   const views = [["ALL", "터미널별 합계"], ...yards.map((y) => [y.name, y.name])];
   $("#eqTabs").innerHTML = views.map(([k, label]) =>
     `<button type="button" class="fchip" data-eq="${esc(k)}" aria-pressed="${eqUi.view === k}">${esc(label)}</button>`).join(" ");
-  $("#eqHead").innerHTML = `<tr><th>${eqUi.view === "ALL" ? "터미널" : "선사"}</th>${EQ_COLS.map(([, h]) => `<th>${h}</th>`).join("")}<th class="sum">합계</th></tr>`;
+  $("#eqHead").innerHTML = `<tr><th>${eqUi.view === "ALL" ? "터미널" : "선사"}</th>${EQ_COLS.map(([, h]) => `<th>${h}</th>`).join("")}<th class="sum">합계</th><th class="rmk">비고</th></tr>`;
   let rows;
   if (eqUi.view === "ALL") {
-    const per = yards.map((y) => [y.name, Object.values(y.lines).reduce((a, b) => addBox(a, b), {})]);
-    rows = per.map(([n, b]) => eqRow(esc(n), b)).join("");
-    rows += eqRow("전체", per.reduce((a, [, b]) => addBox(a, b), {}), "total");
+    const per = [];
+    rows = PICKUP_ORDER.map((t) => {
+      const mine = yards.filter((y) => y.name.split(" ")[0] === t);
+      if (!mine.length) {
+        const rmk = PICKUP_LOGIN[t] ? `<a href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">로그인 필요 ↗</a>` : "조회 실패";
+        return eqRow(`${esc(t)} <span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span>`, null, "off", rmk);
+      }
+      return mine.map((y) => { const b = Object.values(y.lines).reduce((a, x) => addBox(a, x), {}); per.push(b); return eqRow(esc(y.name), b); }).join("");
+    }).join("");
+    rows += eqRow("공개 터미널 전체", per.reduce((a, b) => addBox(a, b), {}), "total");
   } else {
     const y = yards.find((x) => x.name === eqUi.view) || { lines: {} };
     const lines = Object.entries(y.lines).sort((a, b) => boxSum(b[1]) - boxSum(a[1]));
     rows = eqRow(`합계 <span class="muted">(${lines.length}개 선사)</span>`, lines.reduce((a, [, b]) => addBox(a, b), {}), "total")
       + lines.map(([l, b]) => eqRow(esc(l), b)).join("");
   }
-  $("#eqBody").innerHTML = rows || `<tr><td colspan="7" class="empty">공개된 공컨 현황이 없어요.</td></tr>`;
+  $("#eqBody").innerHTML = rows || `<tr><td colspan="8" class="empty">공개된 공컨 현황이 없어요.</td></tr>`;
   document.querySelectorAll("[data-eq]").forEach((b) => b.addEventListener("click", () => { eqUi.view = b.dataset.eq; renderEq(); }));
 }
 
