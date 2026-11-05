@@ -1,4 +1,4 @@
-"""부산항 6개 터미널 선석배정 현황 조회 모듈.
+"""부산항 8개 터미널 선석배정 현황 조회 모듈.
 
 각 터미널 사이트는 선명 검색 기능이 없고 '기간별 전체 목록'만 제공한다.
 그래서 기간(오늘-20일 ~ 오늘+40일) 목록을 한 번 받아온 뒤, 선명/항차로 직접 찾는다.
@@ -6,6 +6,8 @@
   PNC  : POST /info/CMS/Ship/Info.pnc  -> HTML 표 (행 색상 class로 상태 구분)
   HJNC : GET  /esvc/vessel/berthScheduleT/data -> JSON (세션 쿠키 필요)
   HPNT : GET  /infoservice/vessel/vslScheduleList.jsp -> HTML 표 (POST는 400)
+  PNIT : GET  /infoservice/vessel/vslScheduleList.jsp -> HTML 표 (HPNT와 같은 시스템, tmnCod=P, 열 순서만 다름)
+  BNCT : GET  /esvc/vessel/berthScheduleT/list -> JSON (세션 쿠키 필요, 조회기간 93일 미만)
   DGT  : POST /DGT/esvc/vessel/vesselSchedule -> JSON (세션 쿠키 + CSRF 토큰 필요)
   BPTC : POST /Berth_status_text_servlet_sw_kr -> HTML 표 (EUC-KR)   [북항]
   HKTL : GET  custom.hktl.com/jsp/T01/sunsuk.jsp -> HTML 표 (EUC-KR, 20건 페이지) [북항]
@@ -29,6 +31,8 @@ TERMINALS = {
     "HJNC": "HJNC 한진부산 (신항)",
     "HPNT": "HPNT HMM PSA (신항)",
     "DGT": "DGT 동원글로벌터미널 (신항)",
+    "PNIT": "PNIT 부산신항국제터미널 (신항)",
+    "BNCT": "BNCT 부산신항컨테이너터미널 (신항)",
     "BPTC": "BPTC 신선대·감만 (북항)",
     "HKTL": "HKTL 허치슨 신감만·감만1 (북항)",
 }
@@ -166,6 +170,49 @@ def fetch_dgt():
     return out
 
 
+def fetch_pnit():
+    url = "https://www.pnitl.com/infoservice/vessel/vslScheduleList.jsp"
+    op = _opener(http.cookiejar.CookieJar())
+    _fetch(url, opener=op)
+    start, end = _range()
+    q = urllib.parse.urlencode({"isSearch": "Y", "page": "1", "URI": "", "userID": "", "groupID": "U999",
+                                "tmnCod": "P", "strdStDate": start.isoformat(),
+                                "strdEdDate": end.isoformat(), "route": ""})
+    page = _fetch(f"{url}?{q}", opener=op, headers={"Referer": url})
+    status_map = {"DEPARTED": "출항", "ARRIVED": "접안", "PLANNED": "예정"}
+    out = []
+    for _, row in _rows(page):
+        c = _cells(row)
+        if len(c) < 15 or not _dt(c[8]):
+            continue
+        # 선석 | 선사 | 모선항차 | 선사항차 | 접안위치 | 선명 | 항로 | 반입마감 | 접안 | 출항 | ... | 상태
+        out.append({"vessel": c[5], "voyages": [c[2], c[3]], "operator": c[1],
+                    "etb": _dt(c[8]), "etd": _dt(c[9]), "berth": c[0], "yard_open": "", "yard_close": _dt(c[7]),
+                    "status": status_map.get(c[14].upper(), c[14] or "예정")})
+    return out
+
+
+def fetch_bnct():
+    base = "https://info.bnctkorea.com/esvc/vessel/berthScheduleT"
+    op = _opener(http.cookiejar.CookieJar())
+    _fetch(base, opener=op)  # 세션 쿠키 발급
+    start, end = _range()
+    q = urllib.parse.urlencode({"VVD": "", "StrDate": start.isoformat(), "EndDate": end.isoformat()})
+    raw = _fetch(f"{base}/list?{q}", opener=op, headers={
+        "Accept": "application/json", "X-Requested-With": "XMLHttpRequest", "Referer": base})
+    out = []
+    for r in json.loads(raw):
+        # 상태 열이 없어 실제 접안/출항 시각(ATB/ATD) 유무로 판단
+        status = "출항" if r.get("ATDDATE") else "접안" if r.get("ATBDATE") else "예정"
+        out.append({"vessel": r.get("VSLNAME") or "",
+                    "voyages": [f"{r.get('VVD') or ''}/{r.get('VVD_YEAR') or ''}",
+                                "/".join(dict.fromkeys(v for v in (r.get("OPERVSLVVDIN"), r.get("OPERVSLVVDOUT")) if v))],
+                    "operator": r.get("OPERATOR") or "", "etb": _dt(r.get("ATBDATE") or r.get("ETBDATE")),
+                    "etd": _dt(r.get("ATDDATE") or r.get("ETDDATE")), "berth": r.get("BERTHNO") or "",
+                    "yard_open": "", "yard_close": _dt(r.get("CCTDATE")), "status": status})
+    return out
+
+
 def fetch_bptc():
     start, end = _range()
     page = _fetch("https://info.bptc.co.kr/Berth_status_text_servlet_sw_kr", encoding="cp949", data={
@@ -217,7 +264,7 @@ def fetch_hktl():
 
 
 FETCHERS = {"PNC": fetch_pnc, "HJNC": fetch_hjnc, "HPNT": fetch_hpnt, "DGT": fetch_dgt,
-           "BPTC": fetch_bptc, "HKTL": fetch_hktl}
+           "PNIT": fetch_pnit, "BNCT": fetch_bnct, "BPTC": fetch_bptc, "HKTL": fetch_hktl}
 
 
 # ---------------------------------------------------------------- 선박 매칭
