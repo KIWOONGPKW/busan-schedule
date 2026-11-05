@@ -182,7 +182,17 @@
   .dchips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 12px; }
   .dchips button { font-size: 12.5px; padding: 3px 11px; }
   .dchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: transparent; }
-  .dest .table-wrap { border-top: 1px solid var(--line); }
+  .dest .dgrid { display: grid; grid-template-columns: minmax(0, 1fr) 230px; border-top: 1px solid var(--line); }
+  .dest .dgrid .table-wrap { min-width: 0; }
+  .dcarr { border-left: 1px solid var(--line); background: var(--zebra); min-width: 0; }
+  .dch { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--head); }
+  .dch b { color: var(--accent2); font-size: 13px; }
+  .dcarr ul { list-style: none; margin: 0; padding: 0; }
+  .dcarr li { padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .dcarr li .cn { display: flex; justify-content: space-between; gap: 6px; font-weight: 700; }
+  .dcarr li .cn span { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dcarr li .cs { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  @media (max-width: 900px) { .dest .dgrid { grid-template-columns: minmax(0, 1fr); } .dcarr { border-left: 0; border-top: 1px solid var(--line); } }
   table.dtable { min-width: 860px; }
   table.dtable td { padding: 10px 14px; }
   .eta { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -331,7 +341,8 @@
     </form>
     <div class="dchips" id="destChips"></div>
     <div class="tmsg" id="destMsg" hidden></div>
-    <div class="table-wrap" id="destTableWrap" hidden>
+    <div class="dgrid" id="destTableWrap" hidden>
+    <div class="table-wrap">
       <table class="dtable">
         <thead><tr>
           <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
@@ -344,6 +355,8 @@
         </tr></thead>
         <tbody id="destRows"></tbody>
       </table>
+    </div>
+    <aside class="dcarr" aria-label="가용 선사"><div class="dch"><b>가용 선사</b><span class="muted" id="destCarrN"></span></div><ul id="destCarr"></ul></aside>
     </div>
     <div class="thelp" id="destHelp"></div>
     <div class="dnote">예상 도착일은 평균 운송기간 기준 참고용, 선사 확정 스케줄 확인 필요</div>
@@ -815,6 +828,12 @@ const REPO_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/script
 const PORTS = DATA.transit || [];
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
 const DEST_DAYS = 21;
+// 터미널 선사 코드 → 이름 (가용 선사 표시용, 없는 코드는 코드 그대로)
+const CARRIER = { MAE: "머스크", MCC: "MCC(머스크)", HLC: "하팍로이드", MSC: "MSC", ONE: "ONE", HMM: "HMM", YML: "양밍",
+  EMC: "에버그린", EMA: "에버그린", OOL: "OOCL", COS: "COSCO", COH: "COSCO", CMA: "CMA CGM", APL: "APL", APC: "APL", ZIM: "ZIM",
+  SML: "SM상선", KMD: "고려해운", SKR: "장금상선", HAS: "흥아라인", SIT: "SITC", TSL: "TS라인", WHL: "완하이", PIL: "PIL",
+  IAL: "인터아시아", DJS: "동진상선", NSL: "남성해운", NSS: "남성해운", PCL: "팬오션", CKL: "천경해운", EAS: "이스턴해운",
+  DYS: "동영해운", XPR: "X-Press Feeders", ESL: "Emirates Line", RCL: "RCL", BEN: "BEN LINE", SNL: "SNL", POL: "POS", FES: "FESCO" };
 const dnorm = (s) => String(s || "").toUpperCase().replace(/[\s\-_.,()·/]/g, "");
 const portName = (code) => (PORTS.find((p) => p.code === code) || {}).name || code;
 function findPorts(q) {
@@ -873,6 +892,13 @@ function renderDest(q) {
       <td>${days == null ? `<span class="muted">운송기간 미등록</span>` : `<b>${days}일</b>`}</td>
     </tr>`;
   }).join("");
+  // 우측: 이 목적지로 3주 안에 배가 있는 선사 (가장 빠른 출항 순)
+  const carr = {};
+  rows.forEach((r) => { const c = (r.operator || "-").trim(); (carr[c] = carr[c] || []).push(r); });
+  const list = Object.entries(carr).sort((a, b) => byEtd(a[1][0], b[1][0]));
+  $("#destCarrN").textContent = `${list.length}곳`;
+  $("#destCarr").innerHTML = list.map(([c, rs]) => `<li><div class="cn">${esc(CARRIER[c] && CARRIER[c] !== c ? `${CARRIER[c]} (${c})` : c)}<span>${rs.length}척</span></div>
+    <div class="cs">가장 빠른 출항 ${fmt(rs[0].etd).replace(/<[^>]+>/g, "")}</div></li>`).join("");
   wrap.hidden = false;
 }
 function destInit() {
