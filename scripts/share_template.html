@@ -802,19 +802,62 @@ const CARRIER = { MAE: "MAERSK", MCC: "MAERSK", HLC: "HAPAG-LLOYD", MSC: "MSC", 
 const carrierName = (c) => CARRIER[(c || "").trim()] || (c || "-").trim();
 const dnorm = (s) => String(s || "").toUpperCase().replace(/[\s\-_.,()·/]/g, "");
 const portKeys = (p) => [p.code, p.name, ...(p.ko || []), ...(p.aliases || [])].map(dnorm);
-const dayRange = (p) => { const d = Array.isArray(p.days) ? p.days : Number.isFinite(p.days) ? [p.days, p.days] : null;
-  return d && Number.isFinite(d[0]) ? [d[0], Number.isFinite(d[1]) ? d[1] : d[0]] : null; };
+const toRange = (d) => (Array.isArray(d) && Number.isFinite(d[0]) ? [d[0], Number.isFinite(d[1]) ? d[1] : d[0]]
+  : Number.isFinite(d) ? [d, d] : null);
+// 경로별 소요일: [["", [min,max]]] 또는 [["수에즈", [..]], ["희망봉", [..]]]
+function dayRoutes(p) {
+  const d = p && p.days;
+  if (d && !Array.isArray(d) && typeof d === "object") return Object.entries(d).map(([k, v]) => [k, toRange(v)]).filter(([, v]) => v);
+  const r = toRange(d); return r ? [["", r]] : [];
+}
+// 전체 범위(가장 짧은 ~ 가장 긴) — 예상 도착일 계산용
+function dayRange(p) { const rs = dayRoutes(p).map(([, v]) => v); return rs.length ? [Math.min(...rs.map((r) => r[0])), Math.max(...rs.map((r) => r[1]))] : null; }
 const rangeTxt = (r) => (r ? (r[0] === r[1] ? `${r[0]}일` : `${r[0]}~${r[1]}일`) : "");
-// 자동완성 후보: 코드·이름이 같으면 맨 앞, 시작하면 다음, 포함하면 뒤
-function suggest(q) {
+const routesTxt = (p, sep = " · ") => dayRoutes(p).map(([k, v]) => `${rangeTxt(v)}${k ? ` (${k})` : ""}`).join(sep);
+// UN/LOCODE 전체 해상 항구(ports.json, 약 1만7천 개)는 검색창을 처음 쓸 때 한 번만 불러온다 (단독 파일로 열어도 되게 전체 주소)
+const ALLPORTS_URL = "https://kiwoongpkw.github.io/busan-schedule/ports.json";
+const ALL = { list: null, loading: null };
+const RICH = new Set(PORTS.map((p) => p.code));
+function loadAllPorts() {
+  if (ALL.list || ALL.loading) return ALL.loading || Promise.resolve();
+  ALL.loading = fetch(ALLPORTS_URL).then((r) => r.json()).then((d) => {
+    ALL.list = d.p.filter(([c]) => !RICH.has(c)).map(([code, name, country]) => ({ code, name, country, bare: true }));
+  }).catch(() => { ALL.list = []; }).finally(() => { ALL.loading = null; });
+  return ALL.loading;
+}
+const allPorts = () => (ALL.list ? PORTS.concat(ALL.list) : PORTS);
+// 철자가 조금 달라도 (AMBARLY → AMBARLI, MERSINE → MERSIN): 글자 1개(7글자 이상이면 2개)까지 다른 이름
+function editDist(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      best = Math.min(best, cur[j]);
+    }
+    if (best > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// 자동완성 후보: 코드·이름이 같으면 맨 앞, 시작하면 다음, 포함하면 그다음, 철자 비슷하면 마지막 (같은 순위면 정보 있는 항구 먼저)
+function suggest(q, n = 8) {
   const k = dnorm(q); if (k.length < 2) return [];
+  const list = allPorts();
   const score = (p) => { const ks = portKeys(p);
-    return ks[0] === k || ks[1] === k ? 0 : ks.some((x) => x.startsWith(k)) ? 1 : ks.some((x) => x.includes(k)) ? 2 : 9; };
-  return PORTS.map((p) => [score(p), p]).filter(([sc]) => sc < 9).sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name)).map(([, p]) => p).slice(0, 8);
+    return ks.includes(k) ? 0 : ks.some((x) => x.startsWith(k)) ? 1 : k.length >= 3 && ks.some((x) => x.includes(k)) ? 2 : 9; };
+  let hits = list.map((p) => [score(p), p]).filter(([sc]) => sc < 9);
+  if (hits.length < 3 && k.length >= 5) {
+    const max = k.length >= 7 ? 2 : 1, have = new Set(hits.map(([, p]) => p));
+    list.forEach((p) => { if (have.has(p)) return; const nm = dnorm(p.name);
+      if (editDist(k, nm, max) <= max || (nm.length > k.length && editDist(k, nm.slice(0, k.length), max - 1 || 1) <= (max - 1 || 1) && k.length >= 5)) hits.push([3, p]); });
+  }
+  return hits.sort((a, b) => a[0] - b[0] || (a[1].bare ? 1 : 0) - (b[1].bare ? 1 : 0) || a[1].name.localeCompare(b[1].name)).map(([, p]) => p).slice(0, n);
 }
 function findPort(q) {
   const k = dnorm(q); if (!k) return null;
-  return PORTS.find((p) => portKeys(p).includes(k)) || suggest(q)[0] || null;
+  return allPorts().find((p) => portKeys(p).includes(k)) || suggest(q, 1)[0] || null;
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
 function renderDest(q) {
@@ -822,7 +865,13 @@ function renderDest(q) {
   $("#destResult").hidden = true; $("#destCount").textContent = "";
   if (!q.trim()) { say(""); return; }
   const port = findPort(q);
+  if (!port && !ALL.list) { say("항구 목록을 불러오는 중이에요…"); loadAllPorts().then(() => renderDest(q)); return; }
   if (!port) { say(`"${esc(q)}" 항구를 찾지 못했어요. 영문 항구명(예: LONG BEACH)이나 UN/LOCODE(예: USLGB)로 검색해 주세요.`); return; }
+  if (port.bare || (!dayRange(port) && !(PCARR[port.code] || []).length)) {
+    say(`<b>${esc(port.name)}, ${esc(port.country)} (${esc(port.code)})</b> · 선사·소요일 정보 준비 중`);
+    $("#destCount").textContent = `BUSAN → ${port.name}`;
+    return;
+  }
   say("");
   // 같은 지역(group) 항구는 함께 (예: LONG BEACH ↔ LOS ANGELES)
   const ports = PORTS.filter((p) => p === port || (port.group && p.group === port.group));
@@ -838,7 +887,7 @@ function renderDest(q) {
   const others = ports.filter((p) => p !== port).map((p) => p.name).join(", ");
   $("#destSum").innerHTML = `<span class="route">BUSAN<span class="arrow">→</span>${esc(port.name)}</span>
     <span class="meta">${esc(port.country || "")} · ${esc(port.code)}${others ? ` (+ ${esc(others)})` : ""}</span>
-    <span class="meta">예상 소요 <b>${range ? "약 " + rangeTxt(range) : "확인 필요"}</b> · ${weekly ? `주 <b>${weekly}</b>항차` : "주 항차 확인 필요"}</span>`;
+    <span class="meta">예상 소요 <b>${range ? "약 " + esc(routesTxt(port)) : "확인 필요"}</b> · ${weekly ? `주 <b>${weekly}</b>항차` : "주 항차 확인 필요"}</span>`;
   // ② 이용 가능한 선사: 표에 적힌 선사 + 3주 일정에서 실제로 확인된 선사(초록)
   const live = new Set(rows.map((r) => carrierName(r.operator)));
   const listed = [...new Set(ports.flatMap((p) => PCARR[p.code] || []))];
@@ -861,7 +910,7 @@ function renderDest(q) {
       <td>${fmt(r.etd)}${dday(r.etd)}</td>
       <td>${fmt(r.yard_close)}</td>
       <td>${eta}</td>
-      <td>${range ? `<b>${rangeTxt(range)}</b>` : `<span class="muted">확인 필요</span>`}</td>
+      <td>${range ? `<b>${routesTxt(port, "<br>")}</b>` : `<span class="muted">확인 필요</span>`}</td>
     </tr>`;
   }).join("");
   $("#destCount").textContent = `BUSAN → ${port.name}`;
@@ -872,7 +921,7 @@ const dac = { items: [], idx: -1 };
 function acShow(q) {
   dac.items = suggest(q); dac.idx = -1;
   const ul = $("#dqList");
-  ul.innerHTML = dac.items.map((p, i) => `<li role="option" id="dqOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(p.name)}, ${esc(p.country)}</b><span>${esc(p.code)}${p.ko && p.ko[0] ? " · " + esc(p.ko[0]) : ""}</span></li>`).join("");
+  ul.innerHTML = dac.items.map((p, i) => `<li role="option" id="dqOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(p.name)}, ${esc(p.country)}</b><span>${esc(p.code)}${p.ko && p.ko[0] ? " · " + esc(p.ko[0]) : ""}${p.bare ? " · 정보 준비 중" : ""}</span></li>`).join("");
   ul.hidden = !dac.items.length; $("#dq").setAttribute("aria-expanded", String(!ul.hidden));
 }
 function acPick(i) {
@@ -890,7 +939,11 @@ $("#destForm").addEventListener("submit", (e) => {
   if (dac.idx >= 0 && !$("#dqList").hidden) { acPick(dac.idx); return; }
   $("#dqList").hidden = true; renderDest($("#dq").value);
 });
-$("#dq").addEventListener("input", (e) => { acShow(e.target.value); if (!e.target.value.trim()) renderDest(""); });
+$("#dq").addEventListener("input", (e) => {
+  const v = e.target.value; acShow(v); if (!v.trim()) renderDest("");
+  if (!ALL.list) loadAllPorts().then(() => { if ($("#dq").value === v) acShow(v); });
+});
+$("#dq").addEventListener("focus", () => { loadAllPorts(); });
 $("#dq").addEventListener("keydown", (e) => {
   if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); }
   else if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); }

@@ -571,6 +571,230 @@
    "OOCL",
    "EVERGREEN",
    "ZIM"
+  ],
+  "TRAMR": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "TRMER": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "TRIZT": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "TRGEM": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "TRISK": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "ITSPE": [
+   "HMM",
+   "ONE",
+   "YANG MING",
+   "MAERSK",
+   "HAPAG-LLOYD",
+   "MSC",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "ZIM"
+  ],
+  "ESBCN": [
+   "HMM",
+   "ONE",
+   "YANG MING",
+   "MAERSK",
+   "HAPAG-LLOYD",
+   "MSC",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "ZIM"
+  ],
+  "ESALG": [
+   "HMM",
+   "ONE",
+   "YANG MING",
+   "MAERSK",
+   "HAPAG-LLOYD",
+   "MSC",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "ZIM"
+  ],
+  "MTMAR": [
+   "HMM",
+   "ONE",
+   "YANG MING",
+   "MAERSK",
+   "HAPAG-LLOYD",
+   "MSC",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "ZIM"
+  ],
+  "EGPSD": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "EGALY": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "OOCL",
+   "EVERGREEN",
+   "HAPAG-LLOYD",
+   "ONE",
+   "HMM",
+   "YANG MING",
+   "ZIM"
+  ],
+  "ROCND": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "COSCO",
+   "HAPAG-LLOYD",
+   "ZIM",
+   "EVERGREEN"
+  ],
+  "UAODS": [
+   "MSC",
+   "CMA CGM",
+   "MAERSK"
+  ],
+  "RUNVS": [
+   "FESCO"
+  ],
+  "GEPTI": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "ZIM",
+   "COSCO"
+  ],
+  "ZADUR": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "ONE",
+   "HAPAG-LLOYD",
+   "EVERGREEN"
+  ],
+  "KEMBA": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "ONE",
+   "HAPAG-LLOYD",
+   "EVERGREEN"
+  ],
+  "TZDAR": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "ONE",
+   "HAPAG-LLOYD",
+   "EVERGREEN"
+  ],
+  "NGLOS": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "HAPAG-LLOYD",
+   "ONE"
+  ],
+  "GHTEM": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "HAPAG-LLOYD",
+   "ONE"
+  ],
+  "CIABJ": [
+   "MSC",
+   "MAERSK",
+   "CMA CGM",
+   "PIL",
+   "COSCO",
+   "HAPAG-LLOYD",
+   "ONE"
   ]
  }
 }
