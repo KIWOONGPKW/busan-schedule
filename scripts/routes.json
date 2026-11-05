@@ -1,15 +1,19 @@
 {
-  "_안내": "터미널이 주는 항로(서비스) 코드 → 그 노선이 부산 다음에 들르는 목적항 코드(transit_times.json의 code). 터미널 화면에는 기항지가 없어서 이 표로 판단해요. 선사 서비스 노선표로 확인한 노선은 확인을 true로 바꿔 주세요(false면 화면에 '노선 추정' 표시). 표에 없는 노선의 배는 목적지 검색에 안 나와요.",
+  "_안내": "터미널이 주는 항로(서비스) 코드 → 그 노선을 타고 부산에서 갈 수 있는 목적항 코드(transit_times.json의 code). 터미널 화면에는 기항지가 없어서 이 표로 판단해요. 선사 공개 노선(port rotation) 기사·공지로 확인된 것만 넣었고, 출처에 근거를 적었어요. 노선은 자주 바뀌니 선적 전 선사 스케줄 확인 필요. 확인을 false로 두면 화면에 '노선 추정' 표시. 표에 없는 노선의 배는 목적지 검색에 안 나와요.",
   "routes": {
-    "PVS2": {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "흥아·장금, 선명(HEUNG-A BANGKOK, SAWASDEE THAILAND)으로 추정"},
-    "KHS1": {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "흥아·고려·장금, 선명(HEUNG-A HOCHIMINH, KMTC BANGKOK)으로 추정"},
-    "VTS":  {"ports": ["VNSGN", "THLCH", "THBKK"], "확인": false, "메모": "고려·장금, 노선명(Vietnam-Thailand)으로 추정"},
-    "VTX":  {"ports": ["VNSGN", "THLCH"], "확인": false, "메모": "남성·SM, 선명(POS LAEMCHABANG)으로 추정"},
-    "KHX1": {"ports": ["VNHPH"], "확인": false, "메모": "흥아, 선명(HEUNG-A HAIPHONG)으로 추정"},
-    "KHP":  {"ports": ["VNHPH"], "확인": false, "메모": "고려·남성, 노선명(Korea-Haiphong)으로 추정"},
-    "KPX":  {"ports": ["THLCH"], "확인": false, "메모": "고려·남성, 선명(KMTC LAEM CHABANG)으로 추정"},
-    "NFS":  {"ports": ["MYPKG"], "확인": false, "메모": "고려·남성·PIL, 선명(KMTC PENANG, KOTA GAYA)으로 추정"},
-    "PCI":  {"ports": ["INMAA"], "확인": false, "메모": "흥아·장금, 선명(CHENNAI VOYAGER)으로 추정"},
-    "CI5":  {"ports": ["INMAA", "INNSA"], "확인": false, "메모": "고려·IAL·WHL, 선명(TIGER CHENNAI, KMTC JEBEL ALI)으로 추정"}
+    "PS6E":  {"ports": ["USLGB", "USOAK"], "확인": true, "메모": "Premier Alliance PS6: 칭다오-닝보-상해-광양-부산-롱비치-오클랜드", "출처": "https://container-news.com/premier-alliance-ps6-shifts-us-call-from-los-angeles-to-long-beach"},
+    "PS3":   {"ports": ["USLAX", "USOAK"], "확인": true, "메모": "Premier Alliance PS3: 부산-상해-닝보-셔코우-LA-오클랜드 (ONE 2026 Transpacific 노선표)", "출처": "https://us.one-line.com/sites/unitedstates/files/2026-06/2026%20TRANSPACIFIC%20SERVICE%20%2822June2026%29.pdf"},
+    "PN3":   {"ports": ["CAVAN", "USTIW"], "확인": true, "메모": "Premier Alliance PN3: 칭다오-부산-밴쿠버-타코마", "출처": "https://indiaseatradenews.com/premier-alliance-discloses-updates-to-its-network/"},
+    "FP2":   {"ports": ["CAVAN", "USTIW"], "확인": true, "메모": "Premier Alliance FP2: 싱가포르-카이멥-옌톈-부산-밴쿠버-타코마 (동향)", "출처": "https://www.worldports.org/?p=631021"},
+    "CPXE":  {"ports": ["USLGB", "USPDX"], "확인": true, "메모": "SM상선 CPX: 칭다오-상해-닝보-부산-롱비치-포틀랜드", "출처": "https://indiaseatradenews.com/?p=82423"},
+    "PNSE":  {"ports": ["CAVAN", "USSEA"], "확인": true, "메모": "SM상선 PNS: 부산-닝보-상해-부산-밴쿠버-시애틀", "출처": "https://container-news.com/sm-line-removes-yantian-from-pns/"},
+    "PCC1E": {"ports": ["USLGB"], "확인": true, "메모": "OCEAN Alliance PCC1: 닝보-상해-부산-롱비치 (2025 Day 9 기준)", "출처": "https://container-news.com/oocl-unveils-2026-product-line-up/"},
+    "EC1E":  {"ports": ["USNYC", "USSAV", "USCHS"], "확인": true, "메모": "Premier Alliance EC1: …닝보-부산-뉴욕-(노퍽)-사바나-찰스턴", "출처": "https://mykn.kuehne-nagel.com/news/article/container-service-shipping-routes-news-9-dec"},
+    "EC2E":  {"ports": ["USSAV", "USCHS"], "확인": true, "메모": "Premier Alliance EC2: …상해-부산-파나마-사바나-찰스턴", "출처": "https://container-news.com/premier-alliance-removes-jacksonville-from-ec2-rotation"},
+    "EC3W":  {"ports": ["THLCH", "VNSGN", "SGSIN", "LKCMB", "USNYC", "USJAX", "USSAV", "USCHS"], "확인": true, "메모": "Premier Alliance EC3: 부산-상해-람차방-카이멥-싱가포르-콜롬보-(희망봉)-뉴욕-잭슨빌-사바나-찰스턴", "출처": "https://container-news.com/one-unveils-updated-east-west-service-network-for-2026/"},
+    "AX4":   {"ports": ["MXZLO"], "확인": true, "메모": "HMM·ONE NW4/AX4: 상해-닝보-칭다오-부산-엔세나다-라사로카르데나스-만사니요-카야오-포소르하", "출처": "https://container-news.com/hmm-and-one-replace-guayaquil-with-posorja-on-nw4-ax4-service/"},
+    "CI5":   {"ports": ["MYPKG", "INMAA"], "확인": true, "메모": "CCS/CI5/FME2 공동: 칭다오-부산-상해-셔코우-포트켈랑-첸나이-카투팔리", "출처": "https://container-news.com/carriers-remove-singapore-from-northeast-asia-india-service/"},
+    "PCI":   {"ports": ["IDJKT"], "확인": true, "메모": "장금·흥아·SITC PCI: 자카르타-수라바야-호치민-상해-부산-광양", "출처": "https://www.fnnews.com/news/202606221935030880"},
+    "BTS":   {"ports": ["THBKK", "THLCH"], "확인": true, "메모": "장금상선 BTS: 방콕-람차방-호치민-인천-평택-부산 (주간 순환)", "출처": "https://www.tradlinx.com/lingo/news/detail/18-장금상선-주요-서비스-노선-안내"}
   }
 }

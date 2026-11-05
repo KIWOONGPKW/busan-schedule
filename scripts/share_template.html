@@ -193,18 +193,24 @@
   .dnote { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--zebra); }
 
   /* 선박 위치: VesselFinder 공식 퍼가기 지도 + 선명 옆 지도/위치 버튼 */
+  .bond { font-size: 11.5px; margin-top: 2px; } .bond b { color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
   .vtools { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: 2px; }
   .vbtn { display: inline-block; font: inherit; font-size: 11.5px; font-weight: 700; line-height: 1.5; padding: 1px 8px; border-radius: 999px;
           border: 1px solid var(--line); background: var(--panel); color: var(--accent2); text-decoration: none; cursor: pointer; white-space: nowrap; }
   .vbtn:hover { border-color: var(--accent2); transform: none; }
   .vbtn.on { background: var(--accent2); color: #fff; border-color: transparent; }
-  .vmap .caption { align-items: center; }
-  .vmap .ct { flex-wrap: wrap; }
-  .vmapact { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
-  .vmapact .back { margin-left: 0; }
-  .vmap .tmsg { margin: 12px 16px; }
-  .vmap iframe { display: block; width: 100%; height: 440px; border: 0; border-top: 1px solid var(--line); background: var(--sea); }
-  .vmap .thelp { padding-top: 10px; }
+  .vmhint { padding: 9px 16px; font-size: 13px; color: var(--muted); }
+  .vmap .caption { align-items: center; flex-wrap: nowrap; }
+  .vmtitle { min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vmtitle .muted { font-weight: 400; }
+  .vclose { margin-left: auto; flex: none; font-size: 12.5px; font-weight: 700; padding: 4px 14px; }
+  .vmnone { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 14px 16px; font-size: 13.5px; }
+  .vmnone .go { text-decoration: none; padding: 7px 16px; font-size: 13.5px; border-radius: 999px; }
+  .vmap iframe { display: block; width: 100%; height: 440px; border: 0; background: var(--sea); }
+  .vmap .thelp { padding-top: 10px; border-top: 1px solid var(--line); }
+  button.vname { all: unset; cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink); border-bottom: 1px dashed var(--accent2); }
+  button.vname:hover, button.vname.on { color: var(--accent2); }
+  button.vname:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; }
 
   /* 터미널별 픽업 가능 공컨테이너: 검색 전 첫 화면, 카드를 누르면 그 터미널 선박 목록 */
   .pickup .pgrid { display: grid; gap: 10px; padding: 12px 16px 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
@@ -295,7 +301,7 @@
   <div class="warnbar" id="stale" hidden></div>
 
   <section class="stats" aria-label="요약">
-    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">3일 안에 출항하는 배</div></div>
+    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">7일 안에 출항하는 배</div></div>
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
   </section>
@@ -333,7 +339,7 @@
           <th>터미널<small>TERMINAL</small></th>
           <th>부산 출항<small>ETD</small></th>
           <th>반입 마감<small>CLOSING</small></th>
-          <th>예상 도착<small>ETA</small></th>
+          <th>최종 목적지 예상 도착<small>ETA</small></th>
           <th>운송기간<small>T/T</small></th>
         </tr></thead>
         <tbody id="destRows"></tbody>
@@ -363,10 +369,21 @@
     <span class="muted">북항</span>
     <span class="sep"></span>
     <span class="lbl">기간</span>
-    <button type="button" class="fchip per" data-p="3" aria-pressed="true">3일 전후</button>
+    <button type="button" class="fchip per" data-p="7" aria-pressed="true">7일 전후</button>
     <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
     <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
   </div>
+
+  <section class="panel vmap" id="vmapPanel" aria-label="선박 위치">
+    <div class="vmhint" id="vmapHint">📍 선박 표에서 선명을 누르면 위치가 지도에 표시돼요</div>
+    <div id="vmapBody" hidden>
+      <div class="caption"><span class="vmtitle" id="vmapTitle"></span>
+        <button type="button" class="vclose" id="vmapClose">닫기</button></div>
+      <div class="vmnone" id="vmapNone" hidden></div>
+      <iframe id="vmapFrame" title="VesselFinder 선박 위치 지도" hidden referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <div class="thelp" id="vmapHelp"></div>
+    </div>
+  </section>
 
   <section class="panel pickup" id="pickup" aria-label="터미널별 픽업 가능 컨테이너">
     <div class="caption"><span class="ct"><b>터미널 별 픽업 가능 컨테이너 <span class="muted" style="font-weight:400">(30분마다 재업)</span></b><svg class="ico" viewBox="0 0 54 40" fill="currentColor" aria-hidden="true"><rect x="3" y="22" width="22" height="14" rx="1.6"/><rect x="29" y="22" width="22" height="14" rx="1.6"/><rect x="16" y="6" width="22" height="14" rx="1.6"/></svg></span><span class="muted" id="pickupAt"></span></div>
@@ -381,7 +398,7 @@
   </section>
 
   <section class="panel" id="schedPanel" hidden>
-    <div class="caption"><b id="capTitle">3일 안에 출항 · 최근 3일 출항한 배</b><span class="muted" id="capCount"></span>
+    <div class="caption"><b id="capTitle">7일 안에 출항 · 최근 7일 출항한 배</b><span class="muted" id="capCount"></span>
       <button type="button" class="back" id="backBtn">↩ 터미널 현황으로</button></div>
     <div class="table-wrap">
       <table>
@@ -397,15 +414,6 @@
       </table>
     </div>
     <div class="more" id="moreWrap" hidden><button type="button" id="moreBtn">더 보기</button></div>
-  </section>
-
-  <section class="panel vmap" id="vmapPanel" aria-label="선박 위치">
-    <div class="caption"><span class="ct"><b>선박 위치</b><span class="muted" id="vmapTitle">부산항 주변</span></span>
-      <span class="vmapact"><a class="vbtn" id="vmapLink" href="https://www.vesselfinder.com/" target="_blank" rel="noopener">VesselFinder에서 보기 ↗</a>
-      <button type="button" class="back" id="vmapReset" hidden>↩ 부산항 주변</button></span></div>
-    <div class="tmsg" id="vmapMsg" hidden></div>
-    <iframe id="vmapFrame" title="VesselFinder 선박 위치 지도" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-    <div class="thelp" id="vmapHelp"></div>
   </section>
 
   <div class="notes">선적 전 선사·터미널 최신 일정 확인 필요 · 출처: 부산항 8개 터미널 공개 화면, 코리아쉬핑가제트, 부산항만공사</div>
@@ -425,7 +433,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const WD = ["일", "월", "화", "수", "목", "금", "토"];
 const PAGE = 120;
-const ui = { q: "", terms: new Set(), period: "3", limit: PAGE };
+const ui = { q: "", terms: new Set(), period: "7", limit: PAGE, qAll: false };
 
 const toDate = (s) => (s ? new Date(s.replace(" ", "T")) : null);
 const norm = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -463,83 +471,90 @@ function yardCell(r) {
     <div class="box"><span>반입 마감</span>${fmt(r.yard_close)}</div>${badge}</div>`;
 }
 
-// ---------------------------------------------------------------- 선박 위치 (VesselFinder 공식 기능만 사용)
-// 위치 ↗ : VesselFinder 선명 검색 화면(IMO를 알면 상세 화면)을 새 탭으로
-// 지도   : 공식 퍼가기 지도(aismap.js)를 싣는 vfmap.html을 iframe으로. 터미널 정보에는 IMO·MMSI가 없어서
-//          scripts/vessels.json(선명 → IMO/MMSI)에 있으면 그 배를 찍고, 없으면 접안 중인 터미널 주변 지도를 선명 표시로 보여준다.
+// ---------------------------------------------------------------- 선박 위치 (VesselFinder 공식 기능만 사용, 스크래핑 없음)
+// 선명 클릭 → 지도 칸을 펼쳐 그 배를 가운데 두고 확대 (공식 퍼가기 지도 aismap.js를 싣는 vfmap.html)
+// 터미널 정보에는 IMO·MMSI가 없어 scripts/vessels.json(선명 → IMO/MMSI)에 있는 배만 지도에 찍는다.
+// 번호가 없는 배는 지도를 띄우지 않고 VesselFinder 검색 버튼(새 탭)만 보여준다.
 const VFMAP = "https://kiwoongpkw.github.io/busan-schedule/vfmap.html";
 const VIDS = Object.fromEntries(Object.entries(DATA.vessel_ids || {}).map(([k, v]) => [norm(k), v || {}]));
 const vid = (name) => VIDS[norm(name)] || {};
-const BUSAN = { lat: "35.08", lon: "128.95", zoom: "10", label: "부산항 주변 (신항 · 북항)" };
-// 터미널 주변 대략 좌표 (선박을 찍는 용도가 아니라 지도 중심용)
-const NEWPORT = { lat: "35.075", lon: "128.80", zoom: "13", label: "부산신항" };
-const NORTHPORT = { lat: "35.112", lon: "129.08", zoom: "14", label: "부산 북항 (신선대·감만)" };
-const TERM_AREA = { PNC: NEWPORT, HJNC: NEWPORT, HPNT: NEWPORT, DGT: NEWPORT, PNIT: NEWPORT, BNCT: NEWPORT, BPTC: NORTHPORT, HKTL: NORTHPORT };
+const ROWKEY = new Map();  // 버튼 → 행 (항차·터미널 표시용)
 function vfLink(name) {
   const id = vid(name);
   return id.imo ? `https://www.vesselfinder.com/vessels/details/${encodeURIComponent(id.imo)}`
     : `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(name)}`;
 }
+function vesselName(r) {
+  const k = `${r.t}|${r.vessel}|${r.etb}`; ROWKEY.set(k, r);
+  return `<button type="button" class="vname" data-vmap="${esc(k)}" title="지도에서 위치 보기">${esc(r.vessel)}</button>`;
+}
 function vesselTools(r) {
-  return `<span class="vtools"><button type="button" class="vbtn" data-vmap="${esc(r.vessel)}" data-t="${esc(r.t)}" data-etb="${esc(r.etb)}" data-etd="${esc(r.etd)}" title="아래 지도에 표시">지도</button><a class="vbtn" href="${vfLink(r.vessel)}" target="_blank" rel="noopener" title="VesselFinder에서 선명 검색 (새 탭)">위치 ↗</a></span>`;
+  return `<span class="vtools"><a class="vbtn" href="${vfLink(r.vessel)}" target="_blank" rel="noopener" title="VesselFinder에서 선명 검색 (새 탭)">위치 ↗</a></span>`;
 }
-function mapSrc(o) {
-  const q = new URLSearchParams({ lat: o.lat, lon: o.lon, zoom: o.zoom, names: "true" });
-  if (o.imo) q.set("imo", o.imo); else if (o.mmsi) q.set("mmsi", o.mmsi);
-  return `${VFMAP}?${q}`;
+function closeMap() {
+  $("#vmapBody").hidden = true; $("#vmapHint").hidden = false; $("#vmapFrame").hidden = true; $("#vmapFrame").src = "about:blank";
+  document.querySelectorAll("button.vname.on").forEach((b) => b.classList.remove("on"));
 }
-function showMap(name, t, etb, etd) {
-  const msg = $("#vmapMsg"), say = (h) => { msg.innerHTML = h; msg.hidden = !h; };
-  document.querySelectorAll("[data-vmap]").forEach((b) => b.classList.toggle("on", !!name && b.dataset.vmap === name));
-  $("#vmapReset").hidden = !name;
-  if (!name) {
-    $("#vmapFrame").src = mapSrc(BUSAN); $("#vmapTitle").textContent = BUSAN.label;
-    $("#vmapLink").href = "https://www.vesselfinder.com/"; say(""); return;
-  }
-  const id = vid(name);
-  $("#vmapLink").href = vfLink(name);
+function showMap(key) {
+  const r = ROWKEY.get(key); if (!r) return;
+  document.querySelectorAll("button.vname").forEach((b) => b.classList.toggle("on", b.dataset.vmap === key));
+  const id = vid(r.vessel);
+  const voy = r.voyages.filter(Boolean).join(" · ");
+  $("#vmapTitle").innerHTML = `${esc(r.vessel)} <span class="muted">· ${esc(voy || "-")} · ${esc(r.t)} ${esc((TN[r.t] || "").replace(/^\S+\s/, ""))}</span>`;
+  $("#vmapHint").hidden = true; $("#vmapBody").hidden = false;
   if (id.imo || id.mmsi) {
-    $("#vmapFrame").src = mapSrc({ ...BUSAN, imo: id.imo, mmsi: id.mmsi });
-    $("#vmapTitle").textContent = `${name} · ${id.imo ? "IMO " + id.imo : "MMSI " + id.mmsi} (최근 24시간 항적)`;
-    say(""); return;
+    // 위경도를 주지 않으면 그 배를 가운데 두고, 다른 배 이름은 끄고 그 배만 강조(최근 24시간 항적)
+    const q = new URLSearchParams({ zoom: "11", names: "false" });
+    if (id.imo) q.set("imo", id.imo); else q.set("mmsi", id.mmsi);
+    $("#vmapFrame").src = `${VFMAP}?${q}`; $("#vmapFrame").hidden = false; $("#vmapNone").hidden = true;
+  } else {
+    $("#vmapFrame").hidden = true; $("#vmapFrame").src = "about:blank";
+    $("#vmapNone").innerHTML = `<span class="badge b-gray">위치 정보 없음</span>
+      <a class="go" href="${vfLink(r.vessel)}" target="_blank" rel="noopener">VesselFinder에서 검색 ↗</a>
+      <span class="muted">IMO·MMSI 번호가 등록되지 않은 배예요 · <a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">번호 등록하기</a></span>`;
+    $("#vmapNone").hidden = false;
   }
-  const a = toDate(etb), d = toDate(etd);
-  const atBerth = a && d && a <= now && now < d;
-  const area = atBerth ? TERM_AREA[t] || BUSAN : BUSAN;
-  $("#vmapFrame").src = mapSrc(area);
-  $("#vmapTitle").textContent = `${name} · ${area.label}`;
-  const add = `<a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">vessels.json</a>에 IMO를 적으면 그 배를 바로 찍어 드려요`;
-  say(atBerth
-    ? `IMO 번호가 등록되지 않아 <b>${esc(t)}</b> 터미널 주변 지도를 보여드려요. 지도 위 선명으로 찾아보세요. (${add})`
-    : `IMO 번호가 등록되지 않았고 지금 부산에 접안 중인 배가 아니라 부산항 주변을 보여드려요. 위치는 <a href="${vfLink(name)}" target="_blank" rel="noopener">VesselFinder에서 보기 ↗</a>로 확인하거나, ${add}.`);
 }
 document.addEventListener("click", (e) => {
-  const b = e.target.closest("[data-vmap]");
+  const b = e.target.closest("button.vname");
   if (!b) return;
-  showMap(b.dataset.vmap, b.dataset.t, b.dataset.etb, b.dataset.etd);
+  showMap(b.dataset.vmap);
   $("#vmapPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
+// ---------------------------------------------------------------- 장치장 코드 (출처: forwarder.kr 터미널 표, 신고 전 UNI-PASS로 확인)
+const BOND = {
+  PNC: { "": "03077102" }, HJNC: { "": "03077006" }, HPNT: { "": "03077011" }, DGT: { "": "03077135" },
+  PNIT: { "": "03077013" }, BNCT: { "": "03077026" },
+  BPTC: { "신선대": "03077016", "감만": "03012226" }, HKTL: { "신감만": "03012010" },
+};
+const bondAll = (t) => Object.entries(BOND[t] || {}).map(([k, v]) => (k ? `${k} ${v}` : v)).join(" · ");
+function bondCode(r) {
+  const m = BOND[r.t]; if (!m) return "";
+  if (m[""]) return m[""];
+  const k = Object.keys(m).find((x) => (r.berth || "").includes(x));
+  return k ? m[k] : bondAll(r.t);
+}
+const bondLine = (r) => (BOND[r.t] ? `<div class="muted bond">장치장 <b>${esc(bondCode(r))}</b></div>` : "");
+
 const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now - 12 * 3600e3); };
-const within3 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 4 * 86400e3); };
-// 이미 출항한 배도 최근 3일치는 목록 아래쪽에 남겨 둔다 (선적 확인용)
-const departed3 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 3 * 86400e3); };
+// 7일 전후 = 오늘 기준 앞으로 7일 안에 출항할 배 + 최근 7일 안에 출항한 배 (선적 확인용)
+const within7 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 8 * 86400e3); };
+const departed7 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 7 * 86400e3); };
+const inPeriod = (r) => (ui.period === "7" ? within7(r) || departed7(r)
+  : ui.period === "gone" ? toDate(r.etd) && !upcoming(r) : !!toDate(r.etd));
 const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
-// 선명 검색: 입항(ETB)이나 출항(ETD)이 앞뒤 7일 안에 있는 기항만 (없으면 전체 기항을 보여준다)
-const near7 = (r) => [r.etb, r.etd].some((s) => { const d = toDate(s);
-  return d && d >= new Date(today.getTime() - 7 * 86400e3) && d < new Date(today.getTime() + 8 * 86400e3); });
 
 function filtered() {
   const q = norm(ui.q);
   let rows = DATA.rows.filter((r) => !ui.terms.size || ui.terms.has(r.t));
-  ui.qAll = false;
+  ui.qMiss = 0;
   if (q) {
-    rows = rows.filter((r) => norm(r.vessel).includes(q));
-    const near = rows.filter(near7);
-    if (near.length) rows = near; else ui.qAll = rows.length > 0;
+    // 선명 검색도 고른 기간(기본 7일 전후) 안에서 찾고, [전체 일정에서 찾기]를 누르면 전체 일정에서
+    rows = rows.filter((r) => norm(r.vessel).includes(q) && toDate(r.etd));
+    if (!ui.qAll) { const hit = rows.filter(inPeriod); ui.qMiss = hit.length ? 0 : rows.length; rows = hit; }
   } else {
-    rows = rows.filter(ui.period === "3" ? (r) => within3(r) || departed3(r)
-      : ui.period === "gone" ? (r) => toDate(r.etd) && !upcoming(r) : (r) => toDate(r.etd));
+    rows = rows.filter(inPeriod);
   }
   // 출항 전 배는 가까운 순, 출항한 배는 그 아래 최근 출항 순
   return [...rows.filter(upcoming).sort(byEtd), ...rows.filter((r) => !upcoming(r)).sort((a, b) => byEtd(b, a))];
@@ -548,12 +563,18 @@ function filtered() {
 function render() {
   const rows = filtered();
   const q = ui.q.trim().toUpperCase();
-  $("#capTitle").textContent = q ? (ui.qAll ? `"${q}" 검색 결과 (앞뒤 7일 안에는 입출항이 없어 전체 일정)` : `"${q}" 앞뒤 7일 입출항`) : ui.period === "3" ? "3일 안에 출항 · 최근 3일 출항한 배"
+  const pTitle = ui.period === "7" ? "7일 안에 출항 · 최근 7일 출항한 배"
     : ui.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
+  const one = ui.terms.size === 1 ? [...ui.terms][0] : "";
+  $("#capTitle").textContent = (q ? `"${q}" 검색 결과 · ${ui.qAll ? "전체 일정" : pTitle}` : pTitle)
+    + (one && BOND[one] ? ` · ${one} 장치장 ${bondAll(one)}` : "");
   const gone = rows.filter((r) => !upcoming(r)).length;
   $("#capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
   if (!rows.length) {
-    $("#rows").innerHTML = q
+    $("#rows").innerHTML = q && ui.qMiss
+      ? `<tr><td colspan="6" class="empty">"${esc(q)}"은(는) ${ui.period === "gone" ? "출항한 배 목록" : "7일 전후"}에 없어요. 전체 일정에서 찾아볼까요?<br><br>
+          <button type="button" class="go" id="qAllBtn">전체 일정에서 찾기</button></td></tr>`
+      : q
       ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) ${Object.keys(TN).length}개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
       : `<tr><td colspan="6" class="empty">조건에 맞는 일정이 없어요.</td></tr>`;
     $("#moreWrap").hidden = true;
@@ -562,9 +583,9 @@ function render() {
   $("#rows").innerHTML = rows.slice(0, ui.limit).map((r, i) => `${!upcoming(r) && (i === 0 || upcoming(rows[i - 1]))
       ? `<tr class="divider"><td colspan="6">⬇ 이미 출항한 배</td></tr>` : ""}<tr class="${upcoming(r) ? "" : "past"}">
     <td class="no">${i + 1}</td>
-    <td><div class="vessel">${esc(r.vessel)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}${r.operator ? " · " + esc(r.operator) : ""}</div></td>
+    <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}${r.operator ? " · " + esc(r.operator) : ""}</div></td>
     <td><div><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span> ${statusBadge(r)}</div>
-        <div class="muted" style="margin-top:4px">${esc(TN[r.t])} · 선석 ${esc(r.berth || "-")}</div></td>
+        <div class="muted" style="margin-top:4px">${esc(TN[r.t])} · 선석 ${esc(r.berth || "-")}</div>${bondLine(r)}</td>
     <td>${fmt(r.etb)}</td>
     <td>${fmt(r.etd)}${upcoming(r) ? dday(r.etd) : ""}</td>
     <td>${yardCell(r)}</td>
@@ -575,7 +596,7 @@ function render() {
 
 function summary() {
   const up = DATA.rows.filter(upcoming);
-  $("#sDep").textContent = DATA.rows.filter(within3).length;
+  $("#sDep").textContent = DATA.rows.filter(within7).length;
   $("#sClose").textContent = up.filter((r) => { const c = toDate(r.yard_close); return c && c > now && c - now < 48 * 3600e3; }).length;
   const ok = Object.keys(TN).length - Object.keys(DATA.errors).length;
   $("#sTerm").textContent = `${ok} / ${Object.keys(TN).length}`;
@@ -599,10 +620,10 @@ function setTerms(list) {
   document.querySelectorAll(".fchip[data-t]").forEach((x) =>
     x.setAttribute("aria-pressed", String(x.dataset.t === "ALL" ? !ui.terms.size : ui.terms.has(x.dataset.t))));
 }
-$("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); ui.q = $("#q").value; ui.limit = PAGE; showSched(true); render(); });
-$("#q").addEventListener("input", (e) => { ui.q = e.target.value; ui.limit = PAGE; if (ui.q.trim()) showSched(true); render(); });
+$("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); ui.q = $("#q").value; ui.qAll = false; ui.limit = PAGE; showSched(true); render(); });
+$("#q").addEventListener("input", (e) => { ui.q = e.target.value; ui.qAll = false; ui.limit = PAGE; if (ui.q.trim()) showSched(true); render(); });
 $("#backBtn").addEventListener("click", () => {
-  ui.q = ""; $("#q").value = ""; setTerms([]); ui.limit = PAGE; render(); showSched(false);
+  ui.q = ""; ui.qAll = false; $("#q").value = ""; setTerms([]); ui.limit = PAGE; render(); showSched(false);
   $("#pickup").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.querySelectorAll(".fchip[data-t]").forEach((b) => b.addEventListener("click", () => {
@@ -613,11 +634,12 @@ document.querySelectorAll(".fchip[data-t]").forEach((b) => b.addEventListener("c
   ui.limit = PAGE; showSched(true); render();
 }));
 document.querySelectorAll(".fchip[data-p]").forEach((b) => b.addEventListener("click", () => {
-  ui.period = b.dataset.p;
+  ui.period = b.dataset.p; ui.qAll = false;
   document.querySelectorAll(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   ui.limit = PAGE; showSched(true); render();
 }));
 $("#moreBtn").addEventListener("click", () => { ui.limit += PAGE; render(); });
+document.addEventListener("click", (e) => { if (e.target.id === "qAllBtn") { ui.qAll = true; ui.limit = PAGE; render(); } });
 
 const TAG_CLS = { "파업": "b-bad", "기상": "b-blue", "사고": "b-warn", "운영": "b-warn", "스케줄": "b-ok", "항로": "b-warn" };
 const ALERT_TAGS = ["파업", "기상", "사고", "운영", "스케줄", "항로"];
@@ -663,9 +685,9 @@ function renderPickup() {
   const errs = DATA.empty_error || "";
   $("#pickupGrid").innerHTML = PICKUP_ORDER.map((t) => {
     const mine = yards.filter((y) => y.name.split(" ")[0] === t);
-    const ships = DATA.rows.filter((r) => r.t === t && within3(r)).length;
-    const foot = `<div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>3일 내 출항 ${ships}척 ▸</span></div>`;
-    const head = `<div class="ph"><span class="chip t-${esc(t)}"><i></i>${esc(t)}</span><span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span></div>`;
+    const ships = DATA.rows.filter((r) => r.t === t && within7(r)).length;
+    const foot = `<div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>7일 내 출항 ${ships}척 ▸</span></div>`;
+    const head = `<div class="ph"><span class="chip t-${esc(t)}"><i></i>${esc(t)}</span><span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span></div>${BOND[t] ? `<div class="ps muted">장치장 ${bondAll(t)}</div>` : ""}`;
     if (!mine.length) {
       const fail = errs.includes(t);
       if (!fail && PICKUP_LOGIN[t]) {
@@ -800,8 +822,11 @@ function findPorts(q) {
   if (!k) return [];
   const keys = (p) => [p.code, p.name, ...(p.aliases || [])].map(dnorm);
   const exact = PORTS.filter((p) => keys(p).includes(k));
-  if (exact.length) return exact;
-  return k.length < 2 ? [] : PORTS.filter((p) => keys(p).some((x) => x.startsWith(k) || (k.length >= 3 && x.includes(k))));
+  const found = exact.length ? exact
+    : k.length < 2 ? [] : PORTS.filter((p) => keys(p).some((x) => x.startsWith(k) || (k.length >= 3 && x.includes(k))));
+  // 같은 지역(group)으로 묶인 항구는 함께 검색 (예: LA ↔ 롱비치)
+  const groups = new Set(found.map((p) => p.group).filter(Boolean));
+  return PORTS.filter((p) => found.includes(p) || (p.group && groups.has(p.group)));
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
 function renderDest(q) {
@@ -837,16 +862,15 @@ function renderDest(q) {
     const eta = days == null ? `<span class="muted">운송기간 미등록</span>`
       : `<span class="eta">${dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + days))}</span><span class="est">예상</span>`;
     const guess = rt["확인"] ? "" : ` <span class="badge b-warn" title="${esc(rt["메모"] || "선사 노선표로 확인 전")}">노선 추정</span>`;
-    const via = ports.length > 1 || rt.ports.length > 1 ? ` · ${esc(hit.name)}` : "";
     return `<tr>
-      <td><div class="vessel">${esc(r.vessel)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}</div>
+      <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}</div>
           <div class="muted">노선 ${esc(r.route)}${guess}</div></td>
       <td>${esc(r.operator || "-")}</td>
-      <td><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span></td>
+      <td><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span>${bondLine(r)}</td>
       <td>${fmt(r.etd)}${dday(r.etd)}</td>
       <td>${fmt(r.yard_close)}</td>
       <td>${eta}</td>
-      <td>${days == null ? `<span class="muted">운송기간 미등록</span>` : `<b>${days}일</b>`}<span class="muted">${via}</span></td>
+      <td>${days == null ? `<span class="muted">운송기간 미등록</span>` : `<b>${days}일</b>`}</td>
     </tr>`;
   }).join("");
   wrap.hidden = false;
@@ -864,11 +888,9 @@ $("#destForm").addEventListener("submit", (e) => { e.preventDefault(); renderDes
 $("#dq").addEventListener("input", (e) => { if (!e.target.value.trim()) renderDest(""); });
 destInit();
 
-$("#vmapReset").addEventListener("click", () => showMap(""));
+$("#vmapClose").addEventListener("click", closeMap);
 $("#vmapHelp").innerHTML = `지도: <a href="https://www.vesselfinder.com/embed" target="_blank" rel="noopener">VesselFinder 무료 홈페이지 지도</a>(AIS 기준, 실시간과 차이 있을 수 있음)
-  · 선박 표의 <b>지도</b>를 누르면 여기에 표시 · IMO 등록 ${Object.keys(VIDS).length}척
-  · <a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">IMO 번호 등록하기 ↗</a>${DATA.vessel_error ? ` · <b>${esc(DATA.vessel_error)}</b>` : ""}`;
-showMap("");
+  · IMO 등록 ${Object.keys(VIDS).length}척 · <a href="${REPO_EDIT}vessels.json" target="_blank" rel="noopener">IMO 번호 등록하기 ↗</a>${DATA.vessel_error ? ` · <b>${esc(DATA.vessel_error)}</b>` : ""}`;
 
 summary();
 render();
