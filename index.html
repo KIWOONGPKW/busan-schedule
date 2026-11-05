@@ -130,6 +130,7 @@
   tbody tr:nth-child(even) td { background: var(--zebra); }
   tbody tr:hover td { background: var(--hover); }
   tbody tr.past td { color: var(--muted); }
+  tbody tr.divider td { background: var(--head); color: var(--muted); font-weight: 700; font-size: 12.5px; text-align: center; padding: 8px 14px; }
   td.no { width: 48px; text-align: center; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
   .vessel { font-weight: 700; font-size: 15px; }
   .muted { color: var(--muted); font-size: 12px; }
@@ -234,12 +235,13 @@
     <span class="muted">북항</span>
     <span class="sep"></span>
     <span class="lbl">기간</span>
-    <button type="button" class="fchip per" data-p="7" aria-pressed="true">7일 내 출항</button>
+    <button type="button" class="fchip per" data-p="7" aria-pressed="true">7일 전후</button>
     <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
+    <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
   </div>
 
   <section class="panel">
-    <div class="caption"><b id="capTitle">7일 안에 출항하는 배</b><span class="muted" id="capCount"></span></div>
+    <div class="caption"><b id="capTitle">7일 안에 출항 · 최근 7일 출항한 배</b><span class="muted" id="capCount"></span></div>
     <div class="table-wrap">
       <table>
         <thead><tr>
@@ -259,6 +261,7 @@
   <div class="notes">
     · <b>예상 도착</b>은 터미널 접안(예정)일시, <b>예상 출항</b>은 출항(예정)일시예요. 각 터미널 선석배정 현황(공개 화면)을 조회 기준 시각에 모은 자료예요.<br>
     · <b>반입 가능일</b>(반입 시작)은 공개 화면 기준으로 HJNC·HPNT·DGT만 제공해요. PNC·BPTC·HKTL은 반입 마감일만 있어 "미공개"로 표시돼요.<br>
+    · <b>이미 출항한 배</b>도 목록 아래쪽에 회색으로 남겨 둬요 (7일 전후: 최근 7일, 전체 일정·출항한 배: 최근 20일).<br>
     · 일정은 수시로 바뀌어요. 선적 전에는 반드시 선사·터미널에서 최신 일정을 확인해 주세요. 찾는 배가 없으면 <span class="badge b-warn">수동 확인 필요</span>예요.<br>
     · <b>부산항 영향 소식</b>은 <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a>(ksg.co.kr) 기사와 <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a>(busanpa.com) 공지 · 선박대피협의회 결과 · 보도자료 중 파업 · 기상 · 사고 · 운영 차질 소식만 골라 보여드려요. 기사와 공지의 저작권은 각 출처에 있어요.<br>
     · 출처: PNC 부산신항만, HJNC 한진부산, HPNT HMM PSA, DGT 동원글로벌터미널 (신항) · BPTC 신선대·감만, HKTL 한국허치슨 신감만·감만1 (북항)
@@ -319,6 +322,9 @@ function yardCell(r) {
 
 const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now - 12 * 3600e3); };
 const within7 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 8 * 86400e3); };
+// 이미 출항한 배도 최근 7일치는 목록 아래쪽에 남겨 둔다 (선적 확인용)
+const departed7 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 7 * 86400e3); };
+const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
 
 function filtered() {
   const q = norm(ui.q);
@@ -326,16 +332,20 @@ function filtered() {
   if (q) {
     rows = rows.filter((r) => norm(r.vessel).includes(q));
   } else {
-    rows = rows.filter(ui.period === "7" ? within7 : upcoming);
+    rows = rows.filter(ui.period === "7" ? (r) => within7(r) || departed7(r)
+      : ui.period === "gone" ? (r) => toDate(r.etd) && !upcoming(r) : (r) => toDate(r.etd));
   }
-  return rows.sort((a, b) => (a.etd || "9").localeCompare(b.etd || "9"));
+  // 출항 전 배는 가까운 순, 출항한 배는 그 아래 최근 출항 순
+  return [...rows.filter(upcoming).sort(byEtd), ...rows.filter((r) => !upcoming(r)).sort((a, b) => byEtd(b, a))];
 }
 
 function render() {
   const rows = filtered();
   const q = ui.q.trim().toUpperCase();
-  $("#capTitle").textContent = q ? `"${q}" 검색 결과` : ui.period === "7" ? "7일 안에 출항하는 배" : "앞으로의 전체 일정";
-  $("#capCount").textContent = `${rows.length}척${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
+  $("#capTitle").textContent = q ? `"${q}" 검색 결과` : ui.period === "7" ? "7일 안에 출항 · 최근 7일 출항한 배"
+    : ui.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
+  const gone = rows.filter((r) => !upcoming(r)).length;
+  $("#capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
   if (!rows.length) {
     $("#rows").innerHTML = q
       ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) 6개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
@@ -343,7 +353,8 @@ function render() {
     $("#moreWrap").hidden = true;
     return;
   }
-  $("#rows").innerHTML = rows.slice(0, ui.limit).map((r, i) => `<tr class="${upcoming(r) ? "" : "past"}">
+  $("#rows").innerHTML = rows.slice(0, ui.limit).map((r, i) => `${!upcoming(r) && (i === 0 || upcoming(rows[i - 1]))
+      ? `<tr class="divider"><td colspan="6">⬇ 이미 출항한 배</td></tr>` : ""}<tr class="${upcoming(r) ? "" : "past"}">
     <td class="no">${i + 1}</td>
     <td><div class="vessel">${esc(r.vessel)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}${r.operator ? " · " + esc(r.operator) : ""}</div></td>
     <td><div><span class="chip t-${esc(r.t)}"><i></i>${esc(r.t)}</span> ${statusBadge(r)}</div>
