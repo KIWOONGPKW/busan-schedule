@@ -183,6 +183,22 @@
   .pcard .pf { margin-top: 4px; font-size: 11.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
   .pcard.off { background: var(--panel); }
   .pcard.off .pn { color: var(--muted); font-size: 18px; }
+  .pcard .eqbox { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .pcard .eqbox div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px 8px; }
+  .pcard .eqbox span { display: block; font-size: 11px; color: var(--muted); }
+  .pcard .eqbox b { font-size: 16px; font-variant-numeric: tabular-nums; }
+  .eqwrap { border-top: 1px solid var(--line); padding: 12px 16px 4px; }
+  .eqtabs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .eqwrap .table-wrap { border: 1px solid var(--line); border-radius: 12px; }
+  table.eq { min-width: 560px; }
+  table.eq th, table.eq td { padding: 7px 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  table.eq th:first-child, table.eq td:first-child { text-align: left; }
+  table.eq thead th { position: sticky; top: 0; }
+  table.eq thead th small { display: block; font-weight: 400; color: var(--muted); }
+  table.eq td.z { color: var(--muted); }
+  table.eq td.sum, table.eq th.sum { font-weight: 700; background: var(--head); }
+  table.eq tr.total td { font-weight: 700; background: var(--head); border-bottom: 2px solid var(--accent2); }
+  .eqscroll { max-height: 420px; overflow: auto; }
   .back { font: inherit; font-size: 12.5px; color: var(--accent2); background: none; border: 0; cursor: pointer; font-weight: 700; padding: 0; margin-left: auto; }
   .thelp { padding: 0 16px 14px; font-size: 12.5px; color: var(--muted); }
   .thelp a, .tmsg a { color: var(--accent2); font-weight: 700; }
@@ -290,6 +306,12 @@
   <section class="panel pickup" id="pickup" aria-label="터미널별 픽업 가능 컨테이너">
     <div class="caption"><b>터미널별 픽업 가능 컨테이너</b><span class="muted" id="pickupAt"></span></div>
     <div class="pgrid" id="pickupGrid"></div>
+    <div class="eqwrap">
+      <div class="eqtabs" role="group" aria-label="장비 현황표 보기"><span class="lbl">장비 현황표</span><span id="eqTabs"></span></div>
+      <div class="table-wrap eqscroll"><table class="eq">
+        <thead id="eqHead"></thead><tbody id="eqBody"></tbody>
+      </table></div>
+    </div>
     <div class="thelp" id="pickupHelp"></div>
   </section>
 
@@ -522,10 +544,11 @@ function renderPickup() {
       `${esc(y.name.split(" ")[1] || y.name)} ${n0(Object.values(y.lines).reduce((a, b) => a + boxSum(b), 0))}`).join(" · ")}</div>` : "";
     return `<button type="button" class="pcard" data-t="${esc(t)}">${head}
       <div class="pn">${n0(sum.s20 + sum.s40 + sum.sp)}<small> 대 픽업 가능</small></div>
-      <div class="ps">20FT <b>${n0(sum.s20)}</b> · 40FT <b>${n0(sum.s40)}</b>${sum.sp ? ` <span class="muted">· 특수 ${n0(sum.sp)}</span>` : ""}</div>
-      ${parts}<div class="ps muted">많은 선사: ${top || "-"}</div>${foot}</button>`;
+      <div class="eqbox"><div><span>20FT</span><b>${n0(sum.s20)}</b></div><div><span>40FT · 40HC · 45</span><b>${n0(sum.s40)}</b></div></div>
+      ${sum.sp ? `<div class="ps muted">특수(냉동·OT·FR) ${n0(sum.sp)}대 포함</div>` : ""}${parts}<div class="ps muted">많은 선사: ${top || "-"}</div>${foot}</button>`;
   }).join("");
-  $("#pickupAt").textContent = `${DATA.generated_at} 기준 · 2시간마다 갱신`;
+  $("#pickupAt").textContent = `${DATA.generated_at} 기준 · 30분마다 갱신`;
+  renderEq();
   const ok = PICKUP_ORDER.filter((t) => yards.some((y) => y.name.split(" ")[0] === t));
   $("#pickupHelp").innerHTML = `픽업 가능 = 터미널에서 지금 반출(픽업)할 수 있는 공컨테이너 수예요. 40FT에는 40HC·45 포함, 특수는 냉동·OT·FR 등이에요.
     공개 터미널: ${esc(ok.join(" · ") || "-")} · 카드를 누르면 그 터미널 선박 목록이 나와요${errs ? ` · <b>${esc(errs)}</b> 조회 실패` : ""}`;
@@ -533,6 +556,35 @@ function renderPickup() {
     setTerms([b.dataset.t]); ui.limit = PAGE; showSched(true); render();
     $("#schedPanel").scrollIntoView({ behavior: "smooth", block: "start" });
   }));
+}
+
+// 장비 현황표: '터미널별' 합계 또는 야드 하나를 골라 선사별로
+const EQ_COLS = [["20", "20GP"], ["40", "40GP"], ["40HC", "40HC"], ["45", "45"], ["특수", "특수<small>RF·OT·FR</small>"]];
+const eqUi = { view: "ALL" };
+function eqRow(name, b, cls = "") {
+  const cells = EQ_COLS.map(([k]) => b[k] ? `<td>${n0(b[k])}</td>` : `<td class="z">-</td>`).join("");
+  return `<tr class="${cls}"><td>${name}</td>${cells}<td class="sum">${n0(boxSum(b))}</td></tr>`;
+}
+function addBox(to, b) { Object.entries(b).forEach(([k, v]) => { to[k] = (to[k] || 0) + v; }); return to; }
+function renderEq() {
+  const yards = DATA.empties || [];
+  const views = [["ALL", "터미널별 합계"], ...yards.map((y) => [y.name, y.name])];
+  $("#eqTabs").innerHTML = views.map(([k, label]) =>
+    `<button type="button" class="fchip" data-eq="${esc(k)}" aria-pressed="${eqUi.view === k}">${esc(label)}</button>`).join(" ");
+  $("#eqHead").innerHTML = `<tr><th>${eqUi.view === "ALL" ? "터미널" : "선사"}</th>${EQ_COLS.map(([, h]) => `<th>${h}</th>`).join("")}<th class="sum">합계</th></tr>`;
+  let rows;
+  if (eqUi.view === "ALL") {
+    const per = yards.map((y) => [y.name, Object.values(y.lines).reduce((a, b) => addBox(a, b), {})]);
+    rows = per.map(([n, b]) => eqRow(esc(n), b)).join("");
+    rows += eqRow("전체", per.reduce((a, [, b]) => addBox(a, b), {}), "total");
+  } else {
+    const y = yards.find((x) => x.name === eqUi.view) || { lines: {} };
+    const lines = Object.entries(y.lines).sort((a, b) => boxSum(b[1]) - boxSum(a[1]));
+    rows = eqRow(`합계 <span class="muted">(${lines.length}개 선사)</span>`, lines.reduce((a, [, b]) => addBox(a, b), {}), "total")
+      + lines.map(([l, b]) => eqRow(esc(l), b)).join("");
+  }
+  $("#eqBody").innerHTML = rows || `<tr><td colspan="7" class="empty">공개된 공컨 현황이 없어요.</td></tr>`;
+  document.querySelectorAll("[data-eq]").forEach((b) => b.addEventListener("click", () => { eqUi.view = b.dataset.eq; renderEq(); }));
 }
 
 const LIST_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/containers.txt";
@@ -578,7 +630,7 @@ function renderTrack(q) {
     || `<li class="muted">조회 중인 컨테이너가 없어요.</li>`;
   $("#trackCount").textContent = list.length ? `${list.length}개 조회 중 · ${DATA.generated_at} 기준` : "";
   const err = DATA.track_error ? ` · <b>${esc(DATA.track_error)}</b> 조회 실패` : "";
-  $("#trackHelp").innerHTML = `컨테이너 번호로 조회되는 터미널: ${esc((DATA.track_terminals || []).join(" · "))} · 2시간마다 갱신
+  $("#trackHelp").innerHTML = `컨테이너 번호로 조회되는 터미널: ${esc((DATA.track_terminals || []).join(" · "))} · 30분마다 갱신
     · <a href="${LIST_EDIT}" target="_blank" rel="noopener">조회 목록 고치기 ↗</a>${err}`;
 }
 $("#trackForm").addEventListener("submit", (e) => { e.preventDefault(); renderTrack($("#tq").value); });
