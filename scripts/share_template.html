@@ -399,12 +399,18 @@ const within3 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new 
 // 이미 출항한 배도 최근 3일치는 목록 아래쪽에 남겨 둔다 (선적 확인용)
 const departed3 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 3 * 86400e3); };
 const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
+// 선명 검색: 입항(ETB)이나 출항(ETD)이 앞뒤 7일 안에 있는 기항만 (없으면 전체 기항을 보여준다)
+const near7 = (r) => [r.etb, r.etd].some((s) => { const d = toDate(s);
+  return d && d >= new Date(today.getTime() - 7 * 86400e3) && d < new Date(today.getTime() + 8 * 86400e3); });
 
 function filtered() {
   const q = norm(ui.q);
   let rows = DATA.rows.filter((r) => !ui.terms.size || ui.terms.has(r.t));
+  ui.qAll = false;
   if (q) {
     rows = rows.filter((r) => norm(r.vessel).includes(q));
+    const near = rows.filter(near7);
+    if (near.length) rows = near; else ui.qAll = rows.length > 0;
   } else {
     rows = rows.filter(ui.period === "3" ? (r) => within3(r) || departed3(r)
       : ui.period === "gone" ? (r) => toDate(r.etd) && !upcoming(r) : (r) => toDate(r.etd));
@@ -416,7 +422,7 @@ function filtered() {
 function render() {
   const rows = filtered();
   const q = ui.q.trim().toUpperCase();
-  $("#capTitle").textContent = q ? `"${q}" 검색 결과` : ui.period === "3" ? "3일 안에 출항 · 최근 3일 출항한 배"
+  $("#capTitle").textContent = q ? (ui.qAll ? `"${q}" 검색 결과 (앞뒤 7일 안에는 입출항이 없어 전체 일정)` : `"${q}" 앞뒤 7일 입출항`) : ui.period === "3" ? "3일 안에 출항 · 최근 3일 출항한 배"
     : ui.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
   const gone = rows.filter((r) => !upcoming(r)).length;
   $("#capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
