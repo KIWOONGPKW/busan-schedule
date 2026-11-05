@@ -183,6 +183,8 @@
   .dac li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
   .dac li b { font-weight: 700; } .dac li span { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .dac li[aria-selected="true"], .dac li:hover { background: var(--hover); }
+  .dinfo { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 13px; background: var(--blue-soft); color: var(--blue); }
+  .dinfo b { font-weight: 700; } .dinfo .sep { margin: 0 6px; opacity: .6; }
   .dsum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--head); }
   .dsum .route { font-family: var(--f-display); font-size: 20px; line-height: 1.2; }
   .dsum .route .arrow { margin: 0 6px; }
@@ -352,6 +354,7 @@
     </form>
     <div class="tmsg" id="destMsg" hidden></div>
     <div id="destResult" hidden>
+      <div class="dinfo" id="destNote" hidden></div>
       <div class="dsum" id="destSum"></div>
       <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
       <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 3주 · 출항일 빠른 순</small></h3>
@@ -799,6 +802,16 @@ function renderEq() {
 const REPO_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/";
 const PORTS = (DATA.transit || []).filter((p) => p && p.code && p.name);
 const PCARR = DATA.port_carriers || {};
+const REGIONS = DATA.regions || {};
+const CITIES = DATA.cities || {};
+// 항구별 값이 없으면 항로 지역(regions.json) 기본값으로: 선사·소요일·주 운항 횟수
+function withDefaults(p) {
+  const reg = REGIONS[p.region] || null;
+  const own = toRange(p.days) || (p.days && typeof p.days === "object" && !Array.isArray(p.days));
+  const carriers = (PCARR[p.code] || []).length ? PCARR[p.code] : reg ? reg.carriers || [] : [];
+  return { ...p, days: own ? p.days : reg ? reg.days : null, carriers, weekly: reg ? reg.weekly : 0,
+           byRegion: !!reg && (!own || !(PCARR[p.code] || []).length) };
+}
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
 const DEST_DAYS = 21;
 const TS_PER_CARRIER = 3;
@@ -831,7 +844,7 @@ const RICH = new Set(PORTS.map((p) => p.code));
 function loadAllPorts() {
   if (ALL.list || ALL.loading) return ALL.loading || Promise.resolve();
   ALL.loading = fetch(ALLPORTS_URL).then((r) => r.json()).then((d) => {
-    ALL.list = d.p.filter(([c]) => !RICH.has(c)).map(([code, name, country]) => ({ code, name, country, bare: true }));
+    ALL.list = d.p.filter(([c]) => !RICH.has(c)).map(([code, name, country, region]) => ({ code, name, country, region: region || "", bare: true }));
   }).catch(() => { ALL.list = []; }).finally(() => { ALL.loading = null; });
   return ALL.loading;
 }
@@ -863,11 +876,15 @@ function suggest(q, n = 8) {
     list.forEach((p) => { if (have.has(p)) return; const nm = dnorm(p.name);
       if (editDist(k, nm, max) <= max || (nm.length > k.length && editDist(k, nm.slice(0, k.length), max - 1 || 1) <= (max - 1 || 1) && k.length >= 5)) hits.push([3, p]); });
   }
-  return hits.sort((a, b) => a[0] - b[0] || (a[1].bare ? 1 : 0) - (b[1].bare ? 1 : 0) || a[1].name.localeCompare(b[1].name)).map(([, p]) => p).slice(0, n);
+  return hits.sort((a, b) => a[0] - b[0] || rank(a[1]) - rank(b[1]) || a[1].name.localeCompare(b[1].name)).map(([, p]) => p).slice(0, n);
 }
+// 같은 이름이 여러 곳이면: 정보 있는 항구 > 주요 도시 표(city_ports.json)에 있는 항구 > 코드가 이름 첫 글자로 시작 > 나머지
+const CITY_CODES = new Set(Object.entries(DATA.cities || {}).flatMap(([k, v]) => [k, ...(v.ports || [])]));
+const rank = (p) => (!p.bare ? 0 : CITY_CODES.has(p.code) ? 1 : p.code[2] === dnorm(p.name)[0] ? 2 : 3);
 function findPort(q) {
   const k = dnorm(q); if (!k) return null;
-  return allPorts().find((p) => portKeys(p).includes(k)) || suggest(q, 1)[0] || null;
+  const exact = allPorts().filter((p) => portKeys(p).includes(k)).sort((a, b) => rank(a) - rank(b));
+  return exact[0] || suggest(q, 1)[0] || null;
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
 const destUi = { q: "", carrier: "" };
@@ -877,17 +894,33 @@ function renderDest(q, keepFilter) {
   if (!keepFilter || destUi.q !== q) destUi.carrier = "";
   destUi.q = q;
   if (!q.trim()) { say(""); return; }
-  const port = findPort(q);
-  if (!port && !ALL.list) { say("항구 목록을 불러오는 중이에요…"); loadAllPorts().then(() => renderDest(q)); return; }
-  if (!port) { say(`"${esc(q)}" 항구를 찾지 못했어요. 영문 항구명(예: LONG BEACH)이나 UN/LOCODE(예: USLGB)로 검색해 주세요.`); return; }
-  if (port.bare || (!dayRange(port) && !(PCARR[port.code] || []).length)) {
-    say(`<b>${esc(port.name)}, ${esc(port.country)} (${esc(port.code)})</b> · 선사·소요일 정보 준비 중`);
+  let hit = findPort(q);
+  if (!hit && !ALL.list) { say("항구 목록을 불러오는 중이에요…"); loadAllPorts().then(() => renderDest(q, keepFilter)); return; }
+  if (!hit) { say(`"${esc(q)}" 항구를 찾지 못했어요. 영문 항구명(예: LONG BEACH)이나 UN/LOCODE(예: USLGB)로 검색해 주세요.`); return; }
+  const notes = [];
+  // 오타: 입력과 정확히 같은 이름·코드가 아니면 가장 가까운 항구로 검색했다고 알림
+  const kq = dnorm(q);
+  if (!portKeys(hit).some((x) => x.includes(kq))) notes.push(`<b>${esc(hit.name)}</b>(으)로 검색했어요`);
+  // 도시 → 실제 컨테이너 항구 (대표 항구 결과를 바로 표시)
+  const city = CITIES[hit.code];
+  if (city && !(city.ports.length === 1 && city.ports[0] === hit.code)) {
+    const byCode = (c) => allPorts().find((x) => x.code === c);
+    const list = city.ports.map((c) => { const x = byCode(c); return `${esc(x ? x.name : c)}(${esc(c)})`; }).join(" · ");
+    notes.push(`${esc(city.ko || city.name)}의 컨테이너 항구: <b>${list}</b>`);
+    const rep = byCode(city.ports[0]);
+    if (rep && rep !== hit) { hit = rep; notes.push(`대표 항구 <b>${esc(rep.name)}</b> 기준으로 보여드려요`); }
+  }
+  const port = withDefaults(hit);
+  if (!dayRange(port) && !port.carriers.length) {
+    say(`${notes.length ? notes.join(" · ") + "<br>" : ""}<b>${esc(port.name)}, ${esc(port.country)} (${esc(port.code)})</b> · 선사·소요일 정보 준비 중`);
     $("#destCount").textContent = `BUSAN → ${port.name}`;
     return;
   }
+  if (port.byRegion) notes.push(`항구별 정보가 없어 <b>${esc(port.region)}</b> 지역 기본값으로 보여드려요`);
+  $("#destNote").innerHTML = notes.join(`<span class="sep">·</span>`); $("#destNote").hidden = !notes.length;
   say("");
   // 같은 지역(group) 항구는 함께 (예: LONG BEACH ↔ LOS ANGELES, DUBAI ↔ JEBEL ALI)
-  const ports = PORTS.filter((p) => p === port || (port.group && p.group === port.group));
+  const ports = [port, ...PORTS.filter((p) => p.code !== port.code && port.group && p.group === port.group).map(withDefaults)];
   const codes = new Set(ports.map((p) => p.code));
   const range = dayRange(port);
   // 기간: 기본 3주, 터미널 자료가 더 먼 날짜까지 있으면 그 날짜까지 자동 포함
@@ -896,7 +929,7 @@ function renderDest(q, keepFilter) {
   const spanTxt = spanDays > DEST_DAYS + 1 ? `앞으로 ${spanDays}일 (자료 끝 ${dayFmt(LAST_ETD)}까지)` : "앞으로 3주";
   const soon = (r) => { const d = toDate(r.etd); return d && d >= now && d < end; };
   const routeOf = (r) => ROUTES[(r.route || "").trim().toUpperCase()];
-  const listed = [...new Set(ports.flatMap((p) => PCARR[p.code] || []))];
+  const listed = [...new Set(ports.flatMap((p) => p.carriers || []))];
   // ① 노선이 이 항구로 연결된 배
   let rows = DATA.rows.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
   let mode = rows.length ? "route" : "";
@@ -913,10 +946,10 @@ function renderDest(q, keepFilter) {
     rows = cand.filter((r) => { const c = carrierName(r.operator); per[c] = (per[c] || 0) + 1; return per[c] <= TS_PER_CARRIER; });
     if (rows.length) mode = "ts";
   }
-  const regWeekly = (DATA.region_weekly || {})[port.region];
+  const regWeekly = port.weekly;
   const weekly = mode === "route" ? Math.max(1, Math.round(rows.length / (spanDays / 7))) : Number.isFinite(regWeekly) ? regWeekly : 0;
   const weeklyTxt = weekly ? `주 <b>${weekly}</b>회${mode === "route" ? "" : " (지역 평균)"}` : "주 운항 정보 없음";
-  const others = ports.filter((p) => p !== port).map((p) => p.name).join(", ");
+  const others = ports.slice(1).map((p) => p.name).join(", ");
   // ① 요약
   $("#destSum").innerHTML = `<span class="route">BUSAN<span class="arrow">→</span>${esc(port.name)}</span>
     <span class="meta">${esc(port.country || "")} · ${esc(port.code)}${others ? ` (+ ${esc(others)})` : ""}</span>
@@ -976,7 +1009,7 @@ const dac = { items: [], idx: -1 };
 function acShow(q) {
   dac.items = suggest(q); dac.idx = -1;
   const ul = $("#dqList");
-  ul.innerHTML = dac.items.map((p, i) => `<li role="option" id="dqOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(p.name)}, ${esc(p.country)}</b><span>${esc(p.code)}${p.ko && p.ko[0] ? " · " + esc(p.ko[0]) : ""}${p.bare ? " · 정보 준비 중" : ""}</span></li>`).join("");
+  ul.innerHTML = dac.items.map((p, i) => `<li role="option" id="dqOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(p.name)}, ${esc(p.country)}</b><span>${esc(p.code)}${p.ko && p.ko[0] ? " · " + esc(p.ko[0]) : ""}${p.bare ? (REGIONS[p.region] ? ` · ${esc(p.region)}` : " · 정보 준비 중") : ""}</span></li>`).join("");
   ul.hidden = !dac.items.length; $("#dq").setAttribute("aria-expanded", String(!ul.hidden));
 }
 function acPick(i) {
@@ -991,7 +1024,7 @@ function acMove(d) {
 }
 $("#destForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  if (dac.idx >= 0 && !$("#dqList").hidden) { acPick(dac.idx); return; }
+  if (!$("#dqList").hidden && dac.items.length) { acPick(dac.idx >= 0 ? dac.idx : 0); return; }
   $("#dqList").hidden = true; renderDest($("#dq").value);
 });
 $("#dq").addEventListener("input", (e) => {

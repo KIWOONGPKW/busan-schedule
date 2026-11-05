@@ -52,7 +52,13 @@ def main():
     carriers, cc_err = load("carrier_codes.json", "carriers")
     if cc_err:
         carriers = {}
-    region_weekly, _ = load("transit_times.json", "region_weekly")
+    regions, rg_err = load("regions.json", "regions")
+    if rg_err:
+        regions = {}
+    try:
+        cities = {k: v for k, v in json.loads((ROOT / "city_ports.json").read_text(encoding="utf-8")).items() if not k.startswith("_")}
+    except Exception:  # noqa: BLE001
+        cities = {}
     port_carriers, pc_err = load("port_carriers.json", "ports")
     if pc_err:
         port_carriers = {}
@@ -72,8 +78,8 @@ def main():
         vessels_err = f"vessels_imo.json 읽기 실패: {e}"[:160]
 
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "region_weekly": region_weekly or {},
-            "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err])),
+            "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
+            "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),

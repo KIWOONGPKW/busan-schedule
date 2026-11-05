@@ -1,0 +1,567 @@
+{
+ "_안내": "항로 지역별 기본값: 이용 가능 선사(carriers), 소요일(days: [최소,최대] 또는 {수에즈:[..], 희망봉:[..]}), 주 운항 횟수(weekly). 항구별 값(transit_times.json·port_carriers.json)이 없으면 이 지역 기본값을 써요. countries는 국가 코드 → 지역 (미국·캐나다는 서안/동안/걸프, 러시아는 극동/흑해/유럽을 좌표로 나눠요). 모두 참고용 일반 범위라 선사 스케줄 확인 필요.",
+ "regions": {
+  "미주 서안": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "YANG MING",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "OOCL",
+    "EVERGREEN",
+    "SM LINE",
+    "ZIM"
+   ],
+   "days": [
+    11,
+    16
+   ],
+   "weekly": 20
+  },
+  "미주 동안": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "YANG MING",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN",
+    "ZIM"
+   ],
+   "days": [
+    26,
+    35
+   ],
+   "weekly": 8
+  },
+  "미주 걸프": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "YANG MING",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN",
+    "ZIM"
+   ],
+   "days": [
+    28,
+    36
+   ],
+   "weekly": 4
+  },
+  "중남미": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN"
+   ],
+   "days": [
+    18,
+    28
+   ],
+   "weekly": 6
+  },
+  "중미·카리브": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN"
+   ],
+   "days": [
+    25,
+    35
+   ],
+   "weekly": 3
+  },
+  "남미 서안": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN"
+   ],
+   "days": [
+    25,
+    35
+   ],
+   "weekly": 4
+  },
+  "남미 동안": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "COSCO",
+    "HAPAG-LLOYD",
+    "ONE",
+    "EVERGREEN"
+   ],
+   "days": [
+    35,
+    45
+   ],
+   "weekly": 3
+  },
+  "일본": {
+   "carriers": [
+    "KMTC",
+    "SINOKOR",
+    "HEUNG-A",
+    "PAN OCEAN",
+    "NAMSUNG",
+    "DONGJIN",
+    "CK LINE",
+    "SITC",
+    "HMM"
+   ],
+   "days": [
+    1,
+    4
+   ],
+   "weekly": 40
+  },
+  "중국": {
+   "carriers": [
+    "SITC",
+    "KMTC",
+    "SINOKOR",
+    "HEUNG-A",
+    "PAN OCEAN",
+    "NAMSUNG",
+    "COSCO",
+    "HMM"
+   ],
+   "days": [
+    2,
+    6
+   ],
+   "weekly": 50
+  },
+  "러시아 극동": {
+   "carriers": [
+    "FESCO",
+    "SINOKOR",
+    "HEUNG-A"
+   ],
+   "days": [
+    2,
+    5
+   ],
+   "weekly": 5
+  },
+  "동남아": {
+   "carriers": [
+    "KMTC",
+    "SINOKOR",
+    "HEUNG-A",
+    "SITC",
+    "HMM",
+    "ONE",
+    "EVERGREEN",
+    "WAN HAI",
+    "TS LINES",
+    "NAMSUNG",
+    "PAN OCEAN"
+   ],
+   "days": [
+    5,
+    16
+   ],
+   "weekly": 30
+  },
+  "인도": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "KMTC",
+    "EVERGREEN",
+    "WAN HAI",
+    "TS LINES",
+    "INTERASIA"
+   ],
+   "days": [
+    18,
+    26
+   ],
+   "weekly": 8
+  },
+  "중동": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "COSCO",
+    "EVERGREEN",
+    "YANG MING",
+    "KMTC"
+   ],
+   "days": [
+    20,
+    30
+   ],
+   "weekly": 8
+  },
+  "지중해": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "COSCO",
+    "OOCL",
+    "EVERGREEN",
+    "HAPAG-LLOYD",
+    "ONE",
+    "HMM",
+    "YANG MING",
+    "ZIM"
+   ],
+   "days": {
+    "수에즈": [
+     25,
+     35
+    ],
+    "희망봉": [
+     38,
+     48
+    ]
+   },
+   "weekly": 6
+  },
+  "흑해": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "COSCO",
+    "HAPAG-LLOYD",
+    "ZIM",
+    "EVERGREEN"
+   ],
+   "days": {
+    "수에즈": [
+     30,
+     40
+    ],
+    "희망봉": [
+     42,
+     54
+    ]
+   },
+   "weekly": 3
+  },
+  "유럽": {
+   "carriers": [
+    "HMM",
+    "ONE",
+    "YANG MING",
+    "MAERSK",
+    "HAPAG-LLOYD",
+    "MSC",
+    "CMA CGM",
+    "COSCO",
+    "OOCL",
+    "EVERGREEN",
+    "ZIM"
+   ],
+   "days": {
+    "수에즈": [
+     30,
+     38
+    ],
+    "희망봉": [
+     40,
+     48
+    ]
+   },
+   "weekly": 7
+  },
+  "아프리카": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "PIL",
+    "COSCO",
+    "ONE",
+    "HAPAG-LLOYD",
+    "EVERGREEN"
+   ],
+   "days": [
+    22,
+    45
+   ],
+   "weekly": 4
+  },
+  "아프리카 동부": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "PIL",
+    "COSCO",
+    "ONE",
+    "HAPAG-LLOYD",
+    "EVERGREEN"
+   ],
+   "days": [
+    22,
+    32
+   ],
+   "weekly": 3
+  },
+  "남아프리카": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "PIL",
+    "COSCO",
+    "ONE",
+    "HAPAG-LLOYD",
+    "EVERGREEN"
+   ],
+   "days": [
+    22,
+    30
+   ],
+   "weekly": 3
+  },
+  "아프리카 서부": {
+   "carriers": [
+    "MSC",
+    "MAERSK",
+    "CMA CGM",
+    "PIL",
+    "COSCO",
+    "HAPAG-LLOYD",
+    "ONE"
+   ],
+   "days": [
+    35,
+    48
+   ],
+   "weekly": 3
+  },
+  "오세아니아": {
+   "carriers": [
+    "MAERSK",
+    "MSC",
+    "CMA CGM",
+    "ONE",
+    "COSCO",
+    "OOCL",
+    "EVERGREEN",
+    "HAPAG-LLOYD",
+    "PIL",
+    "HMM"
+   ],
+   "days": [
+    12,
+    20
+   ],
+   "weekly": 6
+  }
+ },
+ "countries": {
+  "US": "미주 동안",
+  "CA": "미주 동안",
+  "MX": "중남미",
+  "GT": "중미·카리브",
+  "SV": "중미·카리브",
+  "HN": "중미·카리브",
+  "NI": "중미·카리브",
+  "CR": "중미·카리브",
+  "PA": "중미·카리브",
+  "BZ": "중미·카리브",
+  "CU": "중미·카리브",
+  "JM": "중미·카리브",
+  "HT": "중미·카리브",
+  "DO": "중미·카리브",
+  "PR": "중미·카리브",
+  "BS": "중미·카리브",
+  "TT": "중미·카리브",
+  "BB": "중미·카리브",
+  "AW": "중미·카리브",
+  "CW": "중미·카리브",
+  "KY": "중미·카리브",
+  "LC": "중미·카리브",
+  "VC": "중미·카리브",
+  "GD": "중미·카리브",
+  "AG": "중미·카리브",
+  "DM": "중미·카리브",
+  "KN": "중미·카리브",
+  "VG": "중미·카리브",
+  "VI": "중미·카리브",
+  "MQ": "중미·카리브",
+  "GP": "중미·카리브",
+  "CL": "남미 서안",
+  "PE": "남미 서안",
+  "EC": "남미 서안",
+  "CO": "남미 서안",
+  "BR": "남미 동안",
+  "AR": "남미 동안",
+  "UY": "남미 동안",
+  "PY": "남미 동안",
+  "VE": "남미 동안",
+  "GY": "남미 동안",
+  "SR": "남미 동안",
+  "GF": "남미 동안",
+  "JP": "일본",
+  "CN": "중국",
+  "HK": "중국",
+  "MO": "중국",
+  "TW": "중국",
+  "RU": "러시아 극동",
+  "VN": "동남아",
+  "TH": "동남아",
+  "PH": "동남아",
+  "SG": "동남아",
+  "ID": "동남아",
+  "MY": "동남아",
+  "KH": "동남아",
+  "MM": "동남아",
+  "BN": "동남아",
+  "TL": "동남아",
+  "LA": "동남아",
+  "IN": "인도",
+  "LK": "인도",
+  "PK": "인도",
+  "BD": "인도",
+  "MV": "인도",
+  "AE": "중동",
+  "SA": "중동",
+  "QA": "중동",
+  "OM": "중동",
+  "KW": "중동",
+  "BH": "중동",
+  "IQ": "중동",
+  "IR": "중동",
+  "JO": "중동",
+  "YE": "중동",
+  "TR": "지중해",
+  "GR": "지중해",
+  "IT": "지중해",
+  "ES": "지중해",
+  "MT": "지중해",
+  "CY": "지중해",
+  "EG": "지중해",
+  "LB": "지중해",
+  "IL": "지중해",
+  "SY": "지중해",
+  "LY": "지중해",
+  "TN": "지중해",
+  "DZ": "지중해",
+  "MA": "지중해",
+  "HR": "지중해",
+  "SI": "지중해",
+  "AL": "지중해",
+  "ME": "지중해",
+  "BA": "지중해",
+  "MC": "지중해",
+  "RO": "흑해",
+  "BG": "흑해",
+  "UA": "흑해",
+  "GE": "흑해",
+  "NL": "유럽",
+  "BE": "유럽",
+  "DE": "유럽",
+  "GB": "유럽",
+  "IE": "유럽",
+  "FR": "유럽",
+  "PT": "유럽",
+  "PL": "유럽",
+  "DK": "유럽",
+  "SE": "유럽",
+  "NO": "유럽",
+  "FI": "유럽",
+  "EE": "유럽",
+  "LV": "유럽",
+  "LT": "유럽",
+  "IS": "유럽",
+  "FO": "유럽",
+  "GI": "유럽",
+  "KE": "아프리카 동부",
+  "TZ": "아프리카 동부",
+  "MZ": "아프리카 동부",
+  "DJ": "아프리카 동부",
+  "SO": "아프리카 동부",
+  "ER": "아프리카 동부",
+  "SD": "아프리카 동부",
+  "MG": "아프리카 동부",
+  "MU": "아프리카 동부",
+  "SC": "아프리카 동부",
+  "KM": "아프리카 동부",
+  "RE": "아프리카 동부",
+  "YT": "아프리카 동부",
+  "ZA": "남아프리카",
+  "NA": "남아프리카",
+  "NG": "아프리카 서부",
+  "GH": "아프리카 서부",
+  "CI": "아프리카 서부",
+  "TG": "아프리카 서부",
+  "BJ": "아프리카 서부",
+  "SN": "아프리카 서부",
+  "CM": "아프리카 서부",
+  "AO": "아프리카 서부",
+  "CG": "아프리카 서부",
+  "CD": "아프리카 서부",
+  "GA": "아프리카 서부",
+  "GN": "아프리카 서부",
+  "SL": "아프리카 서부",
+  "LR": "아프리카 서부",
+  "GM": "아프리카 서부",
+  "GW": "아프리카 서부",
+  "MR": "아프리카 서부",
+  "CV": "아프리카 서부",
+  "GQ": "아프리카 서부",
+  "ST": "아프리카 서부",
+  "AU": "오세아니아",
+  "NZ": "오세아니아",
+  "PG": "오세아니아",
+  "FJ": "오세아니아",
+  "NC": "오세아니아",
+  "PF": "오세아니아",
+  "WS": "오세아니아",
+  "TO": "오세아니아",
+  "VU": "오세아니아",
+  "SB": "오세아니아",
+  "GU": "오세아니아",
+  "MP": "오세아니아",
+  "MH": "오세아니아",
+  "FM": "오세아니아",
+  "KI": "오세아니아",
+  "PW": "오세아니아",
+  "NR": "오세아니아",
+  "TV": "오세아니아"
+ }
+}

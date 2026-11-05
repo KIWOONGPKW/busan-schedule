@@ -1,0 +1,126 @@
+{
+ "_안내": "도시(또는 넓은 지역) 코드 → 그 도시의 실제 컨테이너 항구 목록. 첫 번째가 대표 항구로 바로 검색돼요.",
+ "TRIST": {
+  "name": "ISTANBUL",
+  "ko": "이스탄불",
+  "ports": [
+   "TRAMR",
+   "TRHAY"
+  ]
+ },
+ "JPTYO": {
+  "name": "TOKYO",
+  "ko": "도쿄",
+  "ports": [
+   "JPTYO",
+   "JPYOK"
+  ]
+ },
+ "CNSHA": {
+  "name": "SHANGHAI",
+  "ko": "상해",
+  "ports": [
+   "CNSHA"
+  ],
+  "aliases": [
+   "YANGSHAN",
+   "WAIGAOQIAO"
+  ]
+ },
+ "USLAX": {
+  "name": "LOS ANGELES / LONG BEACH",
+  "ko": "LA·롱비치",
+  "ports": [
+   "USLAX",
+   "USLGB"
+  ]
+ },
+ "USNYC": {
+  "name": "NEW YORK / NEWARK",
+  "ko": "뉴욕·뉴어크",
+  "ports": [
+   "USNYC",
+   "USEWR"
+  ]
+ },
+ "USEWR": {
+  "name": "NEW YORK / NEWARK",
+  "ko": "뉴욕·뉴어크",
+  "ports": [
+   "USNYC",
+   "USEWR"
+  ]
+ },
+ "INBOM": {
+  "name": "MUMBAI",
+  "ko": "뭄바이",
+  "ports": [
+   "INNSA",
+   "INBOM"
+  ]
+ },
+ "IDJKT": {
+  "name": "JAKARTA",
+  "ko": "자카르타",
+  "ports": [
+   "IDJKT"
+  ],
+  "aliases": [
+   "TANJUNG PRIOK"
+  ]
+ },
+ "GBLON": {
+  "name": "LONDON",
+  "ko": "런던",
+  "ports": [
+   "GBLGP",
+   "GBTIL",
+   "GBFXT"
+  ]
+ },
+ "NLAMS": {
+  "name": "AMSTERDAM",
+  "ko": "암스테르담",
+  "ports": [
+   "NLRTM",
+   "NLAMS"
+  ]
+ },
+ "VNHAN": {
+  "name": "HANOI",
+  "ko": "하노이",
+  "ports": [
+   "VNHPH"
+  ]
+ },
+ "AEDXB": {
+  "name": "DUBAI",
+  "ko": "두바이",
+  "ports": [
+   "AEJEA",
+   "AEDXB"
+  ]
+ },
+ "FRPAR": {
+  "name": "PARIS",
+  "ko": "파리",
+  "ports": [
+   "FRLEH"
+  ]
+ },
+ "DEBER": {
+  "name": "BERLIN",
+  "ko": "베를린",
+  "ports": [
+   "DEHAM"
+  ]
+ },
+ "KRSEL": {
+  "name": "SEOUL",
+  "ko": "서울",
+  "ports": [
+   "KRINC",
+   "KRPUS"
+  ]
+ }
+}
