@@ -236,11 +236,11 @@
     <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · 최근 14일, 부산항 스케줄 영향 소식 · 항로 시황 · 부산항 주요 소식을 골라요<span id="newsBarErr"></span></div>
   </details>
 
-  <section class="panel track" aria-label="컨테이너 추적">
-    <div class="caption"><b>컨테이너 추적</b><span class="muted" id="trackCount"></span></div>
+  <section class="panel track" aria-label="컨테이너 부산항선적여부">
+    <div class="caption"><b>컨테이너 부산항선적여부</b><span class="muted" id="trackCount"></span></div>
     <form id="trackForm" autocomplete="off">
       <input id="tq" placeholder="컨테이너 번호 (예: BEAU4348542)" aria-label="컨테이너 번호" maxlength="15">
-      <button class="go" type="submit">추적</button>
+      <button class="go" type="submit">조회</button>
     </form>
     <div class="tmsg" id="trackMsg" hidden></div>
     <ul class="tlist" id="trackList"></ul>
@@ -486,6 +486,17 @@ function trackCard(c, hit) {
     <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
     ${c.old ? `<div class="muted" style="margin-top:4px">※ ${RECENT_NOTE}</div>` : ""}</li>`;
 }
+// 터미널별 컨테이너 조회 화면 (모두 번호만으로 조회됨, 로그인 불필요)
+const CNTR_PAGES = [
+  ["HJNC", "https://www.hjnc.co.kr/esvc/cntr/info"],
+  ["HPNT", "https://www.hpnt.co.kr/infoservice/cntr/cntrSearchList.jsp"],
+  ["PNC", "https://svc.pncport.com/info/CMS/Container/Info.pnc?mCode=MN002"],
+  ["DGT", "https://www.dgtbusan.com/DGT/esvc/cntr/cntrInfo"],
+  ["PNIT", "https://www.pnitl.com/infoservice/cntr/cntrSearchList.jsp"],
+  ["BNCT", "https://info.bnctkorea.com/esvc/cntr/cntrSrch"],
+  ["BPTC", "https://info.bptc.co.kr/content/cg/frame/cntr_frame_cg_kr.jsp?p_id=CONT_CN_KR&snb_num=1&snb_div=service", "번호 입력 후 모선 선택"],
+  ["HKTL", "https://custom.hktl.com/jsp/T04/dataio_cntr.jsp?langType=K&mainType=T04&subType=01", "모선·항차 칸은 비워 두고 조회"],
+];
 const RECENT_NOTE = "최근 기록이 없어 예전 기록을 보여드려요";
 function renderTrack(q) {
   const list = DATA.tracking || [];
@@ -495,17 +506,20 @@ function renderTrack(q) {
   msg.hidden = true;
   if (key && !hit) {
     msg.innerHTML = /^[A-Z]{4}\d{7}$/.test(key)
-      ? `<b>${esc(key)}</b>는 아직 추적 목록에 없어요. <a href="${LIST_EDIT}" target="_blank" rel="noopener">추적 목록에 추가하기 ↗</a> — 저장하면 몇 분 뒤 이 화면에 나와요.`
+      ? `<b>${esc(key)}</b>는 아직 조회 목록에 없어요. <a href="${LIST_EDIT}" target="_blank" rel="noopener">조회 목록에 추가하기 ↗</a> — 저장하면 몇 분 뒤 이 화면에 나와요.`
       : `컨테이너 번호는 영문 4자리 + 숫자 7자리예요 (예: BEAU4348542).`;
     msg.hidden = false;
   }
   const shown = hit ? [hit, ...list.filter((c) => c !== hit)] : list;
   $("#trackList").innerHTML = shown.map((c) => trackCard(c, c === hit)).join("")
-    || `<li class="muted">추적 중인 컨테이너가 없어요.</li>`;
-  $("#trackCount").textContent = list.length ? `${list.length}개 추적 중 · ${DATA.generated_at} 기준` : "";
+    || `<li class="muted">조회 중인 컨테이너가 없어요.</li>`;
+  $("#trackCount").textContent = list.length ? `${list.length}개 조회 중 · ${DATA.generated_at} 기준` : "";
   const err = DATA.track_error ? ` · <b>${esc(DATA.track_error)}</b> 조회 실패` : "";
-  $("#trackHelp").innerHTML = `조회 터미널: ${esc((DATA.track_terminals || []).join(" · "))} (다른 터미널은 준비 중) · 2시간마다 갱신
-    · <a href="${LIST_EDIT}" target="_blank" rel="noopener">추적 목록 고치기 ↗</a>${err}`;
+  const direct = CNTR_PAGES.map(([t, url, tip]) =>
+    `<a href="${url}" target="_blank" rel="noopener">${t}</a>${tip ? `(${tip})` : ""}`).join(" · ");
+  $("#trackHelp").innerHTML = `자동 조회: ${esc((DATA.track_terminals || []).join(" · "))} · 2시간마다 갱신
+    · <a href="${LIST_EDIT}" target="_blank" rel="noopener">조회 목록 고치기 ↗</a>${err}<br>
+    8개 터미널 모두 컨테이너 번호만으로 직접 조회돼요(로그인 불필요): ${direct}`;
 }
 $("#trackForm").addEventListener("submit", (e) => { e.preventDefault(); renderTrack($("#tq").value); });
 
