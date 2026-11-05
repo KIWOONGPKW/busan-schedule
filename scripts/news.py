@@ -1,8 +1,11 @@
 """코리아쉬핑가제트(ksg.co.kr) 기사와 부산항만공사(busanpa.com) 공지 중
-부산항 화물 스케줄에 영향 줄 만한 소식만 골라낸다.
+부산항 화물 스케줄에 영향 줄 만한 소식과 부산항 주요 소식을 골라낸다.
 
   파업·기상: 전국 단위여도 부산항 일정이 흔들리니 그대로 싣는다
-  사고·운영(적체·장애 등): 부산항 관련 기사일 때만 싣는다
+  사고·운영·스케줄(기항·노선 변경, 반입 등): 부산 관련 기사일 때만 싣는다
+  항로(수에즈·홍해 등 우회·복귀)·시황(한중항로/ 같은 국내 항로 주간 시황): 부산 언급 없어도 싣는다
+  주요: 위에 안 걸렸지만 제목에 부산이 나오는 화물·운영 소식 (행사·홍보성 기사는 뺀다)
+  자리가 모자라면 경보 > 스케줄·항로 > 시황 > 주요 순으로 채운다
 
 사이트 검색은 본문 전체를 엉성하게 뒤져서 쓸모가 없다 -> 항만·물류·해운·해양종합 목록
 최근 몇 페이지(카테고리당 10건/페이지)를 받아 제목+요약으로 직접 분류한다.
@@ -27,7 +30,7 @@ BPA_BOARDS = {  # boardId: (menuCd, 게시판 이름, 거르지 않고 붙일 �
 }
 CATEGORIES = {"RKC": "항만", "XHJ": "물류", "LPG": "해운", "GOG": "해양/종합"}
 PAGES = 4
-DAYS, LIMIT = 14, 15
+DAYS, LIMIT = 14, 20
 
 # 경보 태그는 제목으로만 판단 (요약까지 보면 '사고 재판', '3위 추락' 같은 엉뚱한 기사가 섞인다)
 TAGS = {
@@ -37,25 +40,46 @@ TAGS = {
            "입출항 통제", "입항 통제", "운항 통제", "피항"],
     "운영": ["적체", "체선", "혼잡", "하역 중단", "작업 중단", "운영 중단", "장비 고장", "크레인 고장", "전산 장애",
            "시스템 장애", "마비", "셧다운", "폐쇄", "봉쇄"],
+    "스케줄": ["기항", "항로 개설", "항로 신설", "신규 항로", "신규 서비스", "서비스 개설", "서비스 개편", "항로 개편",
+            "항로 중단", "서비스 중단", "운항 중단", "블랭크", "임시 결항", "휴항", "스킵", "선복 감축", "지연",
+            "반입", "게이트", "터미널 이전", "터미널 통합", "운영 개시", "개장", "선석",
+            "노선", "취항", "재개", "개편", "셔틀", "신설"],
+    "항로": ["수에즈", "홍해", "파나마운하", "파나마 운하", "희망봉", "후티", "호르무즈", "말라카"],
 }
-ANYWHERE = {"파업", "기상"}
+ALERTS = {"파업", "기상", "사고", "운영"}
+LANE_REPORT = re.compile(r"^\s*\S{1,8}항로\s*/")  # KSG 주간 시황: '한중항로/ ...', '동남아항로/ ...'
+RANK = [ALERTS, {"스케줄", "항로"}, {"시황"}, {"주요"}]
+ANYWHERE = {"파업", "기상", "항로", "시황"}
 # 예방·훈련 같은 행사 기사, 해외 항만 파업은 부산항 일정과 무관 -> 뺀다
 NOT_EVENT = ["예방", "훈련", "캠페인", "교육", "점검", "맞손", "협약", "MOU", "포상", "시상", "세미나", "포럼"]
+# 주요 소식: 부산항 기사 중 화물·운영 이야기만 (기관 행사·공고는 뺀다)
+MAJOR = ["물동량", "처리량", "컨테이너", "TEU", "환적", "신기록", "최대", "최초", "터미널", "부두", "선사", "얼라이언스",
+         "항로", "선박", "입항", "운임", "수출", "수입", "화물", "배후단지", "하역", "크레인", "자동화", "스마트항만",
+         "통관", "관세", "냉동", "공컨테이너", "빈 컨테이너", "장치장", "야드", "보안", "규제", "요금", "개정", "시행"]
+FLUFF = NOT_EVENT + ["기부", "봉사", "나눔", "후원", "사회공헌", "채용", "모집", "공고", "결과 공개", "용역", "장학", "수상",
+                     "감사패", "취임", "인사", "견학", "방문", "내방", "공모", "축제", "체험", "청렴", "윤리", "간담회",
+                     "설명회", "워크숍", "페어", "약정", "총회", "헌혈"]
 FOREIGN = re.compile(r"美|中|日|英|獨|佛|印|濠|미국|중국|일본|대만|홍콩|싱가포르|베트남|인도|유럽|네덜란드|독일|벨기에|프랑스|영국"
                      r"|스페인|이탈리아|그리스|스웨덴|핀란드|덴마크|노르웨이|캐나다|호주|칠레|브라질|멕시코|페루|남아공|이스라엘")
-BUSAN = re.compile(r"부산항|부산신항|부산 신항|부산북항|부산 북항|부산항만공사|BPA\b|신항\s*\d|북항\s*\d")
+BUSAN = re.compile(r"부산|진해신항|부산신항|부산 신항|부산북항|부산 북항|부산항만공사|BPA\b|신항\s*\d|북항\s*\d")
 
 
 def _clean(x):
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", x))).strip()
 
 
-def _tags(title):
+def _tags(title, busan_title=False):
     if any(w in title for w in NOT_EVENT):
-        return []
-    tags = [t for t, words in TAGS.items() if any(w in title for w in words)]
-    if "파업" in tags and FOREIGN.search(title):
-        tags.remove("파업")
+        tags = []
+    else:
+        tags = [t for t, words in TAGS.items() if any(w in title for w in words)]
+        if "파업" in tags and FOREIGN.search(title):
+            tags.remove("파업")
+        if LANE_REPORT.search(title):
+            tags = ["시황"] + [t for t in tags if t in ALERTS]
+    if (not tags and busan_title and any(w in title for w in MAJOR)
+            and not any(w in title for w in FLUFF)):
+        tags = ["주요"]
     return tags
 
 
@@ -68,9 +92,9 @@ def _ksg_page(code, page):
                          r'.*?<dd>(.*?)</(?:dd|dl)>', s, re.S):
         pnum, title, date, summary = m.groups()
         title, summary = _clean(title), _clean(summary)
-        tags = _tags(title)
+        tags = _tags(title, bool(BUSAN.search(title)))
         busan = bool(BUSAN.search(f"{title} {summary}"))
-        # 사고·운영은 부산항 기사일 때만, 파업·기상은 전국 단위도
+        # 사고·운영·스케줄·주요는 부산 기사일 때만, 파업·기상·항로·시황은 부산 언급 없어도
         if tags and (busan or ANYWHERE & set(tags)):
             out.append({"id": f"ksg{pnum}", "title": title, "date": date.strip()[:16], "busan": busan, "tags": tags,
                         "source": "쉬핑가제트", "cat": CATEGORIES[code],
@@ -87,7 +111,7 @@ def _bpa_board(board_id):
                          r'((?:(?!view\.bpa).)*?)<span>(\d{4}-\d{2}-\d{2})</span>', s, re.S):
         sid, title, _, date = m.groups()
         title = _clean(title)
-        tags = fixed or _tags(title)
+        tags = fixed or _tags(title, True)
         if tags:
             out.append({"id": f"bpa{sid}", "title": title, "date": f"{date} 00:00", "busan": True, "tags": tags,
                         "source": "부산항만공사", "cat": name,
@@ -114,11 +138,13 @@ def fetch_news():
             items += found
     cutoff = (datetime.now() - timedelta(days=DAYS)).strftime("%Y-%m-%d %H:%M")
     seen, picked = set(), []
-    for a in sorted(items, key=lambda a: a["date"], reverse=True):
+    # 중요한 태그 순으로 자리를 채우고 -> 화면에는 최신순
+    rank = lambda a: next((i for i, group in enumerate(RANK) if group & set(a["tags"])), len(RANK))
+    for a in sorted(sorted(items, key=lambda a: a["date"], reverse=True), key=rank):
         if a["id"] not in seen and a["date"] >= cutoff:
             seen.add(a["id"])
             picked.append(a)
-    return picked[:LIMIT], errors
+    return sorted(picked[:LIMIT], key=lambda a: a["date"], reverse=True), errors
 
 
 if __name__ == "__main__":
