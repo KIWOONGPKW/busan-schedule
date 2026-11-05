@@ -36,7 +36,7 @@ def main():
     except Exception as e:  # noqa: BLE001
         articles, news_errors = [], {"쉬핑가제트": str(e), "부산항만공사": str(e)}
 
-    try:  # 컨테이너 추적이 막혀도 스케줄은 나가야 한다
+    try:  # 컨테이너 조회가 막혀도 스케줄은 나가야 한다
         tracked, track_errors = tracking.track(rows)
     except Exception as e:  # noqa: BLE001
         tracked, track_errors = [], {"추적": str(e)[:160]}
@@ -44,7 +44,7 @@ def main():
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
-            "tracking": tracked, "track_terminals": tracking.SUPPORTED, "track_error": ", ".join(track_errors)}
+            "tracking": tracked, "track_terminals": [t for t in tracking.SUPPORTED if t not in track_errors], "track_error": ", ".join(track_errors)}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)
