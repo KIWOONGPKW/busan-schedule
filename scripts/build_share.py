@@ -55,9 +55,13 @@ def main():
 
     transit, transit_err = load("transit_times.json", "ports")
     routes, routes_err = load("routes.json", "routes")
+    vessel_ids, vessels_err = load("vessels.json", "vessels")
+    if vessels_err:
+        vessel_ids = {}
 
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "transit": transit, "routes": routes, "dest_error": " · ".join(filter(None, [transit_err, routes_err])),
+            "vessel_ids": vessel_ids, "vessel_error": vessels_err,
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "tracking": tracked, "track_terminals": [t for t in tracking.SUPPORTED if t not in track_errors], "track_error": ", ".join(track_errors),

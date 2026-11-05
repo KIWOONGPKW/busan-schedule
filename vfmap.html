@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>선박 위치 지도</title>
+<style>html, body { margin: 0; padding: 0; background: #e6f3ff; overflow: hidden; } iframe { display: block; border: 0; }</style>
+</head>
+<body>
+<!-- VesselFinder 공식 무료 홈페이지 지도(https://www.vesselfinder.com/embed)를 그대로 싣는 페이지.
+     공식 스크립트가 로드 때 한 번만 지도를 그리므로, 대시보드는 이 페이지 주소(?imo=…&lat=…)만 바꿔 배를 갈아 끼운다. -->
+<script>
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var num = function (k, re) { var v = p.get(k) || ""; return re.test(v) ? v : undefined; };
+    window.width = "100%";
+    window.height = String(Math.max(400, parseInt(p.get("h"), 10) || 420));
+    window.latitude = num("lat", /^-?\d{1,2}(\.\d+)?$/) || "35.08";
+    window.longitude = num("lon", /^-?\d{1,3}(\.\d+)?$/) || "128.95";
+    window.zoom = num("zoom", /^\d{1,2}$/) || "10";
+    window.names = p.get("names") !== "false";
+    var imo = num("imo", /^\d{7}$/), mmsi = num("mmsi", /^\d{9}$/);
+    if (imo) window.imo = imo;
+    if (mmsi) window.mmsi = mmsi;
+    window.show_track = !!(imo || mmsi);
+  })();
+</script>
+<script src="https://www.vesselfinder.com/aismap.js"></script>
+</body>
+</html>
