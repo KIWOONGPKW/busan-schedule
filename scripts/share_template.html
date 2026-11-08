@@ -7,7 +7,7 @@
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
     --bg: #fff8f2; --panel: #ffffff; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
-    --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2;
+    --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
     --ok: #138a52; --ok-soft: #dcf6e8; --bad: #db3f58; --bad-soft: #ffe3e8;
     --warn: #b86400; --warn-soft: #fff0d4; --blue: #2b74d6; --blue-soft: #e0eeff; --gray-soft: #f1eef4;
@@ -24,7 +24,7 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #1c1826; --panel: #251f33; --ink: #f2eefb; --muted: #aba4c3; --line: #3b3450;
-      --head: #2e2843; --zebra: #29223a; --hover: #35293f; --field: #1c1826;
+      --head: #2e2843; --zebra: #29223a; --hover: #35293f; --field: #1c1826; --find: #1d3528; --find-line: #3f7a54;
       --accent: #ff9070; --accent2: #a597ff; --accent-soft: #43282a; --sea: #17263a;
       --ok: #5fd99a; --ok-soft: #1b3a2b; --bad: #ff7a8c; --bad-soft: #45222b;
       --warn: #ffb259; --warn-soft: #43321b; --blue: #80b3ff; --blue-soft: #1f3150; --gray-soft: #322c44;
@@ -40,7 +40,7 @@
   }
   :root[data-theme="dark"] {
     --bg: #1c1826; --panel: #251f33; --ink: #f2eefb; --muted: #aba4c3; --line: #3b3450;
-    --head: #2e2843; --zebra: #29223a; --hover: #35293f; --field: #1c1826;
+    --head: #2e2843; --zebra: #29223a; --hover: #35293f; --field: #1c1826; --find: #1d3528; --find-line: #3f7a54;
     --accent: #ff9070; --accent2: #a597ff; --accent-soft: #43282a; --sea: #17263a;
     --ok: #5fd99a; --ok-soft: #1b3a2b; --bad: #ff7a8c; --bad-soft: #45222b;
     --warn: #ffb259; --warn-soft: #43321b; --blue: #80b3ff; --blue-soft: #1f3150; --gray-soft: #322c44;
@@ -101,8 +101,8 @@
 
   form.search { display: flex; gap: 10px; background: var(--panel); border: 1px solid var(--line);
                 border-radius: 18px; padding: 10px; box-shadow: var(--shadow); }
-  form.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; color: var(--ink); background: var(--field);
-                      border: 2px solid transparent; border-radius: 12px; padding: 10px 14px; text-transform: uppercase; }
+  form.search input { flex: 1; min-width: 0; font: inherit; font-size: 17px; color: var(--ink); background: var(--find);
+                      border: 2px solid var(--find-line); border-radius: 12px; padding: 10px 14px; text-transform: uppercase; }
   form.search input::placeholder { text-transform: none; color: var(--muted); }
   form.search input:focus { outline: none; border-color: var(--accent); }
   button { font: inherit; cursor: pointer; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
@@ -174,8 +174,8 @@
   .dest .caption { align-items: center; }
   .dest form { display: flex; gap: 8px; padding: 12px 16px 12px; }
   .dq-wrap { position: relative; flex: 1; min-width: 0; }
-  .dest input { width: 100%; font: inherit; font-size: 15px; color: var(--ink); background: var(--field);
-                border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
+  .dest input { width: 100%; font: inherit; font-size: 15px; color: var(--ink); background: var(--find);
+                border: 2px solid var(--find-line); border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
   .dest input::placeholder { color: var(--muted); text-transform: none; }
   .dest input:focus { outline: none; border-color: var(--accent); }
   .dac { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none;
