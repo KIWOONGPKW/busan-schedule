@@ -6,7 +6,7 @@
 <style>
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
-    --bg: #fff8f2; --panel: #ffffff; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
+    --bg: #ffffff; --panel: #ffffff; color-scheme: light; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
     --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
     --ok: #138a52; --ok-soft: #dcf6e8; --bad: #db3f58; --bad-soft: #ffe3e8;
@@ -21,7 +21,8 @@
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
     --f-body: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
+  /* 하얀 바탕 고정: 기기 다크 모드여도 밝게 보이게 자동 전환을 꺼 둠. 되돌리려면 'not all'을 '(prefers-color-scheme: dark)'로 */
+  @media not all {
     :root:not([data-theme="light"]) {
       --bg: #1c1826; --panel: #251f33; --ink: #f2eefb; --muted: #aba4c3; --line: #3b3450;
       --head: #2e2843; --zebra: #29223a; --hover: #35293f; --field: #1c1826; --find: #1d3528; --find-line: #3f7a54;
@@ -53,9 +54,7 @@
     --shadow: 0 6px 22px rgba(0, 0, 0, .35); color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  body { background: var(--bg); color: var(--ink); font: 14px/1.6 var(--f-body);
-         background-image: radial-gradient(900px 420px at 0% -10%, var(--accent-soft), transparent 60%),
-                           radial-gradient(800px 420px at 100% 0%, var(--sea), transparent 60%); }
+  body { background: var(--bg); color: var(--ink); font: 14px/1.6 var(--f-body); }
   .wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 56px;
           padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
           display: flex; flex-direction: column; gap: 16px; }
