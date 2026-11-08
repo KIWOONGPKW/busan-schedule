@@ -341,10 +341,10 @@
         <div class="hello" id="hello">선명만 입력하면 터미널 · 도착 · 출항 · 반입 일정을 찾아드려요</div>
       </div>
     </div>
-    <div class="stamp fx" id="fxCard" hidden>
+    <div class="stamp fx" id="fxCard">
       <div class="fx-t" id="fxTitle">송금환율 (보낼 때)</div>
       <ul class="fx-l" id="fxList"></ul>
-      <div class="fx-n" id="fxNote"></div>
+      <div class="fx-n" id="fxNote">환율 불러오는 중</div>
     </div>
     <div class="stamp">조회 기준 시각<br><b id="genAt">-</b><div id="genAgo"></div></div>
   </header>
@@ -480,10 +480,16 @@
 
 <script>
 const DATA = /*__DATA__*/null;
-// 헤더 환율 카드 (송금 보낼 때 TTS, 전일 대비 ▲빨강 ▼파랑). 값이 없으면 카드를 숨긴다
+// 헤더 환율 카드 (송금 보낼 때 TTS, 전일 대비 ▲빨강 ▼파랑).
+// 값이 없어도 카드 자리는 두고 "환율 불러오는 중"으로 표시. 주말·공휴일엔 마지막 영업일 값(캐시)을 그대로 보여준다
 function renderFx() {
   const fx = DATA.fx;
-  if (!fx || !fx.rates || !fx.rates.some((r) => r.tts)) return;
+  if (!fx || !fx.rates || !fx.rates.some((r) => r.tts)) {
+    document.getElementById("fxList").innerHTML = ["USD", "EUR", "CNY", "JPY(100엔)"]
+      .map((c) => `<li><span class="c">${c}</span><b>-</b></li>`).join("");
+    document.getElementById("fxNote").textContent = "환율 불러오는 중";
+    return;
+  }
   const bank = fx.source === "한국수출입은행" ? "한국수출입은행" : "하나은행";
   document.getElementById("fxTitle").textContent = `${bank} 송금환율 (보낼 때)`;
   const fmt = (n) => n.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -497,7 +503,6 @@ function renderFx() {
   const t = new Date(), todayStr = `${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}`;
   const when = fx.date === todayStr ? `${fx.date} 고시` : `직전 영업일 기준 · ${fx.date} 고시`;
   document.getElementById("fxNote").textContent = fx.round ? `${when} ${fx.round}회차` : bank === "한국수출입은행" ? `${when} · 한국수출입은행 기준` : when;
-  document.getElementById("fxCard").hidden = false;
 }
 const TN = DATA.terminals;
 const $ = (s) => document.querySelector(s);
