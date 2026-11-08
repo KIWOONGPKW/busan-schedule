@@ -1,7 +1,7 @@
 """부산항 8개 터미널 선석배정 현황 조회 모듈.
 
 각 터미널 사이트는 선명 검색 기능이 없고 '기간별 전체 목록'만 제공한다.
-그래서 기간(오늘-22일 ~ 오늘+40일) 목록을 한 번 받아온 뒤, 선명/항차로 직접 찾는다.
+그래서 기간(오늘-22일 ~ 오늘+41일) 목록을 한 번 받아온 뒤, 선명/항차로 직접 찾는다.
 
   PNC  : POST /info/CMS/Ship/Info.pnc  -> HTML 표 (행 색상 class로 상태 구분)
   HJNC : GET  /esvc/vessel/berthScheduleT/data -> JSON (세션 쿠키 필요)
@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 TIMEOUT = 20
-DAYS_BACK, DAYS_AHEAD = 22, 40  # 화면 기본이 21일 전후라 지난 일정은 하루 여유
+DAYS_BACK, DAYS_AHEAD = 22, 41  # 선명 검색 21일 전후, 목적지 검색 40일 뒤까지 (하루씩 여유)
 
 TERMINALS = {
     "PNC": "PNC 부산신항만 (신항)",

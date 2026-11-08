@@ -180,7 +180,7 @@
   .ct { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
   .ct svg { height: 26px; width: auto; color: var(--accent2); flex: none; }
 
-  /* 부산발 목적지 검색: 영문 항구명·UN/LOCODE(한글도) → ① 요약 ② 이용 가능한 선사 ③ 3주 스케줄 */
+  /* 부산발 목적지 검색: 영문 항구명·UN/LOCODE(한글도) → ① 요약 ② 이용 가능한 선사 ③ 40일 스케줄 */
   .dest .caption { align-items: center; }
   .dest form { display: flex; gap: 8px; padding: 12px 16px 12px; }
   .dq-wrap { position: relative; flex: 1; min-width: 0; }
@@ -378,8 +378,8 @@
       <div class="dinfo" id="destNote" hidden></div>
       <div class="dsum" id="destSum"></div>
       <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
-      <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 3주 · 출항일 빠른 순</small></h3>
-        <div class="dempty" id="destEmpty" hidden>3주 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
+      <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
+        <div class="dempty" id="destEmpty" hidden>40일 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
         <div class="table-wrap" id="destTableWrap">
           <table class="dtable">
             <thead><tr>
@@ -484,16 +484,16 @@ const DATA = /*__DATA__*/null;
 function renderFx() {
   const fx = DATA.fx;
   if (!fx || !fx.rates || !fx.rates.some((r) => r.tts)) {
-    document.getElementById("fxList").innerHTML = ["USD", "EUR", "CNY", "JPY(100엔)"]
+    $("#fxList").innerHTML = ["USD", "EUR", "CNY", "JPY(100엔)"]
       .map((c) => `<li><span class="c">${c}</span><b>-</b></li>`).join("");
-    document.getElementById("fxNote").textContent = "환율 불러오는 중";
+    $("#fxNote").textContent = "환율 불러오는 중";
     return;
   }
   const ecb = fx.source === "ECB";
   const bank = ecb ? "ECB(유럽중앙은행)" : fx.source === "한국수출입은행" ? "한국수출입은행" : "하나은행";
-  document.getElementById("fxTitle").textContent = ecb ? "기준환율 (참고)" : `${bank} 송금환율 (보낼 때)`;
+  $("#fxTitle").textContent = ecb ? "기준환율 (참고)" : `${bank} 송금환율 (보낼 때)`;
   const fmt = (n) => n.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById("fxList").innerHTML = fx.rates.filter((r) => r.tts).map((r) => {
+  $("#fxList").innerHTML = fx.rates.filter((r) => r.tts).map((r) => {
     const d = r.diff;
     const chg = d == null ? "" : d > 0 ? `<span class="d up">▲${fmt(d)}</span>`
       : d < 0 ? `<span class="d dn">▼${fmt(-d)}</span>` : `<span class="d eq">-</span>`;
@@ -506,9 +506,9 @@ function renderFx() {
   const md = `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})`;
   const note = fx.date === todayStr ? `${md} 고시${fx.round ? ` ${fx.round}회차` : ""}` : `${md} 최종 고시 · 직전 영업일 기준`;
   // ECB 값은 은행 송금환율이 아니라 기준환율이라 출처와 함께 분명히 적는다
-  document.getElementById("fxNote").innerHTML = ecb
+  $("#fxNote").innerHTML = ecb
     ? `${esc(note)}<br>ECB 기준 · 송금 보낼 땐 은행별로 약 1% 더 높아요` : esc(note);
-  document.getElementById("fxNote").title = `${bank} 기준${fx.prev_date ? ` · 전일 대비는 ${fx.prev_date} 고시와 비교` : ""}`;
+  $("#fxNote").title = `${bank} 기준${fx.prev_date ? ` · 전일 대비는 ${fx.prev_date} 고시와 비교` : ""}`;
 }
 const TN = DATA.terminals;
 const $ = (s) => document.querySelector(s);
@@ -850,7 +850,7 @@ function renderEq() {
 
 // ---------------------------------------------------------------- 부산발 목적지 검색
 // 항구 표(transit_times.json): 영문 항구명·UN/LOCODE·한글로 검색, 소요일은 [최소, 최대] 범위(직항·환적 포함)
-// ① 요약  ② 이용 가능한 선사(port_carriers.json + 터미널 일정에서 확인된 선사)  ③ 3주 안 부산 출항 스케줄
+// ① 요약  ② 이용 가능한 선사(port_carriers.json + 터미널 일정에서 확인된 선사)  ③ 40일 안 부산 출항 스케줄
 // ③은 터미널 항로 코드를 routes.json(노선 → 목적항, 출처 있는 것만)으로 판단. 경유·환적항은 표시하지 않음
 const REPO_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/";
 const PORTS = (DATA.transit || []).filter((p) => p && p.code && p.name);
@@ -866,9 +866,8 @@ function withDefaults(p) {
            byRegion: !!reg && (!own || !(PCARR[p.code] || []).length) };
 }
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
-const DEST_DAYS = 21;
-const TS_PER_CARRIER = 3;
-const LAST_ETD = DATA.rows.map((r) => toDate(r.etd)).filter((d) => d && !isNaN(d)).reduce((a, d) => (!a || d > a ? d : a), null);  // 환적 가능(예상): 선사별로 보여줄 가까운 부산 출항 수
+const DEST_DAYS = 40;  // 부산발 목적지 검색: 오늘부터 40일 뒤 출항까지
+const TS_PER_CARRIER = 3;  // 환적 가능(예상): 선사별로 보여줄 가까운 부산 출항 수
 // 터미널 선사 약자 → 영문 선사명, 선사명 → 공식 스케줄 페이지 (carrier_codes.json)
 const CARRIER = {}, CSCHED = {}, CP2P = {};
 Object.entries(DATA.carriers || {}).forEach(([name, v]) => {
@@ -989,17 +988,17 @@ function renderDest(q, keepFilter) {
   const ports = [port, ...PORTS.filter((p) => p.code !== port.code && port.group && p.group === port.group).map(withDefaults)];
   const codes = new Set(ports.map((p) => p.code));
   const range = dayRange(port);
-  // 기간: 기본 3주, 터미널 자료가 더 먼 날짜까지 있으면 그 날짜까지 자동 포함
-  const end = new Date(Math.max(today.getTime() + (DEST_DAYS + 1) * 86400e3, LAST_ETD ? LAST_ETD.getTime() + 60e3 : 0));
-  const spanDays = Math.round((end - today) / 86400e3);
-  const spanTxt = spanDays > DEST_DAYS + 1 ? `앞으로 ${spanDays}일 (자료 끝 ${dayFmt(LAST_ETD)}까지)` : "앞으로 3주";
+  // 기간: 오늘부터 40일 뒤(그날 포함) 출항까지
+  const end = new Date(today.getTime() + (DEST_DAYS + 1) * 86400e3);
+  const spanDays = DEST_DAYS + 1;
+  const spanTxt = `앞으로 ${DEST_DAYS}일`;
   const soon = (r) => { const d = toDate(r.etd); return d && d >= now && d < end; };
   const routeOf = (r) => ROUTES[(r.route || "").trim().toUpperCase()];
   const listed = [...new Set(ports.flatMap((p) => p.carriers || []))];
   // ① 노선이 이 항구로 연결된 배
   let rows = DATA.rows.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
   let mode = rows.length ? "route" : "";
-  // ② 없으면: 이용 가능 선사의 앞으로 3주 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
+  // ② 없으면: 이용 가능 선사의 앞으로 40일 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
   if (!rows.length) {
     const L = new Set(listed);
     // 방향: 미주·중남미는 동향(E), 그 외(동남아·인도·중동·지중해·유럽·아프리카)는 서향·남향(W/S) 항차만. 방향 글자 없으면 포함
