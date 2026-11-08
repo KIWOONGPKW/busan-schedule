@@ -370,6 +370,7 @@
   .newsbar summary::after { content: "▾"; margin-left: auto; color: var(--muted); }
   .newsbar[open] summary::after { content: "▴"; }
   .newsbar summary .lead { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .newsbar summary > b, #newsBarTags { flex: none; white-space: nowrap; }
   .newsbar .nlist { max-height: 320px; border-top: 1px solid var(--line); }
   @media (min-width: 1500px) {
     .page { display: grid; grid-template-columns: minmax(0, 1180px) 290px; justify-content: center; gap: 4px; padding-right: 16px; }
