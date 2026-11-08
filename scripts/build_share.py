@@ -90,6 +90,17 @@ def main():
     except Exception as e:  # noqa: BLE001
         kcci_data, kcci_err = None, str(e)[:160]
 
+    proxy_routes, proxy_err = [], ""
+    try:  # KCCI 미발표 항구 -> 가까운 KCCI 항로 연결표 (사용자 편집)
+        raw = json.loads((ROOT / "proxy_routes.json").read_text(encoding="utf-8"))
+        for p in raw.get("ports", []):
+            if p.get("port") and p.get("route") in kcci.WANT:
+                proxy_routes.append({k: p.get(k, "") for k in ("port", "group", "route", "note")})
+            else:
+                proxy_err = f"proxy_routes.json: {p.get('port') or '?'} 항로 코드 확인 필요 (KMEI·KMDI만 가능)"
+    except Exception as e:  # noqa: BLE001
+        proxy_err = f"proxy_routes.json 읽기 실패: {e}"[:160]
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
@@ -98,7 +109,7 @@ def main():
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
-            "fx": fx_data, "fx_error": fx_err, "kcci": kcci_data, "kcci_error": kcci_err}
+            "fx": fx_data, "fx_error": fx_err, "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)

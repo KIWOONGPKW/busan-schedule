@@ -198,9 +198,13 @@
   .frt .ftip i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
   .frt .fports { padding: 6px 16px 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
   .frt .fports .g { font-weight: 700; color: var(--ink); margin-left: 4px; }
+  .frt .fports .fg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .frt .fports .pp { border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; }
   .frt .fports .pp.in { border-color: var(--c); font-weight: 700; }
   .frt .fports .pp.no { color: var(--muted); background: var(--gray-soft); }
+  /* 추정 칩: 점선 + 회색 글씨 (실제 지수 칩 = 실선 주황 테두리와 구별) */
+  .frt .fports .pp.est { border: 1px dashed var(--muted); color: var(--muted); background: transparent; cursor: help; }
+  .frt .fports .pp.est b { font-weight: 700; font-variant-numeric: tabular-nums; }
   .frt details { padding: 8px 16px 0; font-size: 12.5px; }
   .frt details summary { cursor: pointer; color: var(--accent2); font-weight: 700; }
   .frt details .table-wrap { max-height: 300px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; margin-top: 6px; }
@@ -748,13 +752,9 @@ const FRT_SERIES = [
   { k: "KMEI", name: "중동", ports: "제벨알리 · 담만 · 제다 평균", c: "var(--s-me)" },
   { k: "KMDI", name: "지중해", ports: "발렌시아 · 바르셀로나 · 제노아 · 나폴리 평균", c: "var(--s-md)" },
 ];
-// 보고 싶은 항구가 KCCI 기준항에 들어 있는지만 표시 (추정치 없음). [지역, 항구, 포함 지수 키 또는 null, 메모]
-const FRT_PORTS = [
-  ["걸프", "JEBEL ALI", "KMEI"], ["걸프", "DAMMAM", "KMEI"], ["걸프", "RIYADH", null, "내륙 · 담만 경유"],
-  ["오만", "SOHAR", null], ["오만", "SALALAH", null],
-  ["홍해", "JEDDAH", "KMEI"], ["홍해", "AQABA", null], ["홍해", "ADEN", null], ["홍해", "SOKHNA", null],
-  ["동지중해", "PORT SAID", null], ["동지중해", "ALEXANDRIA", null], ["동지중해", "AMBARLI (ISTANBUL)", null],
-];
+// KCCI 기준항(실제 지수) [지역, 항구, 지수 키] + KCCI 미발표 항구는 scripts/proxy_routes.json 연결표로 '추정' 표시
+const FRT_PORTS = [["걸프", "JEBEL ALI", "KMEI"], ["걸프", "DAMMAM", "KMEI"], ["홍해", "JEDDAH", "KMEI"]];
+const FRT_GROUPS = ["걸프", "오만", "홍해", "동지중해"];
 const usd = (n) => "$" + n0(n);
 function renderFreight() {
   const K = DATA.kcci;
@@ -823,21 +823,35 @@ function renderFreight() {
   hit.addEventListener("mousemove", move); hit.addEventListener("mouseleave", hide);
   hit.addEventListener("touchstart", move, { passive: true }); hit.addEventListener("touchmove", move, { passive: true });
 
-  let last = "";
-  $("#frtPorts").innerHTML = FRT_PORTS.map(([grp, p, key, why]) => {
-    const s = FRT_SERIES.find((x) => x.k === key);
-    const head = grp !== last ? `<span class="g">${grp}</span>` : "";
-    last = grp;
-    const tag = s ? `${s.name} 지수 포함` : "공개 자료 없음";
-    const tt = s ? `KCCI ${s.name} 기준항 (여러 항 평균에 포함, 이 항구만의 숫자는 없음)` : "부산발 공개 운임지수가 없어 숫자를 넣지 않음";
-    return `${head}<span class="pp ${s ? "in" : "no"}"${s ? ` style="--c:${s.c}"` : ""} title="${tt}">${p} · ${tag}${why ? ` (${why})` : ""}</span>`;
-  }).join("");
+  // 추정값 = 최근 발표 주의 연결 항로 KCCI 값 그대로 (매주 월요일 KCCI 갱신 때 같이 바뀜). 그래프 선으로는 그리지 않음
+  const latest = W[W.length - 1];
+  const chips = [
+    ...FRT_PORTS.map(([grp, p, key]) => ({ grp, p, key, real: true })),
+    ...(DATA.proxy_routes || []).map((x) => ({ grp: x.group || "기타", p: x.port, key: x.route, note: x.note })),
+  ];
+  const gi = (g) => (FRT_GROUPS.includes(g) ? FRT_GROUPS.indexOf(g) : FRT_GROUPS.length);
+  chips.sort((a, b) => gi(a.grp) - gi(b.grp) || (b.real ? 1 : 0) - (a.real ? 1 : 0));
+  // 지역별로 묶어서 지역 이름이 줄 끝에 혼자 남지 않게
+  const byGrp = [];
+  chips.forEach((c) => { const g = byGrp.find((x) => x.grp === c.grp); g ? g.list.push(c) : byGrp.push({ grp: c.grp, list: [c] }); });
+  $("#frtPorts").innerHTML = byGrp.map(({ grp, list }) => `<span class="fg"><span class="g">${esc(grp)}</span>${list.map((c) => {
+    const s = FRT_SERIES.find((x) => x.k === c.key);
+    const head = "";
+    if (c.real) {
+      return `${head}<span class="pp in" style="--c:${s.c}" title="KCCI ${s.name} 기준항 (여러 항 평균에 포함, 이 항구만의 숫자는 없음)">${esc(c.p)} · ${s.name} 지수 포함</span>`;
+    }
+    if (!s || latest[c.key] == null) return `${head}<span class="pp no">${esc(c.p)} · 공개 자료 없음</span>`;
+    const tt = `KCCI 미발표 항구 · ${s.name} 항로 지수(${s.ports})로 추정한 참고값${c.note ? ` · ${c.note}` : ""}`;
+    return `${head}<span class="pp est" title="${esc(tt)}">${esc(c.p)} · 추정 (${s.name} 지수 기준) <b>${usd(latest[c.key])}</b></span>`;
+  }).join("")}</span>`).join("");
   $("#frtRows").innerHTML = W.slice().reverse().map((x) => `<tr><td>${x.date}</td><td>${x.KMEI != null ? usd(x.KMEI) : "-"}</td><td>${x.KMDI != null ? usd(x.KMDI) : "-"}</td></tr>`).join("");
   $("#frtHelp").innerHTML = `출처: <a href="https://www.kobc.or.kr/ebz/shippinginfo/timeseries/gridList.do?mId=0304000000" target="_blank" rel="noopener">한국해양진흥공사 KCCI 시계열</a>
     (<a href="https://www.kobc.or.kr/ebz/common/file/KCCI_Standards.pdf" target="_blank" rel="noopener">기준항 정의</a>) ·
     부산항 선적 SPOT 운임, 40ft Dry 기준 USD, BAF 등 운임성 할증 포함 · THC 등 현지 비용 제외.
     중동 지수는 제벨알리·담만·제다 3개 항 평균, 지중해 지수는 서지중해(스페인·이탈리아) 4개 항 평균이에요.
-    이집트·튀르키예(암바를리) 같은 동지중해와 아카바·아덴, 오만 항구는 부산발 공개 지수가 없어 숫자를 넣지 않았어요. 실제 견적은 선사·포워더에 확인해 주세요${DATA.kcci_error ? ` · <b>${esc(DATA.kcci_error)}</b> (지난 자료 표시 중)` : ""}`;
+    점선 칩(추정)은 KCCI가 따로 발표하지 않는 항구에 가까운 KCCI 항로 값(${md(latest.date)} 발표)을 그대로 빌려 온 참고값이에요. 해당 항구의 실제 운임이 아니며,
+    오만·홍해·동지중해는 기항 선사·환적·전쟁 위험 할증에 따라 차이가 클 수 있어요. 리야드는 담만항까지 해상 운임이고 내륙 운송은 별도예요.
+    실제 견적은 선사·포워더에 확인해 주세요 · 연결표: <a href="https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/proxy_routes.json" target="_blank" rel="noopener">proxy_routes.json</a>${DATA.proxy_error ? ` · <b>${esc(DATA.proxy_error)}</b>` : ""}${DATA.kcci_error ? ` · <b>${esc(DATA.kcci_error)}</b> (지난 자료 표시 중)` : ""}`;
 }
 
 function summary() {

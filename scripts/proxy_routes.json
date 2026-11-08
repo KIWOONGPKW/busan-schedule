@@ -1,0 +1,14 @@
+{
+ "_설명": "KCCI가 따로 발표하지 않는 항구를 가까운 KCCI 항로 지수로 '추정' 표시하는 연결표. 숫자는 넣지 않고 항로 코드만 연결해요 (값은 매주 월요일 KCCI 갱신 때 자동으로 따라감). route: KMEI(중동 = 제벨알리·담만·제다 평균) 또는 KMDI(지중해 = 발렌시아·바르셀로나·제노아·나폴리 평균). group: 칩 묶음 이름(걸프·오만·홍해·동지중해). note: 칩 괄호와 안내에 붙는 메모. 회사 견적·원가는 넣지 마세요.",
+ "ports": [
+  {"port": "RIYADH", "group": "걸프", "route": "KMEI", "note": "담만항까지 해상 · 리야드 내륙 운송 별도"},
+  {"port": "SOHAR", "group": "오만", "route": "KMEI", "note": "호르무즈 바깥 항구라 걸프 안쪽 할증과 차이 날 수 있음"},
+  {"port": "SALALAH", "group": "오만", "route": "KMEI", "note": "환적 허브 · 직기항 여부에 따라 차이 큼"},
+  {"port": "AQABA", "group": "홍해", "route": "KMEI", "note": "제다 포함 중동 지수 · 홍해 안쪽"},
+  {"port": "SOKHNA", "group": "홍해", "route": "KMEI", "note": "제다 포함 중동 지수 · 수에즈 남단"},
+  {"port": "ADEN", "group": "홍해", "route": "KMEI", "note": "기항 선사 적고 전쟁 위험 할증 별도"},
+  {"port": "PORT SAID", "group": "동지중해", "route": "KMDI", "note": "서지중해 4항 평균 · 동지중해 운임과 차이 날 수 있음"},
+  {"port": "ALEXANDRIA", "group": "동지중해", "route": "KMDI", "note": "서지중해 4항 평균 · 동지중해 운임과 차이 날 수 있음"},
+  {"port": "AMBARLI (ISTANBUL)", "group": "동지중해", "route": "KMDI", "note": "서지중해 4항 평균 · 마르마라해"}
+ ]
+}
