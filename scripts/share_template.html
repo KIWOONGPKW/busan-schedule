@@ -499,10 +499,14 @@ function renderFx() {
       : d < 0 ? `<span class="d dn">▼${fmt(-d)}</span>` : `<span class="d eq">-</span>`;
     return `<li><span class="c">${r.label}</span><b>${fmt(r.tts)}</b>${chg}</li>`;
   }).join("");
+  // 예) 오늘 값: "11/9(월) 고시" / 지난 영업일 값: "11/6(금) 최종 고시 · 직전 영업일 기준"
   const p2 = (n) => String(n).padStart(2, "0");
   const t = new Date(), todayStr = `${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}`;
-  const when = fx.date === todayStr ? `${fx.date} 고시` : `직전 영업일 기준 · ${fx.date} 고시`;
-  document.getElementById("fxNote").textContent = fx.round ? `${when} ${fx.round}회차` : bank === "한국수출입은행" ? `${when} · 한국수출입은행 기준` : when;
+  const [y, m, d] = fx.date.split("-").map(Number);
+  const md = `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})`;
+  const note = fx.date === todayStr ? `${md} 고시${fx.round ? ` ${fx.round}회차` : ""}` : `${md} 최종 고시 · 직전 영업일 기준`;
+  document.getElementById("fxNote").textContent = note;
+  document.getElementById("fxNote").title = `${bank} 기준${fx.prev_date ? ` · 전일 대비는 ${fx.prev_date} 고시와 비교` : ""}`;
 }
 const TN = DATA.terminals;
 const $ = (s) => document.querySelector(s);

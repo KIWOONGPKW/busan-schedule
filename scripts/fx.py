@@ -57,15 +57,16 @@ def _fresh(key, now):
     if not days:
         raise RuntimeError("최근 14일 고시 환율이 없어요")
     (d0, cur), prev = days[0], (days[1][1] if len(days) > 1 else {})
+    prev_date = days[1][0].isoformat() if len(days) > 1 else None
     rates = [{"code": code, "label": label, "tts": cur.get(code),
               "diff": round(cur[code] - prev[code], 2) if cur.get(code) and prev.get(code) else None}
              for code, label, _ in WANT]
-    return {"date": d0.isoformat(), "source": "한국수출입은행", "rates": rates,
+    return {"date": d0.isoformat(), "prev_date": prev_date, "source": "한국수출입은행", "rates": rates,
             "fetched_at": now.strftime("%Y-%m-%d %H:%M")}
 
 
-def fetch_fx(now=None):
-    """(환율 dict 또는 None, 오류 문자열)."""
+def fetch_fx(now=None, force=False):
+    """(환율 dict 또는 None, 오류 문자열). force=True면 시간과 관계없이 now 날짜 기준으로 받아온다."""
     now = now or datetime.now()
     try:
         cached = json.loads(CACHE.read_text(encoding="utf-8"))
@@ -74,7 +75,7 @@ def fetch_fx(now=None):
     key = os.environ.get("KEXIM_KEY", "").strip()
     in_hours = now.weekday() < 5 and "09:30" <= now.strftime("%H:%M") <= "16:00"
     err = ""
-    if key and (in_hours or not cached):
+    if key and (force or in_hours or not cached):
         try:
             data = _fresh(key, now)
             CACHE.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -87,4 +88,7 @@ def fetch_fx(now=None):
 
 
 if __name__ == "__main__":
-    print(json.dumps(fetch_fx(), ensure_ascii=False, indent=1))
+    # 날짜 지정 수동 실행: KEXIM_KEY=... python scripts/fx.py 20261106  (그날 고시 + 직전 영업일과 비교)
+    import sys
+    at = datetime.strptime(sys.argv[1], "%Y%m%d").replace(hour=23, minute=59) if len(sys.argv) > 1 else None
+    print(json.dumps(fetch_fx(at, force=bool(at)), ensure_ascii=False, indent=1))
