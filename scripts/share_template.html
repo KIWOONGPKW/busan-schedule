@@ -351,7 +351,7 @@
   <div class="warnbar" id="stale" hidden></div>
 
   <section class="stats" aria-label="요약">
-    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">14일 안에 출항하는 배</div></div>
+    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">21일 안에 출항하는 배</div></div>
     <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
     <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
   </section>
@@ -420,7 +420,7 @@
     <span class="muted">북항</span>
     <span class="sep"></span>
     <span class="lbl">기간</span>
-    <button type="button" class="fchip per" data-p="14" aria-pressed="true">14일 전후</button>
+    <button type="button" class="fchip per" data-p="21" aria-pressed="true">21일 전후</button>
     <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
     <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
   </div>
@@ -449,7 +449,7 @@
   </section>
 
   <section class="panel" id="schedPanel" hidden>
-    <div class="caption"><b id="capTitle">14일 안에 출항 · 최근 14일 출항한 배</b><span class="muted" id="capCount"></span>
+    <div class="caption"><b id="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted" id="capCount"></span>
       <button type="button" class="back" id="backBtn">↩ 터미널 현황으로</button></div>
     <div class="table-wrap">
       <table>
@@ -515,7 +515,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const WD = ["일", "월", "화", "수", "목", "금", "토"];
 const PAGE = 120;
-const ui = { q: "", terms: new Set(), period: "14", limit: PAGE, qAll: false };
+const ui = { q: "", terms: new Set(), period: "21", limit: PAGE, qAll: false };
 
 const toDate = (s) => (s ? new Date(s.replace(" ", "T")) : null);
 const norm = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -624,10 +624,10 @@ function bondCode(r) {
 const bondLine = (r) => (BOND[r.t] ? `<div class="muted bond">장치장 <b>${esc(bondCode(r))}</b></div>` : "");
 
 const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now - 12 * 3600e3); };
-// 14일 전후 = 오늘 기준 앞으로 14일 안에 출항할 배 + 최근 14일 안에 출항한 배 (선적 확인용)
-const within14 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 15 * 86400e3); };
-const departed14 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 14 * 86400e3); };
-const inPeriod = (r) => (ui.period === "14" ? within14(r) || departed14(r)
+// 21일 전후 = 오늘 기준 앞으로 21일 안에 출항할 배 + 최근 21일 안에 출항한 배 (선적 확인용)
+const within21 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 22 * 86400e3); };
+const departed21 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 21 * 86400e3); };
+const inPeriod = (r) => (ui.period === "21" ? within21(r) || departed21(r)
   : ui.period === "gone" ? toDate(r.etd) && !upcoming(r) : !!toDate(r.etd));
 const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
 
@@ -636,7 +636,7 @@ function filtered() {
   let rows = DATA.rows.filter((r) => !ui.terms.size || ui.terms.has(r.t));
   ui.qMiss = 0;
   if (q) {
-    // 선명 검색도 고른 기간(기본 14일 전후) 안에서 찾고, [전체 일정에서 찾기]를 누르면 전체 일정에서
+    // 선명 검색도 고른 기간(기본 21일 전후) 안에서 찾고, [전체 일정에서 찾기]를 누르면 전체 일정에서
     rows = rows.filter((r) => norm(r.vessel).includes(q) && toDate(r.etd));
     if (!ui.qAll) { const hit = rows.filter(inPeriod); ui.qMiss = hit.length ? 0 : rows.length; rows = hit; }
   } else {
@@ -649,7 +649,7 @@ function filtered() {
 function render() {
   const rows = filtered();
   const q = ui.q.trim().toUpperCase();
-  const pTitle = ui.period === "14" ? "14일 안에 출항 · 최근 14일 출항한 배"
+  const pTitle = ui.period === "21" ? "21일 안에 출항 · 최근 21일 출항한 배"
     : ui.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
   const one = ui.terms.size === 1 ? [...ui.terms][0] : "";
   $("#capTitle").textContent = (q ? `"${q}" 검색 결과 · ${ui.qAll ? "전체 일정" : pTitle}` : pTitle)
@@ -658,7 +658,7 @@ function render() {
   $("#capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
   if (!rows.length) {
     $("#rows").innerHTML = q && ui.qMiss
-      ? `<tr><td colspan="6" class="empty">"${esc(q)}"은(는) ${ui.period === "gone" ? "출항한 배 목록" : "14일 전후"}에 없어요. 전체 일정에서 찾아볼까요?<br><br>
+      ? `<tr><td colspan="6" class="empty">"${esc(q)}"은(는) ${ui.period === "gone" ? "출항한 배 목록" : "21일 전후"}에 없어요. 전체 일정에서 찾아볼까요?<br><br>
           <button type="button" class="go" id="qAllBtn">전체 일정에서 찾기</button></td></tr>`
       : q
       ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) ${Object.keys(TN).length}개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
@@ -682,7 +682,7 @@ function render() {
 
 function summary() {
   const up = DATA.rows.filter(upcoming);
-  $("#sDep").textContent = DATA.rows.filter(within14).length;
+  $("#sDep").textContent = DATA.rows.filter(within21).length;
   $("#sClose").textContent = up.filter((r) => { const c = toDate(r.yard_close); return c && c > now && c - now < 48 * 3600e3; }).length;
   const ok = Object.keys(TN).length - Object.keys(DATA.errors).length;
   $("#sTerm").textContent = `${ok} / ${Object.keys(TN).length}`;
@@ -772,8 +772,8 @@ function renderPickup() {
   const errs = DATA.empty_error || "";
   $("#pickupGrid").innerHTML = PICKUP_ORDER.map((t) => {
     const mine = yards.filter((y) => y.name.split(" ")[0] === t);
-    const ships = DATA.rows.filter((r) => r.t === t && within14(r)).length;
-    const foot = `<div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>14일 내 출항 ${ships}척 ▸</span></div>`;
+    const ships = DATA.rows.filter((r) => r.t === t && within21(r)).length;
+    const foot = `<div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>21일 내 출항 ${ships}척 ▸</span></div>`;
     const head = `<div class="ph"><span class="chip t-${esc(t)}"><i></i>${esc(t)}</span><span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span></div>${BOND[t] ? `<div class="ps muted">장치장 ${bondAll(t)}</div>` : ""}`;
     if (!mine.length) {
       const fail = errs.includes(t);
