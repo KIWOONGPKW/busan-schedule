@@ -7,6 +7,7 @@
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
     --bg: #ffffff; --panel: #ffffff; color-scheme: light; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
+    --open-bg: #fff4e8; --open-line: #f2a65a; --open-hover: #e07b1a; --open-tag: #fde3c6; --open-ink: #b5560c;
     --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
     --news: #fff6e0; --news-line: #f0d9a0;  /* 부산항 소식란: 연한 노랑으로 따로 구분 */
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
@@ -272,11 +273,20 @@
   .pcard.off > * { opacity: .7; }
   /* 로그인 없이 공컨 수량이 나오는 터미널: 옅은 주황 + 꼬리표 (수량 데이터 유무로 자동 판단) */
   .pcard { position: relative; }
-  .pcard.open { background: #fff4e8; border-color: #f2a65a; }
-  .pcard.open:hover { border-color: #e07b1a; }
+  .pcard.open { background: var(--open-bg); border-color: var(--open-line); }
+  .pcard.open:hover { border-color: var(--open-hover); }
   .pcard.open .ph { padding-right: 84px; }
-  .pcard .ptag { position: absolute; top: 9px; right: 10px; font-size: 11px; font-weight: 700; line-height: 1; padding: 4px 7px;
-                 border-radius: 999px; background: #fde3c6; color: #b5560c; border: 1px solid #f2a65a; white-space: nowrap; }
+  .ptag { font-size: 11px; font-weight: 700; line-height: 1; padding: 4px 7px; display: inline-block;
+          border-radius: 999px; background: var(--open-tag); color: var(--open-ink); border: 1px solid var(--open-line); white-space: nowrap; }
+  .pcard .ptag { position: absolute; top: 9px; right: 10px; }
+  /* 장비 현황표: 로그인 없이 조회되는 행·탭도 같은 주황 */
+  table.eq tbody tr.open td { background: var(--open-bg); }
+  table.eq tbody tr.open td:first-child { font-weight: 700; }
+  table.eq tbody tr.off td { color: var(--muted); }
+  table.eq tbody tr.off td.rmk a { opacity: .8; }
+  table.eq tr.total.open td { background: var(--open-tag); border-bottom-color: var(--open-line); font-weight: 700; }
+  .fchip.open { background: var(--open-bg); border-color: var(--open-line); color: var(--ink); }
+  .fchip.open[aria-pressed="true"] { background: var(--open-tag); border-color: var(--open-hover); color: var(--open-ink); }
   table.eq td.rmk, table.eq th.rmk { text-align: left; font-size: 12px; white-space: nowrap; }
   table.eq td.rmk a { color: var(--accent2); font-weight: 700; }
   .pcard.off .pn { color: var(--muted); font-size: 18px; }
@@ -776,15 +786,18 @@ const PICKUP_LOGIN = {
   BNCT: "https://info.bnctkorea.com/esvc/onDock/cntrStockReport",
   HKTL: "https://custom.hktl.com/jsp/join/login.jsp",
 };
+// 수량 데이터가 있는 터미널(로그인 불필요)을 맨 앞으로, 나머지는 원래 순서 — 카드·장비 현황표 공용
+function pickupOrder() {
+  const yards = DATA.empties || [];
+  const hasData = (t) => yards.some((y) => y.name.split(" ")[0] === t);
+  return [...PICKUP_ORDER.filter(hasData), ...PICKUP_ORDER.filter((t) => !hasData(t))];
+}
 const n0 = (n) => Number(n || 0).toLocaleString("ko-KR");
 const boxSum = (b) => Object.values(b).reduce((a, v) => a + v, 0);
 function renderPickup() {
   const yards = DATA.empties || [];
   const errs = DATA.empty_error || "";
-  // 수량 데이터가 있는 터미널(로그인 불필요)을 맨 앞으로, 나머지는 원래 순서
-  const hasData = (t) => yards.some((y) => y.name.split(" ")[0] === t);
-  const order = [...PICKUP_ORDER.filter(hasData), ...PICKUP_ORDER.filter((t) => !hasData(t))];
-  $("#pickupGrid").innerHTML = order.map((t) => {
+  $("#pickupGrid").innerHTML = pickupOrder().map((t) => {
     const mine = yards.filter((y) => y.name.split(" ")[0] === t);
     const ships = DATA.rows.filter((r) => r.t === t && within21(r)).length;
     const foot = `<div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>21일 내 출항 ${ships}척 ▸</span></div>`;
@@ -837,20 +850,20 @@ function renderEq() {
   const yards = DATA.empties || [];
   const views = [["ALL", "터미널별 합계"], ...yards.map((y) => [y.name, y.name])];
   $("#eqTabs").innerHTML = views.map(([k, label]) =>
-    `<button type="button" class="fchip" data-eq="${esc(k)}" aria-pressed="${eqUi.view === k}">${esc(label)}</button>`).join(" ");
+    `<button type="button" class="fchip${k === "ALL" ? "" : " open"}" data-eq="${esc(k)}" aria-pressed="${eqUi.view === k}">${esc(label)}</button>`).join(" ");
   $("#eqHead").innerHTML = `<tr><th>${eqUi.view === "ALL" ? "터미널" : "선사"}</th>${EQ_COLS.map(([, h]) => `<th>${h}</th>`).join("")}<th class="sum">합계</th><th class="rmk">비고</th></tr>`;
   let rows;
   if (eqUi.view === "ALL") {
     const per = [];
-    rows = PICKUP_ORDER.map((t) => {
+    rows = pickupOrder().map((t) => {
       const mine = yards.filter((y) => y.name.split(" ")[0] === t);
       if (!mine.length) {
         const rmk = PICKUP_LOGIN[t] ? `<a href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">로그인 필요 ↗</a>` : "조회 실패";
         return eqRow(`${esc(t)} <span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span>`, null, "off", rmk);
       }
-      return mine.map((y) => { const b = Object.values(y.lines).reduce((a, x) => addBox(a, x), {}); per.push(b); return eqRow(esc(y.name), b); }).join("");
+      return mine.map((y) => { const b = Object.values(y.lines).reduce((a, x) => addBox(a, x), {}); per.push(b); return eqRow(esc(y.name), b, "open", `<span class="ptag">로그인 불필요</span>`); }).join("");
     }).join("");
-    rows += eqRow("공개 터미널 전체", per.reduce((a, b) => addBox(a, b), {}), "total");
+    rows += eqRow("공개 터미널 전체", per.reduce((a, b) => addBox(a, b), {}), "total open");
   } else {
     const y = yards.find((x) => x.name === eqUi.view) || { lines: {} };
     const lines = Object.entries(y.lines).sort((a, b) => boxSum(b[1]) - boxSum(a[1]));
