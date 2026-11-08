@@ -21,6 +21,7 @@ jobs:
     env:
       TZ: Asia/Seoul            # 조회 기간·갱신 시각을 한국 시간으로
       PYTHONIOENCODING: utf-8
+      KEXIM_KEY: ${{ secrets.KEXIM_KEY }}  # 한국수출입은행 환율 API 인증키 (헤더 환율 카드)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,7 +35,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html scripts/fx_cache.json 2>/dev/null || git add index.html
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "일정 갱신 $(date '+%Y-%m-%d %H:%M')"
           git push

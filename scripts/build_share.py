@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 import empties
+import fx
 import news
 import terminals
 
@@ -78,6 +79,11 @@ def main():
     except Exception as e:  # noqa: BLE001
         vessels_err = f"vessels_imo.json 읽기 실패: {e}"[:160]
 
+    try:
+        fx_data, fx_err = fx.fetch_fx()
+    except Exception as e:  # noqa: BLE001
+        fx_data, fx_err = None, str(e)[:160]
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
@@ -85,7 +91,8 @@ def main():
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
-            "empties": yards, "empty_error": ", ".join(empty_errors)}
+            "empties": yards, "empty_error": ", ".join(empty_errors),
+            "fx": fx_data, "fx_error": fx_err}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)
