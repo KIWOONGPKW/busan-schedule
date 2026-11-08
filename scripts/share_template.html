@@ -8,6 +8,7 @@
   :root {
     --bg: #ffffff; --panel: #ffffff; color-scheme: light; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
     --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
+    --news: #fff6e0; --news-line: #f0d9a0;  /* 부산항 소식란: 연한 노랑으로 따로 구분 */
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
     --ok: #138a52; --ok-soft: #dcf6e8; --bad: #db3f58; --bad-soft: #ffe3e8;
     --warn: #b86400; --warn-soft: #fff0d4; --blue: #2b74d6; --blue-soft: #e0eeff; --gray-soft: #f1eef4;
@@ -294,6 +295,8 @@
 
   /* 항만 소식: 넓은 화면은 오른쪽 칸(스크롤 따라옴), 좁은 화면은 접힌 한 줄 */
   .news { display: none; }
+  .news.panel { background: var(--news); border-color: var(--news-line); }
+  .news .nlist li + li, .news .nhead, .newsbar .nlist { border-color: var(--news-line); }
   .nhead { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
   .nhead b { font-family: var(--f-display); font-weight: 400; font-size: 18px; }
   .nlist { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
@@ -308,7 +311,7 @@
   .nitem.alert .ntitle { font-weight: 700; }
   .nfoot { padding: 8px 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
   .nfoot a { color: inherit; }
-  .newsbar { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .newsbar { background: var(--news); border: 1px solid var(--news-line); border-radius: 14px; overflow: hidden; }
   .newsbar summary { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; list-style: none; font-size: 13px; }
   .newsbar summary::-webkit-details-marker { display: none; }
   .newsbar summary::after { content: "▾"; margin-left: auto; color: var(--muted); }
