@@ -490,8 +490,9 @@ function renderFx() {
     document.getElementById("fxNote").textContent = "환율 불러오는 중";
     return;
   }
-  const bank = fx.source === "한국수출입은행" ? "한국수출입은행" : "하나은행";
-  document.getElementById("fxTitle").textContent = `${bank} 송금환율 (보낼 때)`;
+  const ecb = fx.source === "ECB";
+  const bank = ecb ? "ECB(유럽중앙은행)" : fx.source === "한국수출입은행" ? "한국수출입은행" : "하나은행";
+  document.getElementById("fxTitle").textContent = ecb ? "기준환율 (참고)" : `${bank} 송금환율 (보낼 때)`;
   const fmt = (n) => n.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   document.getElementById("fxList").innerHTML = fx.rates.filter((r) => r.tts).map((r) => {
     const d = r.diff;
@@ -505,7 +506,9 @@ function renderFx() {
   const [y, m, d] = fx.date.split("-").map(Number);
   const md = `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})`;
   const note = fx.date === todayStr ? `${md} 고시${fx.round ? ` ${fx.round}회차` : ""}` : `${md} 최종 고시 · 직전 영업일 기준`;
-  document.getElementById("fxNote").textContent = note;
+  // ECB 값은 은행 송금환율이 아니라 기준환율이라 출처와 함께 분명히 적는다
+  document.getElementById("fxNote").innerHTML = ecb
+    ? `${esc(note)}<br>ECB 기준 · 송금 보낼 땐 은행별로 약 1% 더 높아요` : esc(note);
   document.getElementById("fxNote").title = `${bank} 기준${fx.prev_date ? ` · 전일 대비는 ${fx.prev_date} 고시와 비교` : ""}`;
 }
 const TN = DATA.terminals;

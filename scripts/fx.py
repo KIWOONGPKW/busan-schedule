@@ -8,8 +8,12 @@
       비영업일·당일 고시 전(대략 11시 전)에는 빈 배열 -> 날짜를 거슬러 올라가 직전 영업일 값을 쓴다
   인증키는 환경변수 KEXIM_KEY (GitHub Secrets). 하루 1,000회 제한.
 
-갱신: 영업일(월~금) 09:30~16:00 사이에만 API를 부르고, 그 밖의 시간이나 키가 없을 때는
+갱신: 영업일(월~금) 09:30~16:00 사이에만 API를 부르고, 그 밖의 시간에는
 scripts/fx_cache.json(마지막으로 받은 값)을 그대로 쓴다.
+
+인증키가 없거나 수출입은행 값이 하나도 없을 때는 ECB(유럽중앙은행) 기준환율로 대신한다 (참고용).
+  GET https://api.frankfurter.dev/v1/{시작일}..?base=EUR&symbols=KRW,USD,CNY,JPY  (무료·키 없음, ECB 공개 데이터)
+  ECB는 영업일 16:00 CET(한국 밤 0시 무렵) 고시 -> 원화 환산(KRW/통화) 기준환율이며 은행 송금환율(TTS)이 아니다.
 """
 import http.cookiejar
 import json
@@ -23,6 +27,7 @@ from terminals import _fetch, _opener
 ROOT = Path(__file__).resolve().parent
 CACHE = ROOT / "fx_cache.json"
 URL = "https://oapi.koreaexim.go.kr/site/program/financial/exchangeJSON"
+ECB_URL = "https://api.frankfurter.dev/v1/"
 WANT = [("USD", "USD", ["USD"]), ("EUR", "EUR", ["EUR"]),
         ("CNY", "CNY", ["CNH", "CNY"]), ("JPY", "JPY(100엔)", ["JPY(100)"])]
 
@@ -65,6 +70,27 @@ def _fresh(key, now):
             "fetched_at": now.strftime("%Y-%m-%d %H:%M")}
 
 
+def _ecb(now):
+    """ECB 기준환율을 원화로 환산 (최근 고시일 + 직전 고시일 비교)."""
+    start = (now.date() - timedelta(days=14)).isoformat()
+    end = now.date().isoformat()
+    raw = json.loads(_fetch(f"{ECB_URL}{start}..{end}?base=EUR&symbols=KRW,USD,CNY,JPY"))
+    days = sorted(raw.get("rates", {}).items())
+    if not days:
+        raise RuntimeError("ECB 기준환율이 없어요")
+
+    def krw(r):  # EUR 기준 표 -> 통화 1단위(JPY는 100엔)당 원화
+        k = r["KRW"]
+        return {"USD": k / r["USD"], "EUR": k, "CNY": k / r["CNY"], "JPY": k / r["JPY"] * 100}
+    cur = krw(days[-1][1])
+    prev = krw(days[-2][1]) if len(days) > 1 else {}
+    rates = [{"code": code, "label": label, "tts": round(cur[code], 2),
+              "diff": round(round(cur[code], 2) - round(prev[code], 2), 2) if prev else None}
+             for code, label, _ in WANT]
+    return {"date": days[-1][0], "prev_date": days[-2][0] if len(days) > 1 else None, "source": "ECB",
+            "rates": rates, "fetched_at": now.strftime("%Y-%m-%d %H:%M")}
+
+
 def fetch_fx(now=None, force=False):
     """(환율 dict 또는 None, 오류 문자열). force=True면 시간과 관계없이 now 날짜 기준으로 받아온다."""
     now = now or datetime.now()
@@ -84,6 +110,14 @@ def fetch_fx(now=None, force=False):
             err = f"{type(e).__name__}: {e}"[:160]
     elif not key:
         err = "KEXIM_KEY 없음"
+    # 수출입은행 값이 없으면(키 없음·실패) ECB 기준환율로 대신 (수출입은행 캐시가 있으면 그걸 우선)
+    if not cached or cached.get("source") == "ECB":
+        try:
+            data = _ecb(now)
+            CACHE.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+            cached = data
+        except Exception as e:  # noqa: BLE001
+            err = " · ".join(filter(None, [err, f"ECB {type(e).__name__}: {e}"[:120]]))
     return cached, err
 
 
