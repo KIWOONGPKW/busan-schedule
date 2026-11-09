@@ -25,7 +25,7 @@ jobs:
     env:
       TZ: Asia/Seoul            # 조회 기간·갱신 시각을 한국 시간으로
       PYTHONIOENCODING: utf-8
-      KEXIM_KEY: ${{ secrets.KEXIM_KEY }}  # 한국수출입은행 환율 API 인증키 (헤더 환율 카드)
+      KEXIM_KEY: ${{ secrets.KEXIM_KEY }}  # 한국수출입은행 환율 API 인증키 (하나은행 환율이 안 될 때 예비)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
