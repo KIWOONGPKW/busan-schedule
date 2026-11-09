@@ -109,7 +109,7 @@ def main():
             "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
-            "fx": fx_data, "fx_error": fx_err, "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}
+            "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)

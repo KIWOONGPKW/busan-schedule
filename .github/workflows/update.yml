@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html scripts/fx_cache.json scripts/kcci_cache.json 2>/dev/null || git add index.html
+          git add index.html scripts/fx_cache.json scripts/rates_history.json scripts/kcci_cache.json 2>/dev/null || git add index.html
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "일정 갱신 $(date '+%Y-%m-%d %H:%M')"
           git push

@@ -102,7 +102,17 @@
   .fx-l b { font-size: 14px; margin-left: auto; }
   .fx-l .d { font-size: 11px; font-weight: 700; padding: 0 5px; border-radius: 6px; background: rgba(255,255,255,.9); min-width: 52px; text-align: right; }
   .fx-l .d.up { color: #d6213b; } .fx-l .d.dn { color: #1f63c9; } .fx-l .d.eq { color: #6b6478; }
-  .fx-n { margin-top: 2px; font-size: 10.5px; opacity: .85; }
+  .fx-n { margin-top: 2px; font-size: 10.5px; opacity: .85; cursor: pointer; }
+  /* 환율 카드 날짜 조회: 날짜 글자 누르면 달력, ◀ ▶ 하루씩(영업일), 지난 날짜면 노란 테두리 + [오늘로] */
+  .fx { position: relative; }
+  .fx.past { border: 2px solid #ffd54a; box-shadow: 0 0 0 2px rgba(255,213,74,.25); }
+  .fx-nav { display: flex; align-items: center; gap: 4px; margin-top: 3px; flex-wrap: wrap; }
+  .fx-nav button { font: inherit; font-size: 11px; color: inherit; background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.5);
+    border-radius: 6px; padding: 0 6px; line-height: 18px; cursor: pointer; }
+  .fx-nav button:disabled { opacity: .35; cursor: default; }
+  .fx-nav .fx-day { background: none; border: 0; padding: 0 2px; text-decoration: underline dotted; text-underline-offset: 3px; font-weight: 700; }
+  .fx-nav .fx-today { background: #ffd54a; color: #3a2c00; border-color: #ffd54a; font-weight: 700; }
+  .fx-pick { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; border: 0; padding: 0; }
   @media (max-width: 640px) { .hero .stamp { flex: 1 1 100%; } }
 
   .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -400,6 +410,13 @@
     <div class="stamp fx" id="fxCard">
       <div class="fx-t" id="fxTitle">송금환율 (보낼 때)</div>
       <ul class="fx-l" id="fxList"></ul>
+      <div class="fx-nav" id="fxNav" hidden>
+        <button type="button" id="fxPrev" title="이전 영업일" aria-label="이전 영업일">◀</button>
+        <button type="button" class="fx-day" id="fxDay" title="날짜를 눌러 다른 날 환율 보기">-</button>
+        <button type="button" id="fxNext" title="다음 영업일" aria-label="다음 영업일">▶</button>
+        <button type="button" class="fx-today" id="fxToday" hidden>오늘로</button>
+        <input type="date" class="fx-pick" id="fxPick" min="2026-01-01" tabindex="-1" aria-label="환율 조회 날짜">
+      </div>
       <div class="fx-n" id="fxNote">환율 불러오는 중</div>
     </div>
     <div class="stamp">조회 기준 시각<br><b id="genAt">-</b><div id="genAgo"></div></div>
@@ -547,34 +564,98 @@
 const DATA = /*__DATA__*/null;
 // 헤더 환율 카드 (송금 보낼 때 TTS, 전일 대비 ▲빨강 ▼파랑).
 // 값이 없어도 카드 자리는 두고 "환율 불러오는 중"으로 표시. 주말·공휴일엔 마지막 영업일 값(캐시)을 그대로 보여준다
+// 날짜 조회: DATA.fx_hist(하나은행 날짜별 1회차 기록)에서 찾아 보여준다. fxView = null 이면 오늘(실시간) 값
+let fxView = null;
+const FX_CODES = [["USD", "USD"], ["EUR", "EUR"], ["CNY", "CNY"], ["JPY", "JPY(100엔)"]];
+const fxP2 = (n) => String(n).padStart(2, "0");
+const fxToday = () => { const t = new Date(); return `${t.getFullYear()}-${fxP2(t.getMonth() + 1)}-${fxP2(t.getDate())}`; };
+const fxMd = (iso) => { const [y, m, d] = iso.split("-").map(Number); return `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})`; };
+const fxNum = (n) => n.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fxHistDays = () => Object.keys(DATA.fx_hist || {}).sort();
+function fxList(rows) {
+  $("#fxList").innerHTML = rows.map((r) => {
+    const d = r.diff;
+    const chg = d == null ? "" : d > 0 ? `<span class="d up">▲${fxNum(d)}</span>`
+      : d < 0 ? `<span class="d dn">▼${fxNum(-d)}</span>` : `<span class="d eq">-</span>`;
+    return `<li><span class="c">${r.label}</span><b>${r.tts ? fxNum(r.tts) : "-"}</b>${chg}</li>`;
+  }).join("");
+}
+function fxNavState(cur, liveDate) {
+  const days = fxHistDays();
+  $("#fxNav").hidden = !days.length;
+  if (!days.length) return;
+  $("#fxDay").textContent = fxMd(cur);
+  $("#fxPick").max = fxToday();
+  $("#fxPick").value = cur;
+  $("#fxPrev").disabled = !days.some((k) => k < cur);
+  $("#fxNext").disabled = !days.some((k) => k > cur) && !(fxView && liveDate > cur);
+  $("#fxToday").hidden = !fxView;
+  $("#fxCard").classList.toggle("past", !!fxView);
+}
 function renderFx() {
   const fx = DATA.fx;
+  if (fxView) return renderFxDay(fxView);
   if (!fx || !fx.rates || !fx.rates.some((r) => r.tts)) {
-    $("#fxList").innerHTML = ["USD", "EUR", "CNY", "JPY(100엔)"]
-      .map((c) => `<li><span class="c">${c}</span><b>-</b></li>`).join("");
+    $("#fxList").innerHTML = FX_CODES.map(([, c]) => `<li><span class="c">${c}</span><b>-</b></li>`).join("");
     $("#fxNote").textContent = "환율 불러오는 중";
+    fxNavState(fxToday(), fxToday());
     return;
   }
   const ecb = fx.source === "ECB";
   const bank = ecb ? "ECB(유럽중앙은행)" : fx.source === "한국수출입은행" ? "한국수출입은행" : "하나은행";
   $("#fxTitle").textContent = ecb ? "기준환율 (참고)" : `${bank} 송금환율 (보낼 때)`;
-  const fmt = (n) => n.toLocaleString("ko-KR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  $("#fxList").innerHTML = fx.rates.filter((r) => r.tts).map((r) => {
-    const d = r.diff;
-    const chg = d == null ? "" : d > 0 ? `<span class="d up">▲${fmt(d)}</span>`
-      : d < 0 ? `<span class="d dn">▼${fmt(-d)}</span>` : `<span class="d eq">-</span>`;
-    return `<li><span class="c">${r.label}</span><b>${fmt(r.tts)}</b>${chg}</li>`;
-  }).join("");
-  // 예) 오늘 값: "11/9(월) 고시" / 지난 영업일 값: "11/6(금) 최종 고시 · 직전 영업일 기준"
-  const p2 = (n) => String(n).padStart(2, "0");
-  const t = new Date(), todayStr = `${t.getFullYear()}-${p2(t.getMonth() + 1)}-${p2(t.getDate())}`;
-  const [y, m, d] = fx.date.split("-").map(Number);
-  const md = `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})`;
+  fxList(fx.rates.filter((r) => r.tts));
+  const todayStr = fxToday(), md = fxMd(fx.date);
   const note = fx.date === todayStr ? `${md} 고시${fx.round ? ` ${fx.round}회차` : ""}` : `${md} 최종 고시 · 직전 영업일 기준`;
   // ECB 값은 은행 송금환율이 아니라 기준환율이라 출처와 함께 분명히 적는다
+  // 하나은행 1회차: "하나은행 · 11/9(월) 1회차 고시 (08:24)", 지난 영업일 값이면 아래 줄에 "직전 영업일 기준"
+  const hanaNote = `하나은행 · ${md} ${fx.round || 1}회차 고시${fx.time ? ` (${fx.time})` : ""}`;
   $("#fxNote").innerHTML = ecb
-    ? `${esc(note)}<br>ECB 기준 · 송금 보낼 땐 은행별로 약 1% 더 높아요` : esc(note);
+    ? `${esc(note)}<br>ECB 기준 · 송금 보낼 땐 은행별로 약 1% 더 높아요`
+    : fx.source === "하나은행" ? esc(hanaNote) + (fx.date === todayStr ? "" : "<br>직전 영업일 기준") : esc(note);
   $("#fxNote").title = `${bank} 기준${fx.prev_date ? ` · 전일 대비는 ${fx.prev_date} 고시와 비교` : ""}`;
+  fxNavState(fx.date, fx.date);
+}
+// 지난 날짜 보기: 그날 1회차 송금 보낼 때 + 직전 기록일(직전 영업일) 1회차 대비
+function renderFxDay(day) {
+  const hist = DATA.fx_hist || {}, rec = hist[day];
+  const prevDay = fxHistDays().filter((k) => k < day).pop();
+  const prev = prevDay ? hist[prevDay] : null;
+  $("#fxTitle").textContent = "하나은행 송금환율 (보낼 때)";
+  if (!rec) {
+    fxList(FX_CODES.map(([, label]) => ({ label })));
+    $("#fxNote").textContent = `${fxMd(day)} · 이 날짜 자료 없음`;
+    $("#fxNote").title = "주말·공휴일이거나 저장되지 않은 날짜예요";
+  } else {
+    fxList(FX_CODES.map(([code, label]) => ({ label, tts: rec[code],
+      diff: rec[code] && prev && prev[code] ? Math.round((rec[code] - prev[code]) * 100) / 100 : null })));
+    $("#fxNote").textContent = `하나은행 · ${fxMd(day)} 1회차 고시${rec.t ? ` (${rec.t})` : ""}`;
+    $("#fxNote").title = `하나은행 기준${prevDay ? ` · 전일 대비는 ${prevDay} 1회차와 비교` : ""}`;
+  }
+  fxNavState(day, DATA.fx && DATA.fx.date || fxToday());
+}
+function fxGo(day) {
+  const live = DATA.fx && DATA.fx.date;
+  if (!day || day > fxToday()) return;  // 오늘 이후는 고를 수 없음
+  fxView = day === live || (DATA.fx && DATA.fx.source === "하나은행" && day === fxToday()) ? null : day;
+  renderFx();
+}
+function fxStep(dir) {
+  const live = DATA.fx && DATA.fx.date, cur = fxView || live || fxToday();
+  const days = fxHistDays();
+  if (live && !days.includes(live)) days.push(live), days.sort();
+  const next = dir < 0 ? days.filter((k) => k < cur).pop() : days.find((k) => k > cur);
+  if (next) fxGo(next);
+}
+function initFxNav() {
+  const pick = $("#fxPick");
+  const open = () => { try { pick.showPicker(); } catch { pick.style.pointerEvents = "auto"; pick.focus(); pick.click(); } };
+  $("#fxDay").addEventListener("click", open);
+  $("#fxNote").addEventListener("click", () => { if (fxHistDays().length) open(); });  // 아래 "11/9(월) 1회차 고시" 글자도 누르면 달력
+  pick.addEventListener("change", () => { pick.style.pointerEvents = ""; fxGo(pick.value); });
+  $("#fxPrev").addEventListener("click", () => fxStep(-1));
+  $("#fxNext").addEventListener("click", () => fxStep(1));
+  $("#fxToday").addEventListener("click", () => { fxView = null; renderFx(); });
 }
 const TN = DATA.terminals;
 const $ = (s) => document.querySelector(s);
@@ -862,6 +943,7 @@ function summary() {
   const ok = Object.keys(TN).length - Object.keys(DATA.errors).length;
   $("#sTerm").textContent = `${ok} / ${Object.keys(TN).length}`;
   $("#genAt").textContent = DATA.generated_at;
+  initFxNav();
   renderFx();
   renderFreight();
   let frtW = innerWidth; addEventListener("resize", () => { if (Math.abs(innerWidth - frtW) > 40) { frtW = innerWidth; renderFreight(); } });
