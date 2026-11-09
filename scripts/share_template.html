@@ -189,7 +189,9 @@
   /* 안전운임 · 철송비용 조회 (맨 아래). 데이터는 safe_freight.json 을 칸이 화면에 가까워질 때 한 번 불러온다 */
   .sfr .sf-form { display: grid; gap: 10px; padding: 12px 16px 4px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
   .sfr label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0; }
-  .sfr select, .sfr input[type=search] { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  .panel.sfr { background: #F1F8E9; border-color: #DCEDC8; }  /* 이 카드만 연한 연두 (입력칸은 흰색 유지) */
+  .sfr .caption { border-bottom-color: #DCEDC8; }
+  .sfr select, .sfr input[type=search] { font: inherit; font-size: 14px; color: var(--ink); background: #fff; border: 1px solid var(--line);
     border-radius: 10px; padding: 7px 9px; min-width: 0; width: 100%; }
   .sfr .sf-q { grid-column: 1 / -1; position: relative; }
   .sfr .sf-ac { position: absolute; left: 0; right: 0; top: 100%; z-index: 30; margin: 2px 0 0; padding: 4px; list-style: none; background: var(--panel);
