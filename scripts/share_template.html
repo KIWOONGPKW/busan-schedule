@@ -346,7 +346,7 @@
   .thelp a, .tmsg a { color: var(--accent2); font-weight: 700; }
   .tmsg { margin: 12px 16px 0; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
 
-  /* 항만 소식: 넓은 화면은 오른쪽 칸(스크롤 따라옴), 좁은 화면은 접힌 한 줄 */
+  /* 항만 소식: 1100px 이상은 오른쪽 칸(스크롤 따라옴), 그보다 좁으면 상단 접힌 한 줄 */
   .news { display: none; }
   .news.panel { background: var(--news); border-color: var(--news-line); }
   .news .nlist li + li, .news .nhead, .newsbar .nlist { border-color: var(--news-line); }
@@ -372,8 +372,8 @@
   .newsbar summary .lead { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
   .newsbar summary > b, #newsBarTags { flex: none; white-space: nowrap; }
   .newsbar .nlist { max-height: 320px; border-top: 1px solid var(--line); }
-  @media (min-width: 1500px) {
-    .page { display: grid; grid-template-columns: minmax(0, 1180px) 290px; justify-content: center; gap: 4px; padding-right: 16px; }
+  @media (min-width: 1100px) {  /* 노트북·모니터는 소식란을 오른쪽 칸에 (상단 접힌 줄은 폰·좁은 창만) */
+    .page { display: grid; grid-template-columns: minmax(0, 1180px) 280px; justify-content: center; gap: 4px; padding-right: 16px; }
     .page > .wrap { margin: 0; max-width: none; width: 100%; }
     .news { display: flex; flex-direction: column; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); }
     .newsbar { display: none; }
