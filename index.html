@@ -191,7 +191,7 @@
   [hidden] { display: none !important; }  /* display를 지정한 칸(더 보기 등)도 hidden이면 확실히 숨김 */
   .more { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
   /* 맨 아래: 중동·지중해 운임 추이 (KCCI 주간, 부산발 USD/FEU) */
-  /* 안전운임 · 철송비용 조회 (맨 아래). 데이터는 safe_freight.json 을 칸이 화면에 가까워질 때 한 번 불러온다 */
+  /* 국토부 안전운임 고시 조회 (맨 아래). 데이터는 safe_freight.json 을 칸이 화면에 가까워질 때 한 번 불러온다 */
   .sfr .sf-form { display: grid; gap: 10px; padding: 12px 16px 4px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
   .sfr label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0; }
   .panel.sfr { background: #F1F8E9; border-color: #DCEDC8; }  /* 이 카드만 연한 연두 (입력칸은 흰색 유지) */
@@ -212,15 +212,12 @@
   .sfr .sf-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
   .sfr .sf-card h4 { margin: 0; padding: 8px 12px; font-size: 14px; background: var(--sea); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .sfr .sf-card h4 small { font-weight: 400; color: var(--muted); font-size: 12px; }
-  .sfr .sf-card.rail h4 { background: #e9f7d9; }
   .sfr .table-scroll { overflow-x: auto; }
   .sfr table { width: 100%; min-width: 0; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
   .sfr th, .sfr td { padding: 6px 12px; border: 0; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
   .sfr thead th { background: none; color: var(--ink); border-bottom: 0; }
   .sfr th:first-child, .sfr td:first-child { text-align: left; color: var(--muted); font-weight: 400; }
   .sfr thead th { font-size: 12.5px; color: var(--ink); font-weight: 700; border-top: 0; }
-  .sfr tr.net td { font-weight: 800; color: var(--ink); font-size: 14.5px; background: #f6fbef; }
-  .sfr tr.ref td { font-size: 12px; }
   .sfr .sf-msg { padding: 10px 16px; color: var(--muted); font-size: 13px; }
   .sfr .sf-note { padding: 4px 16px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
   .frt { --s-me: #d9622b; --s-md: #2b74d6; }
@@ -589,8 +586,8 @@
     <div class="thelp" id="frtHelp" style="padding-top:8px"></div>
   </section>
 
-  <section class="panel sfr" id="sfrPanel" aria-label="안전운임 · 철송비용 조회">
-    <div class="caption"><b>안전운임 · 철송비용 조회 <span class="muted" style="font-weight:400;font-size:13px">(수출입 컨테이너 · 행정동 기준 · 20FT / 40FT)</span></b><span class="muted">검토용</span></div>
+  <section class="panel sfr" id="sfrPanel" aria-label="국토부 안전운임 고시 조회">
+    <div class="caption"><b>국토부 안전운임 고시 조회 <span class="muted" style="font-weight:400;font-size:13px">(수출입 컨테이너 · 행정동 기준 · 20FT / 40FT)</span></b><span class="muted">국토교통부 고시</span></div>
     <div class="sf-form">
       <label class="sf-q">도착지 주소 (입력하면 자동완성 · 예: 달성군 유가읍, 부천 소사구, 경기 화성 봉담)
         <input type="search" id="sfQ" placeholder="시도 · 시군구 · 행정동을 입력하세요" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sfAc">
@@ -605,11 +602,10 @@
         <label><input type="radio" name="sfWay" value="ow"> 편도 <small class="muted">(→ 의왕ICD 공컨 반납)</small></label>
       </div>
     </div>
-    <div class="sf-msg" id="sfMsg">도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임과 철송 NET가가 나와요.</div>
+    <div class="sf-msg" id="sfMsg">도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임이 나와요.</div>
     <div class="sf-out" id="sfOut"></div>
     <div class="sf-note">
       · 안전운임: 왕복 표가 기본, 편도는 부산신항 · 부산북항 · 광양항 ↔ 의왕ICD 구간만 있어요 (기점 → 도착지 적컨 → 의왕ICD 공컨 반납).<br>
-      · 철송 NET가 = 청화차운임(20FT 250,000 / 40FT 350,000) + 안전위탁운임(의왕ICD(부곡) 기점 왕복, 도착 행정동) + TMS(20FT 55,000 / 40FT 75,000). 부곡 실적은 보통 안전위탁운임의 10% 마진을 남겨줘요.<br>
       · 40HC는 40FT 값을 써요 (확정 규정 아님, 거래 전 확인 필요). 표에는 20FT · 40FT만 있고 45FT 등은 없어요.<br>
       · 행정동 단위 조회예요. 도로명 주소는 행정동으로 바꿔 찾아 주세요. 옛 이름은 현행으로 (예: 대구 달성군 유가면 → 유가읍). 시군구는 구 단위로 나뉜 곳이 있어요 (예: 부천시 소사구, 화성시는 구 없음).<br>
       · 출처: 국토교통부 안전운임 고시 별첨 「수출입 컨테이너 품목 기점별 운임(왕복 · 편도)」
@@ -723,9 +719,8 @@ function initFxNav() {
   $("#fxNext").addEventListener("click", () => fxStep(1));
   $("#fxToday").addEventListener("click", () => { fxView = null; renderFx(); });
 }
-// ---------------------------------------------------------------- 안전운임 · 철송비용 조회 (맨 아래)
+// ---------------------------------------------------------------- 국토부 안전운임 고시 조회 (맨 아래)
 // safe_freight.json: A 주소목록, R 왕복(기점별 거리 + 거리->운임표), O 편도. 값 순서 [20위탁, 20운수, 20안전, 40위탁, 40운수, 40안전]
-const SF_RAIL = { c20: 250000, c40: 350000, tms20: 55000, tms40: 75000, rail: "의왕ICD" };
 let SF = null, sfLoading = false, sfAcIdx = -1, sfAcList = [];
 const sfWon = (n) => (n == null ? "-" : Number(n).toLocaleString("ko-KR"));
 function sfOpts(sel, items, keep) {
@@ -816,7 +811,7 @@ function sfRender() {
   if (!SF) return;
   const di = $("#sfDong").value, out = $("#sfOut");
   const way = document.querySelector('input[name="sfWay"]:checked').value;
-  if (di === "") { out.innerHTML = ""; $("#sfMsg").textContent = "도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임과 철송 NET가가 나와요."; return; }
+  if (di === "") { out.innerHTML = ""; $("#sfMsg").textContent = "도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임이 나와요."; return; }
   const i = Number(di), place = SF.parts[i].join(" "), dong = esc(SF.parts[i][2]);
   const o = $("#sfOrig").value, origs = o === "BUSAN" ? ["부산신항", "부산북항"] : [o];
   const cards = [];
@@ -835,16 +830,6 @@ function sfRender() {
         [["안전위탁운임", sfWon(v[0]), sfWon(v[3])], ["운수사업자 간 운임", sfWon(v[1]), sfWon(v[4])], ["안전운송운임", sfWon(v[2]), sfWon(v[5])]])}</div>`);
     }
   });
-  // 철송 NET가: 청화차 + 의왕ICD(부곡) 기점 왕복 안전위탁운임 + TMS
-  const RR = SF.R[SF_RAIL.rail], rkm = RR.d[i], rv = RR.t[String(rkm)];
-  const n20 = SF_RAIL.c20 + rv[0] + SF_RAIL.tms20, n40 = SF_RAIL.c40 + rv[3] + SF_RAIL.tms40;
-  cards.push(`<div class="sf-card rail"><h4>철송 NET가 · 의왕ICD(부곡) ↔ ${dong} <small>왕복 ${rkm}km</small></h4>${sfTable("항목 (원)", [
-    ["청화차운임", sfWon(SF_RAIL.c20), sfWon(SF_RAIL.c40)],
-    ["안전위탁운임 (부곡 기점)", sfWon(rv[0]), sfWon(rv[3])],
-    ["TMS 비용", sfWon(SF_RAIL.tms20), sfWon(SF_RAIL.tms40)],
-    ["NET가", sfWon(n20), sfWon(n40), "net"],
-    ["참고: 부곡 마진 (안전위탁 10%)", sfWon(Math.round(rv[0] * 0.1)), sfWon(Math.round(rv[3] * 0.1)), "ref"],
-  ])}</div>`);
   $("#sfMsg").textContent = `도착지: ${place} · 안전운임 ${way === "ow" ? "편도" : "왕복"} · 40HC는 40FT 값 (거래 전 확인)`;
   out.innerHTML = cards.join("");
 }
