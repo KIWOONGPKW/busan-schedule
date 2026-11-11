@@ -206,35 +206,6 @@
   [hidden] { display: none !important; }  /* display를 지정한 칸(더 보기 등)도 hidden이면 확실히 숨김 */
   .more { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
   /* 맨 아래: 중동·지중해 운임 추이 (KCCI 주간, 부산발 USD/FEU) */
-  /* 국토부 안전운임 고시 조회 (맨 아래). 데이터는 safe_freight.json 을 칸이 화면에 가까워질 때 한 번 불러온다 */
-  .sfr .sf-form { display: grid; gap: 10px; padding: 12px 16px 4px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
-  .sfr label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); min-width: 0; }
-  .panel.sfr { background: #F1F8E9; border-color: #DCEDC8; }  /* 이 카드만 연한 연두 (입력칸은 흰색 유지) */
-  .sfr .caption { border-bottom-color: #DCEDC8; }
-  .sfr select, .sfr input[type=search] { font: inherit; font-size: 14px; color: var(--ink); background: #fff; border: 1px solid var(--line);
-    border-radius: 10px; padding: 7px 9px; min-width: 0; width: 100%; }
-  .sfr .sf-q { grid-column: 1 / -1; position: relative; }
-  .sfr .sf-ac { position: absolute; left: 0; right: 0; top: 100%; z-index: 30; margin: 2px 0 0; padding: 4px; list-style: none; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(40,30,60,.14); max-height: 300px; overflow: auto; }
-  .sfr .sf-ac li { padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 13.5px; color: var(--ink); }
-  .sfr .sf-ac li.on, .sfr .sf-ac li:hover { background: var(--accent-soft); }
-  .sfr .sf-ac li small { color: var(--muted); margin-left: 6px; }
-  .sfr .sf-ac li.none { cursor: default; color: var(--muted); background: none; font-size: 12.5px; }
-  .sfr .sf-ac mark { background: none; color: var(--accent); font-weight: 700; }
-  .sfr .sf-way { display: flex; gap: 12px; align-items: center; flex-direction: row; padding-top: 18px; flex-wrap: wrap; }
-  .sfr .sf-way label { flex-direction: row; align-items: center; gap: 4px; color: var(--ink); font-size: 13px; }
-  .sfr .sf-out { padding: 6px 16px 4px; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); }
-  .sfr .sf-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-  .sfr .sf-card h4 { margin: 0; padding: 8px 12px; font-size: 14px; background: var(--sea); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .sfr .sf-card h4 small { font-weight: 400; color: var(--muted); font-size: 12px; }
-  .sfr .table-scroll { overflow-x: auto; }
-  .sfr table { width: 100%; min-width: 0; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-  .sfr th, .sfr td { padding: 6px 12px; border: 0; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
-  .sfr thead th { background: none; color: var(--ink); border-bottom: 0; }
-  .sfr th:first-child, .sfr td:first-child { text-align: left; color: var(--muted); font-weight: 400; }
-  .sfr thead th { font-size: 12.5px; color: var(--ink); font-weight: 700; border-top: 0; }
-  .sfr .sf-msg { padding: 10px 16px; color: var(--muted); font-size: 13px; }
-  .sfr .sf-note { padding: 4px 16px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
   .frt { --s-me: #d9622b; --s-md: #2b74d6; }
   .frt .fstats { display: grid; gap: 10px; padding: 12px 16px 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
   .frt .fst { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
@@ -601,31 +572,6 @@
     <div class="thelp" id="frtHelp" style="padding-top:8px"></div>
   </section>
 
-  <section class="panel sfr" id="sfrPanel" aria-label="국토부 안전운임 고시 조회">
-    <div class="caption"><b>국토부 안전운임 고시 조회 <span class="muted" style="font-weight:400;font-size:13px">(수출입 컨테이너 · 행정동 기준 · 20FT / 40FT)</span></b><span class="muted">국토교통부 고시</span></div>
-    <div class="sf-form">
-      <label class="sf-q">도착지 주소 (입력하면 자동완성 · 예: 달성군 유가읍, 부천 소사구, 경기 화성 봉담)
-        <input type="search" id="sfQ" placeholder="시도 · 시군구 · 행정동을 입력하세요" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="sfAc">
-        <ul class="sf-ac" id="sfAc" role="listbox" hidden></ul>
-      </label>
-      <label>시도<select id="sfSido"><option value="">-</option></select></label>
-      <label>시군구<select id="sfSgg"><option value="">-</option></select></label>
-      <label>행정동<select id="sfDong"><option value="">-</option></select></label>
-      <label>기점 (항구)<select id="sfOrig"><option value="BUSAN">부산신항 + 부산북항</option></select></label>
-      <div class="sf-way" role="radiogroup" aria-label="왕복/편도">
-        <label><input type="radio" name="sfWay" value="rt" checked> 왕복</label>
-        <label><input type="radio" name="sfWay" value="ow"> 편도 <small class="muted">(→ 의왕ICD 공컨 반납)</small></label>
-      </div>
-    </div>
-    <div class="sf-msg" id="sfMsg">도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임이 나와요.</div>
-    <div class="sf-out" id="sfOut"></div>
-    <div class="sf-note">
-      · 안전운임: 왕복 표가 기본, 편도는 부산신항 · 부산북항 · 광양항 ↔ 의왕ICD 구간만 있어요 (기점 → 도착지 적컨 → 의왕ICD 공컨 반납).<br>
-      · 40HC는 40FT 값을 써요 (확정 규정 아님, 거래 전 확인 필요). 표에는 20FT · 40FT만 있고 45FT 등은 없어요.<br>
-      · 행정동 단위 조회예요. 도로명 주소는 행정동으로 바꿔 찾아 주세요. 옛 이름은 현행으로 (예: 대구 달성군 유가면 → 유가읍). 시군구는 구 단위로 나뉜 곳이 있어요 (예: 부천시 소사구, 화성시는 구 없음).<br>
-      · 출처: 국토교통부 안전운임 고시 별첨 「수출입 컨테이너 품목 기점별 운임(왕복 · 편도)」
-    </div>
-  </section>
 
   <div class="notes">선적 전 선사·터미널 최신 일정 확인 필요 · 출처: 부산항 8개 터미널 공개 화면, 코리아쉬핑가제트, 부산항만공사</div>
 </div>
@@ -733,145 +679,6 @@ function initFxNav() {
   $("#fxPrev").addEventListener("click", () => fxStep(-1));
   $("#fxNext").addEventListener("click", () => fxStep(1));
   $("#fxToday").addEventListener("click", () => { fxView = null; renderFx(); });
-}
-// ---------------------------------------------------------------- 국토부 안전운임 고시 조회 (맨 아래)
-// safe_freight.json: A 주소목록, R 왕복(기점별 거리 + 거리->운임표), O 편도. 값 순서 [20위탁, 20운수, 20안전, 40위탁, 40운수, 40안전]
-let SF = null, sfLoading = false, sfAcIdx = -1, sfAcList = [];
-const sfWon = (n) => (n == null ? "-" : Number(n).toLocaleString("ko-KR"));
-function sfOpts(sel, items, keep) {
-  const prev = keep ? sel.value : "";
-  sel.innerHTML = items.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("");
-  if (prev && items.some(([v]) => v === prev)) sel.value = prev;
-}
-function sfLoad() {
-  if (SF || sfLoading) return;
-  sfLoading = true;
-  $("#sfMsg").textContent = "운임표 불러오는 중…";
-  fetch("safe_freight.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => {
-    SF = d; SF.parts = d.A.map((a) => a.split("|"));
-    SF.flat = SF.parts.map((p) => p.join(" "));
-    const sidos = [...new Set(SF.parts.map((p) => p[0]))];
-    sfOpts($("#sfSido"), [["", "선택"], ...sidos.map((s) => [s, s])]);
-    sfOpts($("#sfOrig"), [["BUSAN", "부산신항 + 부산북항"], ...Object.keys(d.R).map((k) => [k, k])]);
-    sfFillSgg(); sfRender();
-    if ($("#sfQ").value.trim()) sfSearch();
-  }).catch(() => {
-    $("#sfMsg").innerHTML = '운임표를 불러오지 못했어요. 사이트(<a href="https://kiwoongpkw.github.io/busan-schedule/" target="_blank" rel="noopener">kiwoongpkw.github.io/busan-schedule</a>)에서 열어 주세요.';
-  }).finally(() => { sfLoading = false; });
-}
-function sfFillSgg() {
-  const sido = $("#sfSido").value;
-  const sggs = sido ? [...new Set(SF.parts.filter((p) => p[0] === sido).map((p) => p[1]))] : [];
-  sfOpts($("#sfSgg"), [["", sido ? "선택" : "-"], ...sggs.map((s) => [s, s])], true);
-  sfFillDong();
-}
-function sfFillDong() {
-  const sido = $("#sfSido").value, sgg = $("#sfSgg").value;
-  const list = sgg ? SF.parts.map((p, i) => [p, i]).filter(([p]) => p[0] === sido && p[1] === sgg) : [];
-  sfOpts($("#sfDong"), [["", sgg ? "선택" : "-"], ...list.map(([p, i]) => [String(i), p[2]])], true);
-}
-function sfPick(i) {
-  const p = SF.parts[i];
-  $("#sfSido").value = p[0]; sfFillSgg();
-  $("#sfSgg").value = p[1]; sfFillDong();
-  $("#sfDong").value = String(i);
-  $("#sfQ").value = p.join(" ");
-  sfAcClose();
-  sfRender();
-}
-// 자동완성: 도로명(~로/~길)·번지·숫자는 빼고, 남은 단어를 가장 많이 포함한 주소부터 보여준다.
-// "경기 화성 봉담"처럼 줄여 써도 됨 (시도·시군구·행정동 글자에 포함되면 맞음)
-const SF_SKIP = (w) => /^[\d\-~]+(번지|호|층)?$/.test(w) || /\d*(로|길|번길|대로)$/.test(w) || /^\d+(번지|호|층|동\d)/.test(w);
-function sfSearch() {
-  if (!SF) { sfLoad(); return; }
-  const all = $("#sfQ").value.trim().replace(/[(),]/g, " ").split(/\s+/).filter(Boolean);
-  if (!all.length) { sfAcClose(); return; }
-  const skipped = all.filter(SF_SKIP), words = all.filter((w) => !SF_SKIP(w));
-  let best = 0, hits = [];
-  if (words.length) SF.flat.forEach((s, i) => {
-    const n = words.reduce((c, w) => c + (s.includes(w) ? 1 : 0), 0);
-    if (n > best) { best = n; hits = [i]; } else if (n && n === best) hits.push(i);
-  });
-  const missed = words.filter((w) => !hits.some((i) => SF.flat[i].includes(w)));
-  // 행정동 이름이 정확히 같은 곳, 행정동 앞부분이 맞는 곳 순으로
-  const last = words[words.length - 1] || "";
-  const score = (i) => (SF.parts[i][2] === last ? 0 : SF.parts[i][2].startsWith(last) ? 1 : 2);
-  hits.sort((x, y) => score(x) - score(y) || x - y);
-  sfAcList = hits.slice(0, 30); sfAcIdx = sfAcList.length ? 0 : -1;
-  const used = words.filter((w) => !missed.includes(w));
-  const mark = (s) => { let x = esc(s); used.forEach((w) => { x = x.split(esc(w)).join(`<mark>${esc(w)}</mark>`); }); return x; };
-  const off = [...skipped, ...missed];
-  const ac = $("#sfAc");
-  ac.innerHTML = sfAcList.length
-    ? sfAcList.map((i, k) => `<li role="option" data-i="${i}" class="${k === 0 ? "on" : ""}">${mark(SF.parts[i][2])}<small>${mark(SF.parts[i][0] + " " + SF.parts[i][1])}</small></li>`).join("")
-      + (hits.length > 30 ? `<li class="none">외 ${hits.length - 30}곳 · 더 자세히 입력해 주세요</li>` : "")
-      + (off.length ? `<li class="none">"${esc(off.join(" "))}"는 행정동 표에 없어 빼고 찾았어요</li>` : "")
-    : `<li class="none">표에 없는 주소예요. 행정동 이름으로 입력해 주세요 (옛 이름은 현행으로, 예: 유가면 → 유가읍)</li>`;
-  ac.hidden = false; $("#sfQ").setAttribute("aria-expanded", "true");
-}
-function sfAcClose() { $("#sfAc").hidden = true; $("#sfQ").setAttribute("aria-expanded", "false"); sfAcIdx = -1; }
-function sfAcMove(d) {
-  if (!sfAcList.length) return;
-  sfAcIdx = (sfAcIdx + d + sfAcList.length) % sfAcList.length;
-  const lis = $("#sfAc").querySelectorAll("li[data-i]");
-  lis.forEach((li, k) => li.classList.toggle("on", k === sfAcIdx));
-  lis[sfAcIdx].scrollIntoView({ block: "nearest" });
-}
-// 운임 카드 한 장: 행 = 운임 종류, 열 = 20FT / 40FT
-function sfTable(head, rows) {
-  return `<div class="table-scroll"><table><thead><tr><th>${head}</th><th>20FT</th><th>40FT</th></tr></thead><tbody>${rows.map(([k, a, b, cls]) =>
-    `<tr${cls ? ` class="${cls}"` : ""}><td>${k}</td><td>${a}</td><td>${b}</td></tr>`).join("")}</tbody></table></div>`;
-}
-function sfRender() {
-  if (!SF) return;
-  const di = $("#sfDong").value, out = $("#sfOut");
-  const way = document.querySelector('input[name="sfWay"]:checked').value;
-  if (di === "") { out.innerHTML = ""; $("#sfMsg").textContent = "도착지 주소를 입력하거나 고르면 20FT · 40FT 안전운임이 나와요."; return; }
-  const i = Number(di), place = SF.parts[i].join(" "), dong = esc(SF.parts[i][2]);
-  const o = $("#sfOrig").value, origs = o === "BUSAN" ? ["부산신항", "부산북항"] : [o];
-  const cards = [];
-  origs.forEach((org) => {
-    if (way === "ow") {
-      const key = `${org}↔의왕ICD`, rows = SF.O[key];
-      if (!rows) { cards.push(`<div class="sf-card"><h4>${esc(org)} <small>편도 표 없음 (부산신항 · 부산북항 · 광양항만 있어요)</small></h4></div>`); return; }
-      const row = rows.find((r) => r[0] === i);
-      if (!row) { cards.push(`<div class="sf-card"><h4>${esc(key)} <small>이 행정동은 편도 표에 없어요</small></h4></div>`); return; }
-      const [, all, full, empty, a1, a2, a3, b1, b2, b3] = row;
-      cards.push(`<div class="sf-card"><h4>${esc(org)} → ${dong} → 의왕ICD <small>편도 ${all}km (적컨 ${full} · 공컨 ${empty})</small></h4>${sfTable("안전운임 (원)",
-        [["안전위탁운임", sfWon(a1), sfWon(b1)], ["운수사업자 간 운임", sfWon(a2), sfWon(b2)], ["안전운송운임", sfWon(a3), sfWon(b3)]])}</div>`);
-    } else {
-      const R = SF.R[org], km = R.d[i], v = R.t[String(km)];
-      cards.push(`<div class="sf-card"><h4>${esc(org)} ↔ ${dong} <small>왕복 ${km}km</small></h4>${sfTable("안전운임 (원)",
-        [["안전위탁운임", sfWon(v[0]), sfWon(v[3])], ["운수사업자 간 운임", sfWon(v[1]), sfWon(v[4])], ["안전운송운임", sfWon(v[2]), sfWon(v[5])]])}</div>`);
-    }
-  });
-  $("#sfMsg").textContent = `도착지: ${place} · 안전운임 ${way === "ow" ? "편도" : "왕복"} · 40HC는 40FT 값 (거래 전 확인)`;
-  out.innerHTML = cards.join("");
-}
-function initSafeFreight() {
-  const panel = $("#sfrPanel"); if (!panel) return;
-  // 화면에 가까워지면 미리 불러오기 (못 쓰는 브라우저는 처음 누를 때)
-  if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); sfLoad(); } }, { rootMargin: "400px" });
-    io.observe(panel);
-  }
-  panel.addEventListener("focusin", sfLoad);
-  const q = $("#sfQ");
-  q.addEventListener("input", sfSearch);
-  q.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); if ($("#sfAc").hidden) sfSearch(); else sfAcMove(1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); sfAcMove(-1); }
-    else if (e.key === "Enter") { e.preventDefault(); if (sfAcIdx >= 0) sfPick(sfAcList[sfAcIdx]); }
-    else if (e.key === "Escape") sfAcClose();
-  });
-  $("#sfAc").addEventListener("mousedown", (e) => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); sfPick(Number(li.dataset.i)); } });
-  q.addEventListener("blur", () => setTimeout(sfAcClose, 150));
-  q.addEventListener("focus", () => { if (q.value.trim() && SF) sfSearch(); });
-  $("#sfSido").addEventListener("change", () => { sfFillSgg(); sfRender(); });
-  $("#sfSgg").addEventListener("change", () => { sfFillDong(); sfRender(); });
-  $("#sfDong").addEventListener("change", sfRender);
-  $("#sfOrig").addEventListener("change", sfRender);
-  panel.querySelectorAll('input[name="sfWay"]').forEach((r) => r.addEventListener("change", sfRender));
 }
 const TN = DATA.terminals;
 const $ = (s) => document.querySelector(s);
@@ -1249,7 +1056,6 @@ function summary() {
   $("#sTerm").textContent = `${ok} / ${Object.keys(TN).length}`;
   $("#genAt").textContent = DATA.generated_at;
   initFxNav();
-  initSafeFreight();
   renderFx();
   renderFreight();
   let frtW = innerWidth; addEventListener("resize", () => { if (Math.abs(innerWidth - frtW) > 40) { frtW = innerWidth; renderFreight(); } });
