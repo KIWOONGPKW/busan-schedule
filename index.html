@@ -158,6 +158,21 @@
   .chip.t-BNCT, .fchip.t-BNCT[aria-pressed="true"] { background: var(--c-bnct-bg); }
   .chip.t-BPTC, .fchip.t-BPTC[aria-pressed="true"] { background: var(--c-bptc-bg); }
   .chip.t-HKTL, .fchip.t-HKTL[aria-pressed="true"] { background: var(--c-hktl-bg); }
+  /* 장치장 코드 말풍선: 터미널 필터 버튼 · 표의 터미널 배지 (마우스 올림 / 휴대폰은 길게 누름) */
+  .fchip[data-t]:not([data-t="ALL"]), td .chip { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  td .chip { cursor: help; }
+  .btip { position: fixed; z-index: 60; max-width: min(320px, calc(100vw - 16px)); background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 28px rgba(40,30,60,.18); padding: 8px 10px; font-size: 13px; line-height: 1.5; }
+  .btip[hidden] { display: none; }
+  .btip .bt-name { font-weight: 700; }
+  .btip .bt-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+  .btip .bt-row .muted { font-size: 12px; }
+  .btip .bt-code { font: inherit; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); background: none;
+    border: 1px dashed var(--line); border-radius: 6px; padding: 0 6px; cursor: copy; }
+  .btip .bt-code:hover, .btip .bt-code:focus-visible { background: var(--accent-soft); }
+  .btip .bt-none { color: var(--muted); }
+  .btip .bt-msg { margin-top: 4px; font-size: 12px; color: var(--muted); min-height: 0; }
+  .btip .bt-msg.ok { color: var(--accent); font-weight: 700; }
 
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); min-width: 0; }
   .caption { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 16px; border-bottom: 1px solid var(--line); }
@@ -970,6 +985,95 @@ function bondCode(r) {
   return k ? m[k] : bondAll(r.t);
 }
 const bondLine = (r) => (BOND[r.t] ? `<div class="muted bond">장치장 <b>${esc(bondCode(r))}</b></div>` : "");
+// ---------------------------------------------------------------- 장치장 코드 말풍선 (BOND · TN 데이터 그대로 사용)
+// 마우스: 올리면 뜨고, 말풍선으로 옮겨 코드를 누르면 복사. 터치: 길게 누르면 뜨고 (이때는 필터가 눌리지 않음), 다른 곳을 누르면 닫힘.
+(() => {
+  const SEL = '.fchip[data-t]:not([data-t="ALL"]), td .chip';
+  const tip = document.createElement("div");
+  tip.className = "btip"; tip.id = "bondTip"; tip.setAttribute("role", "tooltip"); tip.hidden = true;
+  document.body.appendChild(tip);
+  let cur = null, hideT = 0, pressT = 0, pressEl = null, eatClick = null, msgT = 0;
+  const termOf = (el) => el.dataset.t || ((el.className.match(/\bt-(\S+)/) || [])[1] || "");
+  const codeBtn = (v) => `<button type="button" class="bt-code" data-code="${esc(v)}" title="눌러서 복사">${esc(v)}</button>`;
+  function body(t, el) {
+    const name = esc(TN[t] || el.textContent.trim() || t), list = Object.entries(BOND[t] || {});
+    if (!list.length) return `<div class="bt-name">${name}</div><div class="bt-row bt-none">장치장 코드 확인 중</div>`;
+    if (list.length === 1) {
+      const [k, v] = list[0];
+      return `<div class="bt-row"><span class="bt-name">${name}</span><span>· 장치장</span>${codeBtn(v)}${k ? `<span class="muted">${esc(k)}</span>` : ""}</div>`;
+    }
+    return `<div class="bt-name">${name} · 장치장</div>` + list.map(([k, v]) => `<div class="bt-row"><span>${esc(k)}</span>${codeBtn(v)}</div>`).join("");
+  }
+  function place(el) {
+    const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, pad = 8;
+    let top = r.bottom + 6;
+    if (top + h > innerHeight - pad && r.top - 6 - h > pad) top = r.top - 6 - h;
+    const left = Math.min(Math.max(pad, r.left + r.width / 2 - w / 2), innerWidth - w - pad);
+    tip.style.top = `${Math.round(top)}px`; tip.style.left = `${Math.round(left)}px`;
+  }
+  function show(el) {
+    clearTimeout(hideT);
+    const t = termOf(el); if (!t) return;
+    if (cur !== el) { tip.innerHTML = body(t, el) + `<div class="bt-msg"></div>`; cur = el; el.setAttribute("aria-describedby", "bondTip"); }
+    tip.hidden = false; place(el);
+  }
+  function hide() { clearTimeout(hideT); tip.hidden = true; if (cur) cur.removeAttribute("aria-describedby"); cur = null; }
+  const hideSoon = () => { clearTimeout(hideT); hideT = setTimeout(hide, 220); };
+  // 마우스 · 펜
+  document.addEventListener("pointerover", (e) => {
+    if (e.pointerType === "touch") return;
+    const el = e.target.closest(SEL);
+    if (el) show(el); else if (tip.contains(e.target)) clearTimeout(hideT);
+  });
+  document.addEventListener("pointerout", (e) => {
+    if (e.pointerType === "touch" || !cur) return;
+    const to = e.relatedTarget;
+    if (to && (cur.contains(to) || tip.contains(to))) return;
+    if (e.target.closest(SEL) === cur || tip.contains(e.target)) hideSoon();
+  });
+  // 키보드: Tab으로 필터 버튼에 오면 보여 줌
+  document.addEventListener("focusin", (e) => {
+    const el = e.target.closest && e.target.closest(SEL);
+    if (el && el.matches(":focus-visible")) show(el);
+    else if (!tip.contains(e.target)) hideSoon();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !tip.hidden) hide(); });
+  // 터치: 길게 누르기 (0.5초)
+  const cancelPress = () => { clearTimeout(pressT); pressEl = null; };
+  document.addEventListener("pointerdown", (e) => {
+    if (!tip.hidden && !tip.contains(e.target) && !(cur && cur.contains(e.target))) hide();
+    if (e.pointerType !== "touch") return;
+    const el = e.target.closest(SEL); if (!el) return;
+    pressEl = el; clearTimeout(pressT);
+    pressT = setTimeout(() => { if (pressEl === el) { show(el); eatClick = el; if (navigator.vibrate) navigator.vibrate(15); } }, 500);
+  });
+  document.addEventListener("pointermove", (e) => {
+    if (pressEl && e.pointerType === "touch" && (Math.abs(e.movementX) > 6 || Math.abs(e.movementY) > 6)) cancelPress();
+  });
+  ["pointerup", "pointercancel"].forEach((n) => document.addEventListener(n, cancelPress));
+  document.addEventListener("contextmenu", (e) => { if (e.target.closest(SEL)) e.preventDefault(); });
+  // 길게 누른 뒤 손을 뗄 때 생기는 클릭은 필터로 넘기지 않음 (짧게 누르면 필터는 그대로)
+  document.addEventListener("click", (e) => {
+    if (eatClick && eatClick.contains(e.target)) { e.preventDefault(); e.stopPropagation(); }
+    eatClick = null;
+  }, true);
+  // 코드 복사
+  async function copy(v) {
+    try { await navigator.clipboard.writeText(v); return true; } catch (_) {
+      const ta = document.createElement("textarea"); ta.value = v; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (_) {} ta.remove(); return ok;
+    }
+  }
+  tip.addEventListener("click", async (e) => {
+    const b = e.target.closest(".bt-code"); if (!b) return;
+    const ok = await copy(b.dataset.code), m = tip.querySelector(".bt-msg");
+    m.textContent = ok ? `장치장 코드 복사됨 · ${b.dataset.code}` : "복사하지 못했어요. 길게 눌러 직접 복사해 주세요";
+    m.classList.toggle("ok", ok); if (cur) place(cur);
+    clearTimeout(msgT); msgT = setTimeout(() => { m.textContent = ""; m.classList.remove("ok"); }, 1600);
+  });
+  addEventListener("scroll", () => { if (cur && !tip.hidden) place(cur); }, { passive: true, capture: true });
+  addEventListener("resize", () => { if (cur && !tip.hidden) place(cur); });
+})();
 
 const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now - 12 * 3600e3); };
 // 21일 전후 = 오늘 기준 앞으로 21일 안에 출항할 배 + 최근 21일 안에 출항한 배 (선적 확인용)
