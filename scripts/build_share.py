@@ -12,6 +12,7 @@ from pathlib import Path
 
 import empties
 import fx
+import incheon
 import kcci
 import news
 import terminals
@@ -20,18 +21,23 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "share" / "busan-vessel-schedule.html"
 
 
+# 부산 8개 + 인천 4개 터미널을 한 목록으로 (화면 검색·필터·요약이 그대로 함께 동작)
+FETCHERS = {**terminals.FETCHERS, **incheon.FETCHERS}
+TERMINALS = {**terminals.TERMINALS, **incheon.TERMINALS}
+
+
 def main():
     rows, errors = [], {}
 
     def grab(code):
         try:
-            return code, terminals.FETCHERS[code]()
+            return code, FETCHERS[code]()
         except Exception as e:  # noqa: BLE001
             errors[code] = f"{type(e).__name__}: {e}"[:160]
             return code, []
 
-    with ThreadPoolExecutor(max_workers=len(terminals.FETCHERS)) as ex:
-        for code, found in ex.map(grab, terminals.FETCHERS):
+    with ThreadPoolExecutor(max_workers=len(FETCHERS)) as ex:
+        for code, found in ex.map(grab, FETCHERS):
             rows += [{"t": code, **r} for r in found]
 
     try:  # 뉴스가 막혀도 스케줄은 나가야 한다
@@ -42,7 +48,7 @@ def main():
     try:  # 공컨 현황이 막혀도 스케줄은 나가야 한다
         yards, empty_errors = empties.fetch_empties({r["operator"] for r in rows if r["t"] == "HJNC" and r["operator"]})
     except Exception as e:  # noqa: BLE001
-        yards, empty_errors = [], {"HJNC": str(e)[:160], "BPTC": str(e)[:160]}
+        yards, empty_errors = [], {k: str(e)[:160] for k in ("HJNC", "BPTC", "HJIT", "E1CT")}
 
     def load(name, key):  # 사용자가 고치는 표: 잘못 고쳐도 페이지는 나가야 한다
         try:
@@ -97,7 +103,7 @@ def main():
             if p.get("port") and p.get("route") in kcci.WANT:
                 proxy_routes.append({k: p.get(k, "") for k in ("port", "group", "route", "note")})
             else:
-                proxy_err = f"proxy_routes.json: {p.get('port') or '?'} 항로 코드 확인 필요 (KMEI·KMDI만 가능)"
+                proxy_err = f"proxy_routes.json: {p.get('port') or '?'} 항로 코드 확인 필요 ({'·'.join(kcci.WANT)}만 가능)"
     except Exception as e:  # noqa: BLE001
         proxy_err = f"proxy_routes.json 읽기 실패: {e}"[:160]
 
@@ -106,7 +112,7 @@ def main():
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
             "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
-            "terminals": terminals.TERMINALS, "errors": errors, "rows": rows,
+            "terminals": TERMINALS, "incheon": list(incheon.TERMINALS), "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
             "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}

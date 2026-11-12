@@ -1,4 +1,4 @@
-<title>부산항 선박 스케줄</title>
+<title>부산항·인천항 선박 스케줄</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +18,8 @@
     --c-hktl: #a86600; --c-hktl-bg: #fff0cc;
     --c-dgt: #0f7f8c; --c-dgt-bg: #d8f4f6;
     --c-pnit: #c2387a; --c-pnit-bg: #ffe1ef; --c-bnct: #5f6f0e; --c-bnct-bg: #eef3cf;
+    --c-snct: #0b6e99; --c-snct-bg: #dcf0fa; --c-hjit: #3949ab; --c-hjit-bg: #e3e7fb;
+    --c-ict: #00796b; --c-ict-bg: #d7f3ee; --c-e1ct: #8e3fa8; --c-e1ct-bg: #f4e3fa;
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
     --shadow: 0 6px 22px rgba(123, 104, 238, .10);
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
@@ -37,6 +39,8 @@
       --c-dgt: #66d4de; --c-dgt-bg: #163a3e;
     --c-pnit: #ff8fc0; --c-pnit-bg: #47213a; --c-bnct: #c8d86a; --c-bnct-bg: #33381a;
       --c-pnit: #ff8fc0; --c-pnit-bg: #47213a; --c-bnct: #c8d86a; --c-bnct-bg: #33381a;
+      --c-snct: #6cc6ee; --c-snct-bg: #15344a; --c-hjit: #a3adf5; --c-hjit-bg: #262c52;
+      --c-ict: #5fd6c4; --c-ict-bg: #123a35; --c-e1ct: #dca3ef; --c-e1ct-bg: #3b2346;
       --hero-a: #222d52; --hero-b: #3f4d80; --hero-c: #9a6a4f; --hero-ink: #fff7f2;
       --shadow: 0 6px 22px rgba(0, 0, 0, .35); color-scheme: dark;
     }
@@ -52,6 +56,8 @@
     --c-hktl: #ffcc66; --c-hktl-bg: #44351a;
     --c-dgt: #66d4de; --c-dgt-bg: #163a3e;
     --c-pnit: #ff8fc0; --c-pnit-bg: #47213a; --c-bnct: #c8d86a; --c-bnct-bg: #33381a;
+    --c-snct: #6cc6ee; --c-snct-bg: #15344a; --c-hjit: #a3adf5; --c-hjit-bg: #262c52;
+    --c-ict: #5fd6c4; --c-ict-bg: #123a35; --c-e1ct: #dca3ef; --c-e1ct-bg: #3b2346;
     --hero-a: #222d52; --hero-b: #3f4d80; --hero-c: #9a6a4f; --hero-ink: #fff7f2;
     --shadow: 0 6px 22px rgba(0, 0, 0, .35); color-scheme: dark;
   }
@@ -145,6 +151,7 @@
   .t-PNC { color: var(--c-pnc); } .t-HJNC { color: var(--c-hjnc); } .t-HPNT { color: var(--c-hpnt); }
   .t-DGT { color: var(--c-dgt); } .t-PNIT { color: var(--c-pnit); } .t-BNCT { color: var(--c-bnct); }
   .t-BPTC { color: var(--c-bptc); } .t-HKTL { color: var(--c-hktl); }
+  .t-SNCT { color: var(--c-snct); } .t-HJIT { color: var(--c-hjit); } .t-ICT { color: var(--c-ict); } .t-E1CT { color: var(--c-e1ct); }
   .chip.t-PNC, .fchip.t-PNC[aria-pressed="true"] { background: var(--c-pnc-bg); }
   .chip.t-HJNC, .fchip.t-HJNC[aria-pressed="true"] { background: var(--c-hjnc-bg); }
   .chip.t-HPNT, .fchip.t-HPNT[aria-pressed="true"] { background: var(--c-hpnt-bg); }
@@ -153,6 +160,11 @@
   .chip.t-BNCT, .fchip.t-BNCT[aria-pressed="true"] { background: var(--c-bnct-bg); }
   .chip.t-BPTC, .fchip.t-BPTC[aria-pressed="true"] { background: var(--c-bptc-bg); }
   .chip.t-HKTL, .fchip.t-HKTL[aria-pressed="true"] { background: var(--c-hktl-bg); }
+  .chip.t-SNCT, .fchip.t-SNCT[aria-pressed="true"] { background: var(--c-snct-bg); }
+  .chip.t-HJIT, .fchip.t-HJIT[aria-pressed="true"] { background: var(--c-hjit-bg); }
+  .chip.t-ICT, .fchip.t-ICT[aria-pressed="true"] { background: var(--c-ict-bg); }
+  .chip.t-E1CT, .fchip.t-E1CT[aria-pressed="true"] { background: var(--c-e1ct-bg); }
+  .filters .port { font-weight: 800; font-size: 12px; color: var(--ink); }
   /* 장치장 코드 말풍선: 터미널 필터 버튼 · 표의 터미널 배지 (마우스 올림 / 휴대폰은 길게 누름) */
   .fchip[data-t]:not([data-t="ALL"]), td .chip { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   td .chip { cursor: help; }
@@ -200,8 +212,8 @@
   .empty { text-align: center; color: var(--muted); padding: 44px 16px; font-size: 15px; }
   [hidden] { display: none !important; }  /* display를 지정한 칸(더 보기 등)도 hidden이면 확실히 숨김 */
   .more { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
-  /* 맨 아래: 중동·지중해 운임 추이 (KCCI 주간, 부산발 USD/FEU) */
-  .frt { --s-me: #d9622b; --s-md: #2b74d6; }
+  /* 맨 아래: 미주·중동·지중해 운임 추이 (KCCI 주간, 부산발 USD/FEU) */
+  .frt { --s-me: #d9622b; --s-md: #2b74d6; --s-uw: #138a52; --s-ue: #8e3fa8; }
   .frt .fstats { display: grid; gap: 10px; padding: 12px 16px 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
   .frt .fst { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
   .frt .fst .k { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; flex-wrap: wrap; }
@@ -418,7 +430,7 @@
         <button type="button" class="mute" id="yaniMute" aria-pressed="false" title="야니 소리 끄기">🔊</button>
       </figure>
       <div>
-        <h1>부산항 선박 스케줄</h1>
+        <h1>부산항·인천항 선박 스케줄</h1>
         <div class="hello" id="hello">선명만 입력하면 터미널 · 도착 · 출항 · 반입 일정을 찾아드려요</div>
       </div>
     </div>
@@ -497,6 +509,7 @@
   <div class="filters" role="group" aria-label="필터">
     <span class="lbl">터미널</span>
     <button type="button" class="fchip all" data-t="ALL" aria-pressed="true">전체</button>
+    <span class="port">부산</span>
     <button type="button" class="fchip t-PNC" data-t="PNC" aria-pressed="false">PNC</button>
     <button type="button" class="fchip t-HJNC" data-t="HJNC" aria-pressed="false">HJNC</button>
     <button type="button" class="fchip t-HPNT" data-t="HPNT" aria-pressed="false">HPNT</button>
@@ -507,6 +520,14 @@
     <button type="button" class="fchip t-BPTC" data-t="BPTC" aria-pressed="false">BPTC</button>
     <button type="button" class="fchip t-HKTL" data-t="HKTL" aria-pressed="false">HKTL</button>
     <span class="muted">북항</span>
+    <span class="sep"></span>
+    <span class="port">인천</span>
+    <button type="button" class="fchip t-SNCT" data-t="SNCT" aria-pressed="false">SNCT</button>
+    <button type="button" class="fchip t-HJIT" data-t="HJIT" aria-pressed="false">HJIT</button>
+    <span class="muted">인천신항</span>
+    <button type="button" class="fchip t-ICT" data-t="ICT" aria-pressed="false">ICT</button>
+    <button type="button" class="fchip t-E1CT" data-t="E1CT" aria-pressed="false">E1CT</button>
+    <span class="muted">인천남항</span>
     <span class="sep"></span>
     <span class="lbl">기간</span>
     <button type="button" class="fchip per" data-p="21" aria-pressed="true">21일 전후</button>
@@ -556,17 +577,17 @@
     <div class="more" id="moreWrap" hidden><button type="button" id="moreBtn">더 보기</button></div>
   </section>
 
-  <section class="panel frt" id="frtPanel" aria-label="중동·홍해·지중해 운임 추이">
-    <div class="caption"><b>중동 · 홍해 · 지중해 운임 추이 <span class="muted" style="font-weight:400;font-size:13px">(부산발 40ft, 2026년 1월~)</span></b><span class="muted" id="frtAt"></span></div>
+  <section class="panel frt" id="frtPanel" aria-label="미주·중동·홍해·지중해 운임 추이">
+    <div class="caption"><b>미주 · 중동 · 홍해 · 지중해 운임 추이 <span class="muted" style="font-weight:400;font-size:13px">(부산발 40ft, 2026년 1월~)</span></b><span class="muted" id="frtAt"></span></div>
     <div class="fstats" id="frtStats"></div>
     <div class="fchart" id="frtChart"></div>
     <div class="fports" id="frtPorts"></div>
-    <details><summary>주간 수치 표로 보기</summary><div class="table-wrap"><table><thead><tr><th>발표일</th><th>중동 (USD/FEU)</th><th>지중해 (USD/FEU)</th></tr></thead><tbody id="frtRows"></tbody></table></div></details>
+    <details><summary>주간 수치 표로 보기</summary><div class="table-wrap"><table><thead><tr><th>발표일</th><th>미주서안</th><th>미주동안</th><th>중동</th><th>지중해</th></tr></thead><tbody id="frtRows"></tbody></table></div></details>
     <div class="thelp" id="frtHelp" style="padding-top:8px"></div>
   </section>
 
 
-  <div class="notes">선적 전 선사·터미널 최신 일정 확인 필요 · 출처: 부산항 8개 터미널 공개 화면, 코리아쉬핑가제트, 부산항만공사</div>
+  <div class="notes">선적 전 선사·터미널 최신 일정 확인 필요 · 출처: 부산항 8개 · 인천항 4개 터미널 공개 화면, 코리아쉬핑가제트, 부산항만공사</div>
 </div>
 
 <aside class="news panel" aria-label="항만 소식">
@@ -711,6 +732,7 @@ function yardCell(r) {
   else if (open && now < open) badge = `<span class="badge b-blue">반입 전</span>`;
   else if (close && close - now < 48 * 3600e3) badge = `<span class="badge b-bad">마감 임박</span>`;
   else if (open || close) badge = `<span class="badge b-ok">반입 가능</span>`;
+  else if (r.gate_in && upcoming(r)) badge = r.gate_in === "Y" ? `<span class="badge b-ok">반입 가능</span>` : `<span class="badge b-gray">반입 불가</span>`;
   const openTxt = r.yard_open ? fmt(r.yard_open) : `<span class="muted">미공개</span>`;
   return `<div class="range"><div class="box"><span>반입 가능</span>${openTxt}</div><span class="arrow">→</span>
     <div class="box"><span>반입 마감</span>${fmt(r.yard_close)}</div>${badge}</div>`;
@@ -776,6 +798,7 @@ const BOND = {
   PNC: { "": "03077102" }, HJNC: { "": "03077006" }, HPNT: { "": "03077011" }, DGT: { "": "03077135" },
   PNIT: { "": "03077013" }, BNCT: { "": "03077026" },
   BPTC: { "신선대": "03077016", "감만": "03012226" }, HKTL: { "신감만": "03012010" },
+  SNCT: { "": "02012014" }, HJIT: { "": "02012016" }, ICT: { "": "02077002" }, E1CT: { "": "02012007" },
 };
 const bondAll = (t) => Object.entries(BOND[t] || {}).map(([k, v]) => (k ? `${k} ${v}` : v)).join(" · ");
 function bondCode(r) {
@@ -875,6 +898,8 @@ const bondLine = (r) => (BOND[r.t] ? `<div class="muted bond">장치장 <b>${esc
   addEventListener("resize", () => { if (cur && !tip.hidden) place(cur); });
 })();
 
+// 부산발 목적지 검색은 부산 터미널 배만 (인천 터미널은 선명 검색·필터·픽업 카드에서만)
+const BUSAN_ROWS = DATA.rows.filter((r) => !(DATA.incheon || []).includes(r.t));
 const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now - 12 * 3600e3); };
 // 21일 전후 = 오늘 기준 앞으로 21일 안에 출항할 배 + 최근 21일 안에 출항한 배 (선적 확인용)
 const within21 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 22 * 86400e3); };
@@ -932,10 +957,13 @@ function render() {
   $("#moreBtn").textContent = `더 보기 (${rows.length - ui.limit}척 남음)`;
 }
 
-// ---------------------------------------------------------------- 맨 아래: 중동·홍해·지중해 운임 추이 (KCCI 주간)
+// ---------------------------------------------------------------- 맨 아래: 미주·중동·홍해·지중해 운임 추이 (KCCI 주간)
 // 한국해양진흥공사 KCCI: 부산항 선적 SPOT 운임, USD/40ft Dry, BAF 등 운임성 Surcharge 포함 · THC 등 Local Charge 제외
 // KMEI 중동 = 부산 → 제벨알리·담만·제다, KMDI 지중해 = 부산 → 발렌시아·바르셀로나·제노아·나폴리 (KCCI 표준기술서)
+// KUWI 미주서안 · KUEI 미주동안 = 부산 → 미국 서안 · 동안 (KCCI 표의 열 그대로)
 const FRT_SERIES = [
+  { k: "KUWI", name: "미주서안", ports: "부산 → 미국 서안", c: "var(--s-uw)" },
+  { k: "KUEI", name: "미주동안", ports: "부산 → 미국 동안", c: "var(--s-ue)" },
   { k: "KMEI", name: "중동", ports: "제벨알리 · 담만 · 제다 평균", c: "var(--s-me)" },
   { k: "KMDI", name: "지중해", ports: "발렌시아 · 바르셀로나 · 제노아 · 나폴리 평균", c: "var(--s-md)" },
 ];
@@ -962,7 +990,7 @@ function renderFreight() {
       <div class="n">최저 ${md(loW.date)} · 최고 ${md(hiW.date)} · 최근 ${usd(last)} (1월 대비 ${ch > 0 ? "+" : ""}${ch}%)</div></div>`;
   }).join("");
 
-  // 선 그래프: 두 항로 모두 USD/FEU라 한 축, 1월~최근 최저~최고 폭은 옅은 띠
+  // 선 그래프: 네 항로 모두 USD/FEU라 한 축, 1월~최근 최저~최고 폭은 옅은 띠
   // 화면 폭 그대로 그려서 휴대폰에서도 글씨 크기 유지
   const w = Math.max(320, Math.min(1100, ($("#frtChart").clientWidth || 760) - 12)), h = w < 520 ? 220 : 260, L = 46, R = 74, T = 14, B = 26;
   const mStep = w < 520 ? 2 : 1;
@@ -989,10 +1017,10 @@ function renderFreight() {
     ends.push({ y: lp[1], s, v: W[W.length - 1][s.k] });
   });
   ends.sort((a, b) => a.y - b.y);
-  if (ends.length > 1 && ends[1].y - ends[0].y < 30) ends[1].y = ends[0].y + 30;  // 끝 라벨 겹침 방지
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 30) ends[i].y = ends[i - 1].y + 30;  // 끝 라벨 겹침 방지
   ends.forEach((e) => { g += `<text class="lbl" x="${w - R + 8}" y="${e.y}">${e.s.name}</text><text x="${w - R + 8}" y="${e.y + 13}">${usd(e.v)}</text>`; });
   g += `<line class="xh" id="frtX" y1="${T}" y2="${h - B}" visibility="hidden"/><rect id="frtHit" x="${L}" y="${T}" width="${w - L - R}" height="${h - T - B}" fill="transparent"/>`;
-  $("#frtChart").innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="KCCI 중동·지중해 주간 운임 선 그래프">${g}</svg><div class="ftip" id="frtTip" hidden></div>`;
+  $("#frtChart").innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="KCCI 미주서안·미주동안·중동·지중해 주간 운임 선 그래프">${g}</svg><div class="ftip" id="frtTip" hidden></div>`;
 
   // 마우스·손가락을 올리면 가장 가까운 주의 두 운임
   const svg = $("#frtChart svg"), tip = $("#frtTip"), xh = $("#frtX"), hit = $("#frtHit");
@@ -1031,11 +1059,11 @@ function renderFreight() {
     const tt = `KCCI 미발표 항구 · ${s.name} 항로 지수(${s.ports})로 추정한 참고값${c.note ? ` · ${c.note}` : ""}`;
     return `${head}<span class="pp est" title="${esc(tt)}">${esc(c.p)} · 추정 (${s.name} 지수 기준) <b>${usd(latest[c.key])}</b></span>`;
   }).join("")}</span>`).join("");
-  $("#frtRows").innerHTML = W.slice().reverse().map((x) => `<tr><td>${x.date}</td><td>${x.KMEI != null ? usd(x.KMEI) : "-"}</td><td>${x.KMDI != null ? usd(x.KMDI) : "-"}</td></tr>`).join("");
+  $("#frtRows").innerHTML = W.slice().reverse().map((x) => `<tr><td>${x.date}</td>${FRT_SERIES.map((s) => `<td>${x[s.k] != null ? usd(x[s.k]) : "-"}</td>`).join("")}</tr>`).join("");
   $("#frtHelp").innerHTML = `출처: <a href="https://www.kobc.or.kr/ebz/shippinginfo/timeseries/gridList.do?mId=0304000000" target="_blank" rel="noopener">한국해양진흥공사 KCCI 시계열</a>
     (<a href="https://www.kobc.or.kr/ebz/common/file/KCCI_Standards.pdf" target="_blank" rel="noopener">기준항 정의</a>) ·
     부산항 선적 SPOT 운임, 40ft Dry 기준 USD, BAF 등 운임성 할증 포함 · THC 등 현지 비용 제외.
-    중동 지수는 제벨알리·담만·제다 3개 항 평균, 지중해 지수는 서지중해(스페인·이탈리아) 4개 항 평균이에요.
+    미주서안·미주동안은 KCCI 미국 서안·동안 항로 지수, 중동 지수는 제벨알리·담만·제다 3개 항 평균, 지중해 지수는 서지중해(스페인·이탈리아) 4개 항 평균이에요.
     점선 칩(추정)은 KCCI가 따로 발표하지 않는 항구에 가까운 KCCI 항로 값(${md(latest.date)} 발표)을 그대로 빌려 온 참고값이에요. 해당 항구의 실제 운임이 아니며,
     오만·홍해·동지중해는 기항 선사·환적·전쟁 위험 할증에 따라 차이가 클 수 있어요. 리야드는 담만항까지 해상 운임이고 내륙 운송은 별도예요.
     실제 견적은 선사·포워더에 확인해 주세요 · 연결표: <a href="https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/proxy_routes.json" target="_blank" rel="noopener">proxy_routes.json</a>${DATA.proxy_error ? ` · <b>${esc(DATA.proxy_error)}</b>` : ""}${DATA.kcci_error ? ` · <b>${esc(DATA.kcci_error)}</b> (지난 자료 표시 중)` : ""}`;
@@ -1120,7 +1148,7 @@ function renderNews() {
 }
 
 // 공컨 현황을 공개하는 곳만 숫자가 있고, 나머지는 '정보미제공(로그인 필요)' — 카드를 누르면 그 터미널 로그인 화면으로
-const PICKUP_ORDER = ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT", "BPTC", "HKTL"];
+const PICKUP_ORDER = ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT", "BPTC", "HKTL", "SNCT", "HJIT", "ICT", "E1CT"];
 const PICKUP_LOGIN = {
   PNC: "https://svc.pncport.com/info/CMS/Yard/EmptySum.pnc?mCode=MN048",
   HPNT: "https://www.hpnt.co.kr/infoservice/yard/yardWorkStatus.jsp",
@@ -1128,7 +1156,11 @@ const PICKUP_LOGIN = {
   PNIT: "https://www.pnitl.com/infoservice/yard/yardWorkStatus.jsp",
   BNCT: "https://info.bnctkorea.com/esvc/onDock/cntrStockReport",
   HKTL: "https://custom.hktl.com/jsp/join/login.jsp",
+  SNCT: "http://snct.sun-kwang.co.kr/infoservice/webpage/main/mainPage.jsp",
+  ICT: "https://service.psa-ict.co.kr/",
 };
+// 로그인해도 공컨 수량 화면이 없는 곳 (터미널 사이트로만 연결)
+const PICKUP_NOPAGE = new Set(["ICT"]);
 // 수량 데이터가 있는 터미널(로그인 불필요)을 맨 앞으로, 나머지는 원래 순서 — 카드·장비 현황표 공용
 function pickupOrder() {
   const yards = DATA.empties || [];
@@ -1149,9 +1181,9 @@ function renderPickup() {
       const fail = errs.includes(t);
       if (!fail && PICKUP_LOGIN[t]) {
         return `<a class="pcard off" href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">${head}
-          <div class="pn">정보미제공<small>(로그인 필요)</small></div>
-          <div class="ps" style="color:var(--bad);font-weight:700">공컨 현황을 로그인 회원에게만 공개해요</div>
-          <div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>로그인하고 보기 ↗</span></div></a>`;
+          <div class="pn">정보미제공<small>${PICKUP_NOPAGE.has(t) ? "" : "(로그인 필요)"}</small></div>
+          <div class="ps" style="color:var(--bad);font-weight:700">${PICKUP_NOPAGE.has(t) ? "공컨 수량을 공개하는 화면이 없어요" : "공컨 현황을 로그인 회원에게만 공개해요"}</div>
+          <div class="pf"><span>${esc(DATA.generated_at)} 기준</span><span>${PICKUP_NOPAGE.has(t) ? "터미널 사이트 ↗" : "로그인하고 보기 ↗"}</span></div></a>`;
       }
       return `<button type="button" class="pcard off" data-t="${esc(t)}">${head}<div class="pn">조회 실패</div>
         <div class="ps muted">이번 갱신에서 터미널 사이트에 접속하지 못했어요</div>${foot}</button>`;
@@ -1201,7 +1233,7 @@ function renderEq() {
     rows = pickupOrder().map((t) => {
       const mine = yards.filter((y) => y.name.split(" ")[0] === t);
       if (!mine.length) {
-        const rmk = PICKUP_LOGIN[t] ? `<a href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">로그인 필요 ↗</a>` : "조회 실패";
+        const rmk = PICKUP_LOGIN[t] ? `<a href="${PICKUP_LOGIN[t]}" target="_blank" rel="noopener">${PICKUP_NOPAGE.has(t) ? "정보 미제공 ↗" : "로그인 필요 ↗"}</a>` : "조회 실패";
         return eqRow(`${esc(t)} <span class="muted">${esc((TN[t] || "").replace(/^\S+\s/, ""))}</span>`, null, "off", rmk);
       }
       return mine.map((y) => { const b = Object.values(y.lines).reduce((a, x) => addBox(a, x), {}); per.push(b); return eqRow(esc(y.name), b, "open", `<span class="ptag">로그인 불필요</span>`); }).join("");
@@ -1366,7 +1398,7 @@ function renderDest(q, keepFilter) {
   const routeOf = (r) => ROUTES[(r.route || "").trim().toUpperCase()];
   const listed = [...new Set(ports.flatMap((p) => p.carriers || []))];
   // ① 노선이 이 항구로 연결된 배
-  let rows = DATA.rows.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
+  let rows = BUSAN_ROWS.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
   let mode = rows.length ? "route" : "";
   // ② 없으면: 이용 가능 선사의 앞으로 40일 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
   if (!rows.length) {
@@ -1375,7 +1407,7 @@ function renderDest(q, keepFilter) {
     const east = /^(미주|중남미)/.test(port.region || "");
     const dirOk = (r) => { const m = (r.voyages[r.voyages.length - 1] || "").trim().toUpperCase().match(/([NSEW])\s*$/);
       return !m || (east ? m[1] === "E" : m[1] === "W" || m[1] === "S"); };
-    const cand = DATA.rows.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
+    const cand = BUSAN_ROWS.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
     // 선사별로 가까운 3항차만
     const per = {};
     rows = cand.filter((r) => { const c = carrierName(r.operator); per[c] = (per[c] || 0) + 1; return per[c] <= TS_PER_CARRIER; });
@@ -1478,7 +1510,7 @@ $("#dqList").addEventListener("mousedown", (e) => { const li = e.target.closest(
 $("#dq").addEventListener("blur", () => setTimeout(() => { $("#dqList").hidden = true; }, 120));
 // 관리용 링크는 숨김 (주소 끝에 #admin을 붙여 열면 보임)
 if (location.hash === "#admin") {
-  const unmapped = new Set(DATA.rows.filter((r) => r.route && !ROUTES[r.route.trim().toUpperCase()]).map((r) => r.route.trim().toUpperCase()));
+  const unmapped = new Set(BUSAN_ROWS.filter((r) => r.route && !ROUTES[r.route.trim().toUpperCase()]).map((r) => r.route.trim().toUpperCase()));
   $("#destHelp").innerHTML = `노선 → 목적항 등록 ${Object.keys(ROUTES).length}개 · 미등록 노선 ${unmapped.size}개
     · <a href="${REPO_EDIT}routes.json" target="_blank" rel="noopener">routes.json</a>
     · <a href="${REPO_EDIT}transit_times.json" target="_blank" rel="noopener">transit_times.json</a>
