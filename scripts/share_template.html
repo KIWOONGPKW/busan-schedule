@@ -214,6 +214,7 @@
   .more { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--line); }
   /* 맨 아래: 미주·중동·지중해 운임 추이 (KCCI 주간, 부산발 USD/FEU) */
   .frt { --s-me: #d9622b; --s-md: #2b74d6; --s-uw: #138a52; --s-ue: #8e3fa8; }
+  .frt .fmotto { font-weight: 700; font-size: 13px; color: var(--accent2); margin-left: 6px; white-space: nowrap; }
   .frt .fstats { display: grid; gap: 10px; padding: 12px 16px 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
   .frt .fst { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
   .frt .fst .k { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; flex-wrap: wrap; }
@@ -578,7 +579,7 @@
   </section>
 
   <section class="panel frt" id="frtPanel" aria-label="미주·중동·홍해·지중해 운임 추이">
-    <div class="caption"><b>미주 · 중동 · 홍해 · 지중해 운임 추이 <span class="muted" style="font-weight:400;font-size:13px">(부산발 40ft, 2026년 1월~)</span></b><span class="muted" id="frtAt"></span></div>
+    <div class="caption"><b>미주 · 중동 · 홍해 · 지중해 운임 추이 <span class="muted" style="font-weight:400;font-size:13px">(부산발 40ft, 2026년 1월~)</span> <span class="fmotto">과거를 보고 미래를 예상해보자</span></b><span class="muted" id="frtAt"></span></div>
     <div class="fstats" id="frtStats"></div>
     <div class="fchart" id="frtChart"></div>
     <div class="fports" id="frtPorts"></div>
