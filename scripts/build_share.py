@@ -107,12 +107,20 @@ def main():
     except Exception as e:  # noqa: BLE001
         proxy_err = f"proxy_routes.json 읽기 실패: {e}"[:160]
 
+    try:  # 인천발 목적지 검색 표 (사용자 편집)
+        incheon_dest = json.loads((ROOT / "incheon_transit_times.json").read_text(encoding="utf-8"))
+        incheon_dest.pop("_안내", None)
+        incheon_dest_err = ""
+    except Exception as e:  # noqa: BLE001
+        incheon_dest, incheon_dest_err = {}, f"incheon_transit_times.json 읽기 실패: {e}"[:160]
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
             "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
-            "terminals": TERMINALS, "incheon": list(incheon.TERMINALS), "errors": errors, "rows": rows,
+            "terminals": TERMINALS, "incheon": list(incheon.TERMINALS),
+            "incheon_dest": incheon_dest, "incheon_dest_error": incheon_dest_err, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
             "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}

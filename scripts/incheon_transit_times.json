@@ -1,0 +1,18 @@
+{
+ "_안내": "인천발 목적지 검색용 표. ports: 인천 출항 → 목적항 소요일(숫자 하나 또는 [최소, 최대]). 여기 없는 항구는 near_regions(인천 직항이 주로 있는 지역)면 부산발 소요일을 그대로, 그 밖의 원양 항로는 부산발 소요일 + longhaul_extra(인천→부산 연결·환적 대기 일수)로 보여줘요. longhaul_extra 기본값은 아래 ports 값(나바샤바·첸나이·제벨알리·담맘)과 부산발 값의 차이로 잡은 참고치예요. carriers: 항구별로 인천발 선사를 직접 지정할 때(없으면 부산발 선사 목록 중 인천 터미널에 실제 기항하는 선사만). routes: 인천 터미널 항로(서비스) 코드 → 목적항 코드, 선사 공개 노선으로 확인된 것만 넣기. 모두 참고용이라 선사 확인 필요.",
+ "ports": {
+  "VNSGN": {"name": "HO CHI MINH", "days": 11},
+  "VNHPH": {"name": "HAIPHONG", "days": 6},
+  "THLCH": {"name": "LAEM CHABANG", "days": 10},
+  "THBKK": {"name": "BANGKOK", "days": 10},
+  "IDSUB": {"name": "SURABAYA", "days": 13},
+  "INNSA": {"name": "NHAVA SHEVA", "days": 30},
+  "INMAA": {"name": "CHENNAI", "days": 30},
+  "AEJEA": {"name": "JEBEL ALI", "days": 32},
+  "SADMM": {"name": "DAMMAM", "days": 35}
+ },
+ "near_regions": ["중국", "일본", "러시아 극동", "동남아", "한국 연안"],
+ "longhaul_extra": [5, 9],
+ "carriers": {},
+ "routes": {}
+}
