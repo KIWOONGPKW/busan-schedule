@@ -1,18 +1,308 @@
 {
  "_안내": "인천발 목적지 검색용 표. ports: 인천 출항 → 목적항 소요일(숫자 하나 또는 [최소, 최대]). 여기 없는 항구는 near_regions(인천 직항이 주로 있는 지역)면 부산발 소요일을 그대로, 그 밖의 원양 항로는 부산발 소요일 + longhaul_extra(인천→부산 연결·환적 대기 일수)로 보여줘요. longhaul_extra 기본값은 아래 ports 값(나바샤바·첸나이·제벨알리·담맘)과 부산발 값의 차이로 잡은 참고치예요. carriers: 항구별로 인천발 선사를 직접 지정할 때(없으면 부산발 선사 목록 중 인천 터미널에 실제 기항하는 선사만). routes: 인천 터미널 항로(서비스) 코드 → 목적항 코드, 선사 공개 노선으로 확인된 것만 넣기. 모두 참고용이라 선사 확인 필요.",
  "ports": {
-  "VNSGN": {"name": "HO CHI MINH", "days": 11},
-  "VNHPH": {"name": "HAIPHONG", "days": 6},
-  "THLCH": {"name": "LAEM CHABANG", "days": 10},
-  "THBKK": {"name": "BANGKOK", "days": 10},
-  "IDSUB": {"name": "SURABAYA", "days": 13},
-  "INNSA": {"name": "NHAVA SHEVA", "days": 30},
-  "INMAA": {"name": "CHENNAI", "days": 30},
-  "AEJEA": {"name": "JEBEL ALI", "days": 32},
-  "SADMM": {"name": "DAMMAM", "days": 35}
+  "VNSGN": {
+   "name": "HO CHI MINH",
+   "days": 11
+  },
+  "VNHPH": {
+   "name": "HAIPHONG",
+   "days": 6
+  },
+  "THLCH": {
+   "name": "LAEM CHABANG",
+   "days": 10
+  },
+  "THBKK": {
+   "name": "BANGKOK",
+   "days": 10
+  },
+  "IDSUB": {
+   "name": "SURABAYA",
+   "days": 13
+  },
+  "INNSA": {
+   "name": "NHAVA SHEVA",
+   "days": 30
+  },
+  "INMAA": {
+   "name": "CHENNAI",
+   "days": 30
+  },
+  "AEJEA": {
+   "name": "JEBEL ALI",
+   "days": 32
+  },
+  "SADMM": {
+   "name": "DAMMAM",
+   "days": 35
+  }
  },
- "near_regions": ["중국", "일본", "러시아 극동", "동남아", "한국 연안"],
- "longhaul_extra": [5, 9],
+ "near_regions": [
+  "중국",
+  "일본",
+  "러시아 극동",
+  "동남아",
+  "한국 연안"
+ ],
+ "longhaul_extra": [
+  5,
+  9
+ ],
  "carriers": {},
- "routes": {}
+ "routes": {
+  "CKV": {
+   "ports": [
+    "CNDLC",
+    "CNDAL",
+    "CNDAG",
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNLYG",
+    "VNHPH",
+    "VNC8Q",
+    "VNDAD",
+    "CNSHK"
+   ],
+   "확인": true,
+   "메모": "SITC CKV: 인천-다롄-칭다오-롄윈강-하이퐁-쭈라이-다낭-셔커우-인천 (선박 SITC LIDE·GUANGXI·HENGDE 일치)",
+   "출처": "https://atlas.flexport.com/service/code:SITU:CKV"
+  },
+  "CKV2": {
+   "ports": [
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNWNZ",
+    "CNWZO",
+    "HKHKG",
+    "KHKOS",
+    "THLCH",
+    "VNHPH",
+    "CNQZH",
+    "CNXMN",
+    "CNXAM",
+    "CNXMG"
+   ],
+   "확인": true,
+   "메모": "SITC CKV2: 인천-칭다오-원저우-홍콩-시아누크빌-람차방-하이퐁-친저우-샤먼-인천 (선박 SITC JIANGSU·ZHENGDE·ZHI 일치)",
+   "출처": "https://atlas.flexport.com/service/code:SITU:CKV2"
+  },
+  "CBX2": {
+   "ports": [
+    "CNTXG",
+    "CNTSN",
+    "CNTNJ",
+    "CNTNG",
+    "CNXGA",
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "MYPKG",
+    "BDCGP"
+   ],
+   "확인": true,
+   "메모": "SITC CBX2: 인천-톈진신강-칭다오-상해-포트클랑-치타공-인천 (선박 SITC CHANGMING·HUIMING·SHENGMING 일치)",
+   "출처": "https://atlas.flexport.com/service/code:SITU:CBX2"
+  },
+  "IA9": {
+   "ports": [
+    "CNDLC",
+    "CNDAL",
+    "CNDAG",
+    "CNTXG",
+    "CNTSN",
+    "CNTNJ",
+    "CNTNG",
+    "CNXGA",
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "VNSGN",
+    "VNCLI",
+    "KHKOS",
+    "MYTPP",
+    "HKHKG",
+    "CNNSA"
+   ],
+   "확인": true,
+   "메모": "MAERSK IA9: 인천-다롄-톈진신강-칭다오-깟라이-시아누크빌-탄중펠레파스-깟라이-홍콩-난사-인천 (선박 MAERSK NUSSFJORD·NEXOE MAERSK·MERATUS JAYAGIRI 일치)",
+   "출처": "https://atlas.flexport.com/service/code:MAEU:IA9"
+  },
+  "PH3": {
+   "ports": [
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "CNNGB",
+    "CNNBO",
+    "PHMNL",
+    "PHMNN",
+    "PHMNS",
+    "JPHBK",
+    "JPKKJ",
+    "CNTAO",
+    "CNQIN",
+    "CNQDG"
+   ],
+   "확인": true,
+   "메모": "MAERSK PH3: 인천-상해-닝보-마닐라 북·남항-히비키-칭다오-인천 (선박 AS NARA·GALLOWAY 일치)",
+   "출처": "https://atlas.flexport.com/service/code:MAEU:PH3"
+  },
+  "PH5": {
+   "ports": [
+    "CNTXG",
+    "CNTSN",
+    "CNTNJ",
+    "CNTNG",
+    "CNXGA",
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNLYG",
+    "HKHKG",
+    "CNNSA",
+    "THLCH",
+    "CNSHA",
+    "CNSGH",
+    "CNPDG"
+   ],
+   "확인": true,
+   "메모": "MAERSK PH5: 인천-톈진신강-칭다오-롄윈강-홍콩-난사-람차방-상해-인천 (선박 GUO HAI SAN LONG 9·HUA XIN 758·XIN BIN ZHOU 일치)",
+   "출처": "https://atlas.flexport.com/service/code:MAEU:PH5"
+  },
+  "KIS": {
+   "ports": [
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "CNNGB",
+    "CNNBO",
+    "IDJKT",
+    "IDSUB"
+   ],
+   "확인": true,
+   "메모": "HMM KIS: 인천-부산-상해-닝보-자카르타-수라바야-인천 (선박 HMM HARVEST·MARINA ONE·SEABREEZE 일치)",
+   "출처": "https://atlas.flexport.com/service/code:HDMU:KIS"
+  },
+  "KST": {
+   "ports": [
+    "VNSGN",
+    "VNCLI",
+    "THLCH",
+    "THBKK"
+   ],
+   "확인": true,
+   "메모": "KMTC·장금상선 KST: 인천-부산-호치민-람차방-방콕-호치민-인천 (선박 KMTC ULSAN·PANCON CHAMPION·SAWASDEE SPICA 일치)",
+   "출처": "https://atlas.flexport.com/service/code:KMTU:KST"
+  },
+  "KHX": {
+   "ports": [
+    "VNHPH",
+    "CNXMN",
+    "CNXAM",
+    "CNXMG"
+   ],
+   "확인": true,
+   "메모": "SM상선 KHX: 인천-광양-부산-하이퐁-샤먼-인천 (선박 SM TOKYO·PEGASUS DREAM 일치)",
+   "출처": "https://atlas.flexport.com/service/code:SMLM:KHX"
+  },
+  "KVS": {
+   "ports": [
+    "TWTXG",
+    "CNXMN",
+    "CNXAM",
+    "CNXMG",
+    "VNSGN",
+    "VNCLI",
+    "MYPKG",
+    "TWKHH",
+    "TWTPE"
+   ],
+   "확인": true,
+   "메모": "WAN HAI KVS: 인천-광양-부산-울산-타이중-샤먼-깟라이-포트클랑-가오슝-타이중-타이베이 (선박 WAN HAI 308 일치)",
+   "출처": "https://atlas.flexport.com/service/code:WHLC:KVS"
+  },
+  "PS6": {
+   "ports": [
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "CNNGB",
+    "CNNBO",
+    "USLAX",
+    "USOAK"
+   ],
+   "확인": true,
+   "메모": "HMM·ONE PS6(미주): 인천-칭다오-상해-닝보-광양-부산-LA-오클랜드 (선박 HMM HANUL 일치, ONE PS6 인천 기항 공지)",
+   "출처": "https://atlas.flexport.com/service/code:HDMU:PS6"
+  },
+  "KI8": {
+   "ports": [
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "CNNGB",
+    "CNNBO",
+    "IDJKT",
+    "IDSRG",
+    "VNSGN",
+    "VNCLI"
+   ],
+   "확인": true,
+   "메모": "CNC·천경·SeaLead KI8: 인천-상해-닝보-자카르타-스마랑-호치민-부산-인천 (첫 입항 CNC PANTHER, HJIT 일정과 일치)",
+   "출처": "https://www.inews24.com/view/1888460"
+  },
+  "KCI": {
+   "ports": [
+    "CNTAO",
+    "CNQIN",
+    "CNQDG",
+    "CNSHA",
+    "CNSGH",
+    "CNPDG",
+    "IDJKT",
+    "IDSUB",
+    "CNSHK"
+   ],
+   "확인": true,
+   "메모": "KCI: 인천-칭다오-상해-자카르타-수라바야-셔커우-부산-인천 (인천항만공사 발표)",
+   "출처": "http://www.haesanews.com/news/articleView.html?idxno=144944"
+  },
+  "KHP": {
+   "ports": [
+    "VNHPH",
+    "CNSHK"
+   ],
+   "확인": true,
+   "메모": "KMTC·남성해운 KHP: 인천-부산-울산-하이퐁-셔커우-인천 (인천항만공사 발표)",
+   "출처": "https://www.kyeonggi.com/article/20230910580130"
+  },
+  "RIX": {
+   "ports": [
+    "CNRZH"
+   ],
+   "확인": true,
+   "메모": "SMC RIX: 르자오-인천신항 SNCT 직항, 주 2항차 (인천항만공사 발표)",
+   "출처": "https://www.dailian.co.kr/news/view/1713545"
+  },
+  "HIS": {
+   "ports": [
+    "CNJTG",
+    "CNTGS",
+    "CNHNH",
+    "CNHUH"
+   ],
+   "확인": true,
+   "메모": "허더항운 HIS: 인천-징탕-황화-인천, 투입선 SHAO YUN (인천항만공사 발표, HJIT 일정과 일치)",
+   "출처": "https://www.inews24.com/view/1867546"
+  }
+ }
 }

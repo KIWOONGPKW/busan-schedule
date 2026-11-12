@@ -1,5 +1,5 @@
-"""코리아쉬핑가제트(ksg.co.kr) 기사와 부산항만공사(busanpa.com) 공지 중
-부산항 화물 스케줄에 영향 줄 만한 소식과 부산항 주요 소식을 골라낸다.
+"""코리아쉬핑가제트(ksg.co.kr) 기사, 부산항만공사(busanpa.com) 공지, 인천항만공사(icpa.or.kr) 보도자료 중
+부산항·인천항 화물 스케줄에 영향 줄 만한 소식과 두 항만의 주요 소식을 골라낸다. (아래 '부산'은 부산·인천 모두)
 
   파업·기상: 전국 단위여도 부산항 일정이 흔들리니 그대로 싣는다
   사고·운영·스케줄(기항·노선 변경, 반입 등): 부산 관련 기사일 때만 싣는다
@@ -13,6 +13,7 @@
   KSG : GET /news/news_list.jsp?page=N&bbsID=news&bbsCategory=KSG&categoryCode=XXX -> HTML (<ul class="new_list">)
   BPA : GET /board/list.bpa?boardId=BBS_XXX&menuCd=DOM_XXX -> HTML (예전 /kor/Board.do 링크는 404)
         선박대피협의회 회의결과는 기상악화 때 선박 대피 결정이라 전부 싣고, 공지·보도자료는 제목으로 거른다
+  IPA : GET /article/list.do?menuKey=1400&boardKey=217 -> HTML 표 (인천항만공사 보도자료, 제목으로 거름)
 """
 import html
 import re
@@ -23,6 +24,7 @@ from terminals import _fetch
 
 BASE = "https://www.ksg.co.kr"
 BPA = "https://www.busanpa.com"
+IPA = "https://www.icpa.or.kr"
 BPA_BOARDS = {  # boardId: (menuCd, 게시판 이름, 거르지 않고 붙일 태그)
     "BBS_0000029": ("DOM_000000105001003000", "선박대피협의회", ["기상"]),
     "BBS_0000027": ("DOM_000000105001001000", "공지사항", None),
@@ -30,7 +32,7 @@ BPA_BOARDS = {  # boardId: (menuCd, 게시판 이름, 거르지 않고 붙일 �
 }
 CATEGORIES = {"RKC": "항만", "XHJ": "물류", "LPG": "해운", "GOG": "해양/종합"}
 PAGES = 4
-DAYS, LIMIT = 14, 20
+DAYS, LIMIT = 14, 24
 
 # 경보 태그는 제목으로만 판단 (요약까지 보면 '사고 재판', '3위 추락' 같은 엉뚱한 기사가 섞인다)
 TAGS = {
@@ -43,7 +45,7 @@ TAGS = {
     "스케줄": ["기항", "항로 개설", "항로 신설", "신규 항로", "신규 서비스", "서비스 개설", "서비스 개편", "항로 개편",
             "항로 중단", "서비스 중단", "운항 중단", "블랭크", "임시 결항", "휴항", "스킵", "선복 감축", "지연",
             "반입", "게이트", "터미널 이전", "터미널 통합", "운영 개시", "개장", "선석",
-            "노선", "취항", "재개", "개편", "셔틀", "신설"],
+            "노선", "취항", "재개", "개편", "셔틀", "신설", "바닷길"],
     "항로": ["수에즈", "홍해", "파나마운하", "파나마 운하", "희망봉", "후티", "호르무즈", "말라카"],
 }
 ALERTS = {"파업", "기상", "사고", "운영"}
@@ -62,6 +64,7 @@ FLUFF = NOT_EVENT + ["기부", "봉사", "나눔", "후원", "사회공헌", "�
 FOREIGN = re.compile(r"美|中|日|英|獨|佛|印|濠|미국|중국|일본|대만|홍콩|싱가포르|베트남|인도|유럽|네덜란드|독일|벨기에|프랑스|영국"
                      r"|스페인|이탈리아|그리스|스웨덴|핀란드|덴마크|노르웨이|캐나다|호주|칠레|브라질|멕시코|페루|남아공|이스라엘")
 BUSAN = re.compile(r"부산|진해신항|부산신항|부산 신항|부산북항|부산 북항|부산항만공사|BPA\b|신항\s*\d|북항\s*\d")
+INCHEON = re.compile(r"인천|인천항만공사|IPA\b|SNCT|HJIT|E1CT|선광신컨")
 
 
 def _clean(x):
@@ -92,11 +95,13 @@ def _ksg_page(code, page):
                          r'.*?<dd>(.*?)</(?:dd|dl)>', s, re.S):
         pnum, title, date, summary = m.groups()
         title, summary = _clean(title), _clean(summary)
-        tags = _tags(title, bool(BUSAN.search(title)))
+        tags = _tags(title, bool(BUSAN.search(title) or INCHEON.search(title)))
         busan = bool(BUSAN.search(f"{title} {summary}"))
-        # 사고·운영·스케줄·주요는 부산 기사일 때만, 파업·기상·항로·시황은 부산 언급 없어도
-        if tags and (busan or ANYWHERE & set(tags)):
-            out.append({"id": f"ksg{pnum}", "title": title, "date": date.strip()[:16], "busan": busan, "tags": tags,
+        incheon = bool(INCHEON.search(f"{title} {summary}"))
+        # 사고·운영·스케줄·주요는 부산·인천 기사일 때만, 파업·기상·항로·시황은 언급 없어도
+        if tags and (busan or incheon or ANYWHERE & set(tags)):
+            out.append({"id": f"ksg{pnum}", "title": title, "date": date.strip()[:16], "busan": busan, "incheon": incheon,
+                        "tags": tags,
                         "source": "쉬핑가제트", "cat": CATEGORIES[code],
                         "url": f"{BASE}/news/main_newsView.jsp?pNum={pnum}"})
     return out
@@ -119,10 +124,26 @@ def _bpa_board(board_id):
     return out
 
 
+def _ipa_board():
+    s = _fetch(f"{IPA}/article/list.do?menuKey=1400&boardKey=217")
+    out = []
+    for m in re.finditer(r'href="view\.do\?articleKey=(\d+)&[^"]*"[^>]*>(.*?)</a>.*?<td>[^<]*</td>\s*<td>(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.',
+                         s, re.S):
+        key, title, y, mo, d = m.groups()
+        title = _clean(title).rstrip(".").rstrip()
+        tags = _tags(title, True)
+        if tags:
+            out.append({"id": f"ipa{key}", "title": title, "date": f"{y}-{int(mo):02d}-{int(d):02d} 00:00",
+                        "busan": False, "incheon": True, "tags": tags, "source": "인천항만공사", "cat": "보도자료",
+                        "url": f"{IPA}/article/view.do?articleKey={key}&boardKey=217&menuKey=1400"})
+    return out
+
+
 def fetch_news():
     """(기사 목록, {출처: 오류}) - 한쪽 사이트가 막혀도 다른 쪽 소식은 싣는다."""
     jobs = {("쉬핑가제트", f"{c}-{p}"): (_ksg_page, c, p) for c in CATEGORIES for p in range(1, PAGES + 1)}
     jobs.update({("부산항만공사", b): (_bpa_board, b) for b in BPA_BOARDS})
+    jobs[("인천항만공사", "보도자료")] = (_ipa_board,)
     items, errors = [], {}
 
     def run(key):
@@ -150,5 +171,5 @@ def fetch_news():
 if __name__ == "__main__":
     found, errs = fetch_news()
     for a in found:
-        print(a["date"], a["source"], a["tags"], "부산" if a["busan"] else "", a["title"])
+        print(a["date"], a["source"], a["tags"], "부산" if a["busan"] else "", "인천" if a.get("incheon") else "", a["title"])
     print("오류:", errs or "없음")
