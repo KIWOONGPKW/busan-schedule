@@ -28,6 +28,7 @@
     --c-snct: var(--ic-ink); --c-snct-bg: var(--ic-tag); --c-hjit: var(--ic-ink); --c-hjit-bg: var(--ic-tag);
     --c-ict: var(--ic-ink); --c-ict-bg: var(--ic-tag); --c-e1ct: var(--ic-ink); --c-e1ct-bg: var(--ic-tag);
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
+    --sea-top: #182654; --sea-mid: #24497f; --sea-low: #2f78ad;  /* 헤더 바다 그라데이션 (위 → 아래) */
     --shadow: 0 6px 22px rgba(123, 104, 238, .10);
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
     --f-body: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
@@ -74,11 +75,23 @@
           padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
           display: flex; flex-direction: column; gap: 16px; }
 
-  .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 24px 28px; color: var(--hero-ink);
-          background: linear-gradient(120deg, var(--hero-a), var(--hero-b) 40%, var(--hero-c)); box-shadow: var(--shadow);
+  .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 24px 54px; color: var(--hero-ink);
+          background: linear-gradient(180deg, var(--sea-top) 0%, var(--sea-mid) 55%, var(--sea-low) 100%); box-shadow: var(--shadow);
           display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 18px; opacity: .35;
-                 background: radial-gradient(14px 9px at 14px 0, transparent 9px, var(--hero-ink) 10px) 0 0 / 28px 18px repeat-x; }
+  /* 헤더 바다: 위 진한 남색 → 아래 바다색, 오른쪽 위 은은한 빛, 아래 물결 3겹 (뒤 26초 · 가운데 18초 · 앞 12초, 맨 앞은 페이지 흰색) */
+  .hero > :not(.hwaves) { position: relative; z-index: 1; }
+  .hero::before { content: ""; position: absolute; right: -8%; top: -60%; width: 60%; height: 160%; pointer-events: none;
+                  background: radial-gradient(closest-side, rgba(255, 236, 200, .38), rgba(255, 236, 200, 0)); animation: heroGlow 9s ease-in-out infinite alternate; }
+  @keyframes heroGlow { from { opacity: .35; } to { opacity: 1; } }
+  .hwaves { position: absolute; left: 0; right: 0; bottom: -1px; height: 64px; pointer-events: none; }
+  .hwaves i { position: absolute; left: 0; right: 0; bottom: 0; background-repeat: repeat-x; animation: heroWave linear infinite; }
+  .hwaves .w1 { height: 60px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 27 Q150 11 300 27 T600 27 T900 27 T1200 27 V60 H0Z' fill='rgba(120,180,235,.5)'/%3E%3C/svg%3E"); background-size: 1200px 60px; animation-duration: 26s; --tile: 1200px; }
+  .hwaves .w2 { height: 46px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 50' preserveAspectRatio='none'%3E%3Cpath d='M0 22 Q112 10 225 22 T450 22 T675 22 T900 22 V50 H0Z' fill='rgba(180,220,248,.7)'/%3E%3C/svg%3E"); background-size: 900px 46px; animation-duration: 18s; --tile: 900px; }
+  .hwaves .w3 { height: 28px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 34' preserveAspectRatio='none'%3E%3Cpath d='M0 15 Q88 8 175 15 T350 15 T525 15 T700 15 V34 H0Z' fill='%23ffffff'/%3E%3C/svg%3E"); background-size: 700px 28px; animation-duration: 12s; --tile: 700px; }
+  @keyframes heroWave { from { background-position-x: 0; } to { background-position-x: var(--tile); } }
+  .cmfmark { animation: markBob 6s ease-in-out infinite; }
+  @keyframes markBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+  @media (prefers-reduced-motion: reduce) { .hwaves i, .hero::before, .cmfmark { animation: none; } }
   .yani { position: relative; margin: 0; flex: none; }
   .yani img { display: block; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
               border: 3px solid #fffaf2; box-shadow: 0 4px 14px rgba(20, 24, 50, .3); }
@@ -504,7 +517,7 @@
     .news { display: flex; flex-direction: column; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); }
     .newsbar { display: none; }
   }
-  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px; } }
+  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px 18px 48px; } }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } button:hover { transform: none; } }
 </style>
 
@@ -534,6 +547,7 @@
       <div class="fx-n" id="fxNote">환율 불러오는 중</div>
     </div>
     <div class="stamp">조회 기준 시각<br><b id="genAt">-</b><div id="genAgo"></div></div>
+    <div class="hwaves" aria-hidden="true"><i class="w1"></i><i class="w2"></i><i class="w3"></i></div>
   </header>
 
   <div class="warnbar" id="stale" hidden></div>
