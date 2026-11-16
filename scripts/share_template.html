@@ -7,7 +7,8 @@
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
     --bg: #ffffff; --panel: #ffffff; color-scheme: light; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
-    --open-bg: #fff4e8; --open-line: #f2a65a; --open-hover: #e07b1a; --open-tag: #fde3c6; --open-ink: #b5560c; --open-off: #fffcf8;
+    /* 부산 색(--open-*)은 아래 ★ 부산 녹색(--zbs-*) 한 줄을 그대로 따라감 — 색은 그 줄에서만 고치기 */
+    --open-bg: var(--zbs-soft); --open-line: var(--zbs-line); --open-hover: var(--zbs-hover); --open-tag: var(--zbs-tag); --open-ink: var(--zbs-ink); --open-off: var(--zbs-off);
     --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
     --news: #fff6e0; --news-line: #f0d9a0;  /* 부산항 소식란: 연한 노랑으로 따로 구분 */
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
@@ -18,11 +19,11 @@
     --c-hktl: #a86600; --c-hktl-bg: #fff0cc;
     --c-dgt: #0f7f8c; --c-dgt-bg: #d8f4f6;
     --c-pnit: #c2387a; --c-pnit-bg: #ffe1ef; --c-bnct: #5f6f0e; --c-bnct-bg: #eef3cf;
-    /* ★ 인천 색: 이 한 줄만 고치면 인천 화면 전체(픽업 카드·장비표·필터·말풍선·인천발 검색)가 바뀜 (부산은 주황 --open-*)
+    /* ★ 인천 색: 이 한 줄만 고치면 인천 화면 전체(픽업 카드·장비표·필터·말풍선·인천발 검색)가 바뀜 (부산은 ★ 부산 녹색 --zbs-*)
        bg 연한 배경 · line 테두리 · hover 진한 테두리 · tag 꼬리표 · ink 글씨·숫자·점 · off 거의 흰색 · off-line 흐린 테두리 */
     --ic-bg: #e6f1ff; --ic-line: #7aa8e6; --ic-hover: #3f78c9; --ic-tag: #d3e5ff; --ic-ink: #1f5fb4; --ic-off: #f6faff; --ic-off-line: #c4d9f5;
     --zbs-bg: #f6fcf7; --zic-bg: #f5f9ff;  /* 구역 배경: 부산 아주 연한 녹색 · 인천 아주 연한 푸른색 */
-    /* ★ 부산 녹색 (부산항 구역 박스 + 픽업 카드 부산 묶음, 장비표·필터 등은 --open-* 주황 그대로): line 테두리 · hover 진한 테두리 · tag 띠·꼬리표 배경 · ink 진한 글씨 · soft 연한 배경 · off 거의 흰색 · off-line 흐린 테두리 */
+    /* ★ 부산 녹색: 이 한 줄만 고치면 부산 화면 전체(구역 박스·픽업 카드·장비표·탭·말풍선·꼬리표)가 바뀜: line 테두리 · hover 진한 테두리 · tag 띠·꼬리표 배경 · ink 진한 글씨 · soft 연한 배경 · off 거의 흰색 · off-line 흐린 테두리 */
     --zbs-line: #7cc596; --zbs-hover: #3f9e63; --zbs-tag: #d6f0de; --zbs-ink: #1d7a43; --zbs-soft: #e8f7ec; --zbs-off: #fbfefc; --zbs-off-line: #cfe9d7;
     /* ★ 입력창 색 (부산 구역 연한 녹색 · 인천 구역 연한 푸른색): bg 배경 · line 테두리 · focus 클릭했을 때 테두리 */
     --bs-in-bg: var(--find); --bs-in-line: var(--find-line); --bs-in-focus: #2f9e5a;
@@ -346,7 +347,7 @@
   .panel.bsdest { background: var(--zbs-off); border-color: var(--zbs-line); }
   .zbs .dest input, .zbs form.search input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
   .zbs .dest input:focus, .zbs form.search input:focus { border-color: var(--bs-in-focus); }
-  /* 부산항·인천항 구역: 위아래로 나누고 배경·띠 색으로 구분 (부산 주황 --open-*, 인천 푸른 --ic-*) */
+  /* 부산항·인천항 구역: 위아래로 나누고 배경·띠 색으로 구분 (부산 녹색 --zbs-*, 인천 푸른 --ic-*) */
   .zone { display: flex; flex-direction: column; gap: 14px; padding: 0 14px 16px; border-radius: 22px; border: 1px solid; margin-top: 18px; }
   .zone + .zone { margin-top: 34px; }
   .zone.zbs { background: var(--zbs-bg); border-color: var(--zbs-line); }
@@ -416,7 +417,7 @@
   a.pcard, a.pcard:hover { text-decoration: none; }
   .pcard.off { background: var(--panel); }
   .pcard.off > * { opacity: .7; }
-  /* 로그인 없이 공컨 수량이 나오는 터미널: 옅은 주황 + 꼬리표 (수량 데이터 유무로 자동 판단) */
+  /* 로그인 없이 공컨 수량이 나오는 터미널: 옅은 녹색 + 꼬리표 (수량 데이터 유무로 자동 판단) */
   .pcard { position: relative; }
   .pcard.open { background: var(--open-bg); border-color: var(--open-line); }
   .pcard.open:hover { border-color: var(--open-hover); }
@@ -424,7 +425,7 @@
   .ptag { font-size: 11px; font-weight: 700; line-height: 1; padding: 4px 7px; display: inline-block;
           border-radius: 999px; background: var(--open-tag); color: var(--open-ink); border: 1px solid var(--open-line); white-space: nowrap; }
   .pcard .ptag { position: absolute; top: 9px; right: 10px; }
-  /* 부산 / 인천 묶음: 소제목 + 지역 꼬리표 (부산 주황, 인천 녹색) */
+  /* 부산 / 인천 묶음: 소제목 + 지역 꼬리표 (부산 녹색, 인천 푸른색) */
   .pickup .pgroup { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; margin-top: 4px; }
   .pickup .pgroup::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   .pickup .pgroup.ic { color: var(--ic-ink); margin-top: 10px; }
@@ -460,11 +461,15 @@
   .fchip.open.ic[aria-pressed="true"] { background: var(--ic-tag); border-color: var(--ic-hover); color: var(--ic-ink); }
   .filters .port.ic { color: var(--ic-ink); }
   .fchip.t-SNCT, .fchip.t-HJIT, .fchip.t-ICT, .fchip.t-E1CT { border-color: var(--ic-line); }
+  .btip:not(.ic) { background: var(--zbs-off); border-color: var(--zbs-line); }
+  .btip:not(.ic) .bt-code { color: var(--zbs-ink); }
+  .btip:not(.ic) .bt-code:hover, .btip:not(.ic) .bt-code:focus-visible { background: var(--zbs-tag); }
+  .btip:not(.ic) .bt-msg.ok { color: var(--zbs-ink); }
   .btip.ic { background: var(--ic-off); border-color: var(--ic-line); }
   .btip.ic .bt-code { color: var(--ic-ink); }
   .btip.ic .bt-code:hover, .btip.ic .bt-code:focus-visible { background: var(--ic-tag); }
   .btip.ic .bt-msg.ok { color: var(--ic-ink); }
-  /* 장비 현황표: 로그인 없이 조회되는 행·탭도 같은 주황 */
+  /* 장비 현황표: 로그인 없이 조회되는 행·탭도 같은 부산 녹색 */
   table.eq tbody tr.open td { background: var(--open-bg); }
   table.eq tbody tr.open td:first-child { font-weight: 700; }
   table.eq tbody tr.off td { color: var(--muted); }
