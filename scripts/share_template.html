@@ -21,6 +21,7 @@
     /* ★ 인천 색: 이 한 줄만 고치면 인천 화면 전체(픽업 카드·장비표·필터·말풍선·인천발 검색)가 바뀜 (부산은 주황 --open-*)
        bg 연한 배경 · line 테두리 · hover 진한 테두리 · tag 꼬리표 · ink 글씨·숫자·점 · off 거의 흰색 · off-line 흐린 테두리 */
     --ic-bg: #e6f1ff; --ic-line: #7aa8e6; --ic-hover: #3f78c9; --ic-tag: #d3e5ff; --ic-ink: #1f5fb4; --ic-off: #f6faff; --ic-off-line: #c4d9f5;
+    --zbs-bg: #fffaf4; --zic-bg: #f5f9ff;  /* 구역 배경: 부산 아주 연한 주황 · 인천 아주 연한 푸른색 */
     --c-snct: var(--ic-ink); --c-snct-bg: var(--ic-tag); --c-hjit: var(--ic-ink); --c-hjit-bg: var(--ic-tag);
     --c-ict: var(--ic-ink); --c-ict-bg: var(--ic-tag); --c-e1ct: var(--ic-ink); --c-e1ct-bg: var(--ic-tag);
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
@@ -323,6 +324,27 @@
   .icdest input { background: var(--ic-bg); border-color: var(--ic-line); }
   .icdest input:focus { border-color: var(--ic-hover); }
   .icdest .caption .rtag { margin-left: 6px; vertical-align: 2px; }
+  /* 부산항·인천항 구역: 위아래로 나누고 배경·띠 색으로 구분 (부산 주황 --open-*, 인천 푸른 --ic-*) */
+  .zone { display: flex; flex-direction: column; gap: 14px; padding: 0 14px 16px; border-radius: 22px; border: 1px solid; margin-top: 18px; }
+  .zone + .zone { margin-top: 34px; }
+  .zone.zbs { background: var(--zbs-bg); border-color: var(--open-line); }
+  .zone.zic { background: var(--zic-bg); border-color: var(--ic-line); }
+  .zbar { margin: 0 -14px; padding: 11px 18px; border-radius: 21px 21px 0 0; font-family: var(--f-display); font-weight: 400; font-size: 20px; line-height: 1.3;
+          display: flex; align-items: center; gap: 8px; }
+  .zbs .zbar { background: var(--open-tag); color: var(--open-ink); border-bottom: 2px solid var(--open-line); }
+  .zic .zbar { background: var(--ic-tag); color: var(--ic-ink); border-bottom: 2px solid var(--ic-line); }
+  .zpin { font-size: 14px; }
+  .zone + .vmap { margin-top: 18px; }
+  .zic form.search input { background: var(--ic-bg); border-color: var(--ic-line); }
+  .zic form.search input:focus { border-color: var(--ic-hover); }
+  .zic .zsched { border-color: var(--ic-line); }
+  .zbs .zsched { border-color: var(--open-line); }
+  .stat .l small { font-size: 11.5px; opacity: .85; }
+  .zswitch { margin-top: 10px; }
+  /* 목적지 검색 자동완성 목록이 칸 밖으로 잘리지 않게 */
+  .panel.dest { overflow: visible; position: relative; }
+  .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
+  .panel.dest .dnote { border-radius: 0 0 18px 18px; }
   .dnote { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--zebra); }
 
   /* 선박 위치: VesselFinder 공식 퍼가기 지도 + 선명 옆 지도/위치 버튼 */
@@ -502,9 +524,9 @@
   <div class="warnbar" id="stale" hidden></div>
 
   <section class="stats" aria-label="요약">
-    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">21일 안에 출항하는 배</div></div>
-    <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감</div></div>
-    <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널</div></div>
+    <div class="stat go"><div class="n" id="sDep">-</div><div class="l">21일 안에 출항하는 배 <small>· 부산·인천 합계</small></div></div>
+    <div class="stat hot"><div class="n" id="sClose">-</div><div class="l">48시간 안에 반입 마감 <small>· 부산·인천 합계</small></div></div>
+    <div class="stat okk"><div class="n" id="sTerm">-</div><div class="l">조회된 터미널 <small>· 부산 8 · 인천 4</small></div></div>
   </section>
 
   <details class="newsbar" id="newsBar" hidden>
@@ -513,115 +535,165 @@
     <div class="nfoot">출처: <a href="https://www.ksg.co.kr/news/main_news.jsp" target="_blank" rel="noopener">코리아쉬핑가제트</a> · <a href="https://www.busanpa.com/board/list.bpa?boardId=BBS_0000029&menuCd=DOM_000000105001003000" target="_blank" rel="noopener">부산항만공사</a> · <a href="https://www.icpa.or.kr/article/list.do?menuKey=1400&boardKey=217" target="_blank" rel="noopener">인천항만공사</a> · 최근 14일, 부산항·인천항 스케줄 영향 소식 · 항로 시황 · 두 항만 주요 소식을 골라요<span id="newsBarErr"></span></div>
   </details>
 
-  <section class="panel dest" aria-label="부산발 목적지 검색">
-    <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 섣부른 판단 안 돼요 · 선사 확인 필수</span></div>
-    <div class="dcount muted" id="destCount"></div>
-    <form id="destForm" autocomplete="off" role="search">
-      <div class="dq-wrap">
-        <input id="dq" placeholder="Port name (e.g. LONG BEACH, HO CHI MINH, NHAVA SHEVA, USLGB)" aria-label="목적 항구 (영문 항구명, UN/LOCODE, 한글)"
-               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dqList">
-        <ul class="dac" id="dqList" role="listbox" hidden></ul>
-      </div>
-      <button class="go" type="submit">찾기</button>
-    </form>
-    <div class="tmsg" id="destMsg" hidden></div>
-    <div id="destResult" hidden>
-      <div class="dinfo" id="destNote" hidden></div>
-      <div class="dsum" id="destSum"></div>
-      <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
-      <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
-        <div class="dempty" id="destEmpty" hidden>40일 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
-        <div class="table-wrap" id="destTableWrap">
-          <table class="dtable">
-            <thead><tr>
-              <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
-              <th>선사<small>CARRIER</small></th>
-              <th>터미널<small>TERMINAL</small></th>
-              <th>부산 출항<small>ETD</small></th>
-              <th>반입 마감<small>CLOSING</small></th>
-              <th>예상 도착<small>ETA</small></th>
-              <th>소요일<small>T/T</small></th>
-            </tr></thead>
-            <tbody id="destRows"></tbody>
-          </table>
+  <section class="zone zbs" id="zone_bs" data-z="bs" aria-label="부산 구역">
+    <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>부산항 · 신항/북항 8개 터미널</h2>
+    <section class="panel dest" aria-label="부산발 목적지 검색">
+      <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
+      <div class="dcount muted" id="destCount"></div>
+      <form id="destForm" autocomplete="off" role="search">
+        <div class="dq-wrap">
+          <input id="dq" placeholder="Port name (e.g. LONG BEACH, HO CHI MINH, NHAVA SHEVA, USLGB)" aria-label="목적 항구 (영문 항구명, UN/LOCODE, 한글)"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dqList">
+          <ul class="dac" id="dqList" role="listbox" hidden></ul>
+        </div>
+        <button class="go" type="submit">찾기</button>
+      </form>
+      <div class="tmsg" id="destMsg" hidden></div>
+      <div id="destResult" hidden>
+        <div class="dinfo" id="destNote" hidden></div>
+        <div class="dsum" id="destSum"></div>
+        <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
+        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
+          <div class="dempty" id="destEmpty" hidden>40일 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
+          <div class="table-wrap" id="destTableWrap">
+            <table class="dtable">
+              <thead><tr>
+                <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
+                <th>선사<small>CARRIER</small></th>
+                <th>터미널<small>TERMINAL</small></th>
+                <th>부산 출항<small>ETD</small></th>
+                <th>반입 마감<small>CLOSING</small></th>
+                <th>예상 도착<small>ETA</small></th>
+                <th>소요일<small>T/T</small></th>
+              </tr></thead>
+              <tbody id="destRows"></tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="thelp" id="destHelp" hidden></div>
-    <div class="dnote">예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요</div>
-  </section>
+      <div class="thelp" id="destHelp" hidden></div>
+      <div class="dnote">예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요</div>
+    </section>
 
-  <section class="panel dest icdest" aria-label="인천발 목적지 검색">
-    <div class="caption"><span class="ct"><b>인천발 목적지 검색</b><span class="rtag ic">인천</span><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
-    <div class="dcount muted" id="icdCount"></div>
-    <form id="icdForm" autocomplete="off" role="search">
-      <div class="dq-wrap">
-        <input id="icdq" placeholder="Port name (e.g. HO CHI MINH, HAIPHONG, NHAVA SHEVA, VNSGN)" aria-label="인천발 목적 항구 (영문 항구명, UN/LOCODE, 한글)"
-               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="icdqList">
-        <ul class="dac" id="icdqList" role="listbox" hidden></ul>
-      </div>
+    <form class="search" autocomplete="off" role="search">
+      <input class="zq" placeholder="부산 선명 검색 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="부산 선명 검색">
       <button class="go" type="submit">찾기</button>
     </form>
-    <div class="tmsg" id="icdMsg" hidden></div>
-    <div id="icdResult" hidden>
-      <div class="dinfo" id="icdNote" hidden></div>
-      <div class="dsum" id="icdSum"></div>
-      <div class="dsec"><h3>이용 가능한 선사<small>인천 터미널(SNCT·HJIT·ICT·E1CT)에 실제 기항하는 선사</small></h3><div class="ccarr" id="icdCarr"></div></div>
-      <div class="dsec sched"><h3>진행 가능한 스케줄<small id="icdSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
-        <div class="dempty" id="icdEmpty" hidden></div>
-        <div class="table-wrap" id="icdTableWrap">
-          <table class="dtable">
-            <thead><tr>
-              <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
-              <th>선사<small>CARRIER</small></th>
-              <th>터미널<small>TERMINAL</small></th>
-              <th>인천 출항<small>ETD</small></th>
-              <th>반입 마감<small>CLOSING</small></th>
-              <th>예상 도착<small>ETA</small></th>
-              <th>소요일<small>T/T</small></th>
-            </tr></thead>
-            <tbody id="icdRows"></tbody>
-          </table>
+    <div class="filters" role="group" aria-label="부산 필터">
+      <span class="lbl">터미널</span>
+      <button type="button" class="fchip all" data-t="ALL" aria-pressed="true">전체</button>
+      <button type="button" class="fchip t-PNC" data-t="PNC" aria-pressed="false">PNC</button>
+      <button type="button" class="fchip t-HJNC" data-t="HJNC" aria-pressed="false">HJNC</button>
+      <button type="button" class="fchip t-HPNT" data-t="HPNT" aria-pressed="false">HPNT</button>
+      <button type="button" class="fchip t-DGT" data-t="DGT" aria-pressed="false">DGT</button>
+      <button type="button" class="fchip t-PNIT" data-t="PNIT" aria-pressed="false">PNIT</button>
+      <button type="button" class="fchip t-BNCT" data-t="BNCT" aria-pressed="false">BNCT</button>
+      <span class="muted">신항</span>
+      <button type="button" class="fchip t-BPTC" data-t="BPTC" aria-pressed="false">BPTC</button>
+      <button type="button" class="fchip t-HKTL" data-t="HKTL" aria-pressed="false">HKTL</button>
+      <span class="muted">북항</span>
+      <span class="sep"></span>
+      <span class="lbl">기간</span>
+      <button type="button" class="fchip per" data-p="21" aria-pressed="true">21일 전후</button>
+      <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
+      <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
+    </div>
+    <section class="panel zsched" aria-label="부산 선박 스케줄">
+      <div class="caption"><b class="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted capCount"></span>
+        <button type="button" class="back" hidden>↺ 검색·필터 지우기</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>No.</th>
+            <th>선명<small>VESSEL · VOYAGE</small></th>
+            <th>터미널<small>TERMINAL · BERTH</small></th>
+            <th>예상 도착<small>ETB</small></th>
+            <th>예상 출항<small>ETD</small></th>
+            <th>컨테이너 반입<small>CY OPEN → CLOSING</small></th>
+          </tr></thead>
+          <tbody class="rows"></tbody>
+        </table>
+      </div>
+      <div class="more" hidden><button type="button" class="moreBtn">더 보기</button></div>
+    </section>
+  </section>
+  <section class="zone zic" id="zone_ic" data-z="ic" aria-label="인천 구역">
+    <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>인천항 · 신항/남항 4개 터미널</h2>
+    <section class="panel dest icdest" aria-label="인천발 목적지 검색">
+      <div class="caption"><span class="ct"><b>인천발 목적지 검색</b><span class="rtag ic">인천</span><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
+      <div class="dcount muted" id="icdCount"></div>
+      <form id="icdForm" autocomplete="off" role="search">
+        <div class="dq-wrap">
+          <input id="icdq" placeholder="Port name (e.g. HO CHI MINH, HAIPHONG, NHAVA SHEVA, VNSGN)" aria-label="인천발 목적 항구 (영문 항구명, UN/LOCODE, 한글)"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="icdqList">
+          <ul class="dac" id="icdqList" role="listbox" hidden></ul>
+        </div>
+        <button class="go" type="submit">찾기</button>
+      </form>
+      <div class="tmsg" id="icdMsg" hidden></div>
+      <div id="icdResult" hidden>
+        <div class="dinfo" id="icdNote" hidden></div>
+        <div class="dsum" id="icdSum"></div>
+        <div class="dsec"><h3>이용 가능한 선사<small>인천 터미널(SNCT·HJIT·ICT·E1CT)에 실제 기항하는 선사</small></h3><div class="ccarr" id="icdCarr"></div></div>
+        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="icdSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
+          <div class="dempty" id="icdEmpty" hidden></div>
+          <div class="table-wrap" id="icdTableWrap">
+            <table class="dtable">
+              <thead><tr>
+                <th>선명 · 항차<small>VESSEL · VOYAGE</small></th>
+                <th>선사<small>CARRIER</small></th>
+                <th>터미널<small>TERMINAL</small></th>
+                <th>인천 출항<small>ETD</small></th>
+                <th>반입 마감<small>CLOSING</small></th>
+                <th>예상 도착<small>ETA</small></th>
+                <th>소요일<small>T/T</small></th>
+              </tr></thead>
+              <tbody id="icdRows"></tbody>
+            </table>
+          </div>
         </div>
       </div>
+      <div class="dnote">인천 4개 터미널(SNCT·HJIT·ICT·E1CT) 출항 배 기준 · 예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요 · 경유항·환적항은 표시하지 않아요</div>
+    </section>
+
+    <form class="search" autocomplete="off" role="search">
+      <input class="zq" placeholder="인천 선명 검색 (예: SITC LIANYUNGANG, 일부만 입력해도 돼요)" aria-label="인천 선명 검색">
+      <button class="go" type="submit">찾기</button>
+    </form>
+    <div class="filters" role="group" aria-label="인천 필터">
+      <span class="lbl">터미널</span>
+      <button type="button" class="fchip all" data-t="ALL" aria-pressed="true">전체</button>
+      <button type="button" class="fchip t-SNCT" data-t="SNCT" aria-pressed="false">SNCT</button>
+      <button type="button" class="fchip t-HJIT" data-t="HJIT" aria-pressed="false">HJIT</button>
+      <span class="muted">인천신항</span>
+      <button type="button" class="fchip t-ICT" data-t="ICT" aria-pressed="false">ICT</button>
+      <button type="button" class="fchip t-E1CT" data-t="E1CT" aria-pressed="false">E1CT</button>
+      <span class="muted">인천남항</span>
+      <span class="sep"></span>
+      <span class="lbl">기간</span>
+      <button type="button" class="fchip per" data-p="21" aria-pressed="true">21일 전후</button>
+      <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
+      <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
     </div>
-    <div class="dnote">인천 4개 터미널(SNCT·HJIT·ICT·E1CT) 출항 배 기준 · 예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요 · 경유항·환적항은 표시하지 않아요</div>
+    <section class="panel zsched" aria-label="인천 선박 스케줄">
+      <div class="caption"><b class="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted capCount"></span>
+        <button type="button" class="back" hidden>↺ 검색·필터 지우기</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>No.</th>
+            <th>선명<small>VESSEL · VOYAGE</small></th>
+            <th>터미널<small>TERMINAL · BERTH</small></th>
+            <th>예상 도착<small>ETB</small></th>
+            <th>예상 출항<small>ETD</small></th>
+            <th>컨테이너 반입<small>CY OPEN → CLOSING</small></th>
+          </tr></thead>
+          <tbody class="rows"></tbody>
+        </table>
+      </div>
+      <div class="more" hidden><button type="button" class="moreBtn">더 보기</button></div>
+    </section>
   </section>
-
-  <form class="search" id="searchForm" autocomplete="off">
-    <input id="q" placeholder="선명 검색 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="선명 검색">
-    <button class="go" type="submit">찾기</button>
-  </form>
-
-  <div class="filters" role="group" aria-label="필터">
-    <span class="lbl">터미널</span>
-    <button type="button" class="fchip all" data-t="ALL" aria-pressed="true">전체</button>
-    <span class="port">부산</span>
-    <button type="button" class="fchip t-PNC" data-t="PNC" aria-pressed="false">PNC</button>
-    <button type="button" class="fchip t-HJNC" data-t="HJNC" aria-pressed="false">HJNC</button>
-    <button type="button" class="fchip t-HPNT" data-t="HPNT" aria-pressed="false">HPNT</button>
-    <button type="button" class="fchip t-DGT" data-t="DGT" aria-pressed="false">DGT</button>
-    <button type="button" class="fchip t-PNIT" data-t="PNIT" aria-pressed="false">PNIT</button>
-    <button type="button" class="fchip t-BNCT" data-t="BNCT" aria-pressed="false">BNCT</button>
-    <span class="muted">신항</span>
-    <button type="button" class="fchip t-BPTC" data-t="BPTC" aria-pressed="false">BPTC</button>
-    <button type="button" class="fchip t-HKTL" data-t="HKTL" aria-pressed="false">HKTL</button>
-    <span class="muted">북항</span>
-    <span class="sep"></span>
-    <span class="port ic">인천</span>
-    <button type="button" class="fchip t-SNCT" data-t="SNCT" aria-pressed="false">SNCT</button>
-    <button type="button" class="fchip t-HJIT" data-t="HJIT" aria-pressed="false">HJIT</button>
-    <span class="muted">인천신항</span>
-    <button type="button" class="fchip t-ICT" data-t="ICT" aria-pressed="false">ICT</button>
-    <button type="button" class="fchip t-E1CT" data-t="E1CT" aria-pressed="false">E1CT</button>
-    <span class="muted">인천남항</span>
-    <span class="sep"></span>
-    <span class="lbl">기간</span>
-    <button type="button" class="fchip per" data-p="21" aria-pressed="true">21일 전후</button>
-    <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
-    <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
-  </div>
-
   <section class="panel vmap" id="vmapPanel" aria-label="선박 위치">
     <div class="vmhint" id="vmapHint">📍 선박 표에서 선명을 누르면 위치가 지도에 표시돼요</div>
     <div id="vmapBody" hidden>
@@ -643,25 +715,6 @@
       </table></div>
     </div>
     <div class="thelp" id="pickupHelp"></div>
-  </section>
-
-  <section class="panel" id="schedPanel" hidden>
-    <div class="caption"><b id="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted" id="capCount"></span>
-      <button type="button" class="back" id="backBtn">↩ 터미널 현황으로</button></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th>No.</th>
-          <th>선명<small>VESSEL · VOYAGE</small></th>
-          <th>터미널<small>TERMINAL · BERTH</small></th>
-          <th>예상 도착<small>ETB</small></th>
-          <th>예상 출항<small>ETD</small></th>
-          <th>컨테이너 반입<small>CY OPEN → CLOSING</small></th>
-        </tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-    <div class="more" id="moreWrap" hidden><button type="button" id="moreBtn">더 보기</button></div>
   </section>
 
   <section class="panel frt" id="frtPanel" aria-label="미주·중동·홍해·지중해 운임 추이">
@@ -786,7 +839,6 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const WD = ["일", "월", "화", "수", "목", "금", "토"];
 const PAGE = 120;
-const ui = { q: "", terms: new Set(), period: "21", limit: PAGE, qAll: false };
 
 const toDate = (s) => (s ? new Date(s.replace(" ", "T")) : null);
 const norm = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -992,46 +1044,68 @@ const upcoming = (r) => { const d = toDate(r.etd); return d && d >= new Date(now
 // 21일 전후 = 오늘 기준 앞으로 21일 안에 출항할 배 + 최근 21일 안에 출항한 배 (선적 확인용)
 const within21 = (r) => { const d = toDate(r.etd); return upcoming(r) && d < new Date(today.getTime() + 22 * 86400e3); };
 const departed21 = (r) => { const d = toDate(r.etd); return d && !upcoming(r) && d >= new Date(today.getTime() - 21 * 86400e3); };
-const inPeriod = (r) => (ui.period === "21" ? within21(r) || departed21(r)
-  : ui.period === "gone" ? toDate(r.etd) && !upcoming(r) : !!toDate(r.etd));
+const inPeriod = (r, z) => (z.period === "21" ? within21(r) || departed21(r)
+  : z.period === "gone" ? toDate(r.etd) && !upcoming(r) : !!toDate(r.etd));
 const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
 
-function filtered() {
-  const q = norm(ui.q);
-  let rows = DATA.rows.filter((r) => !ui.terms.size || ui.terms.has(r.t));
-  ui.qMiss = 0;
+// 부산항·인천항 구역: 선명 검색·터미널 필터·기간·선박 표를 구역마다 따로 (부산 칸은 부산 터미널만, 인천 칸은 인천 터미널만)
+const FIRST = 15;  // 처음엔 가까운 15척만, [더 보기]로 120척씩
+const IC_LIST = DATA.incheon || [];
+function mkZone(key, name, other, isMine) {
+  const el = document.getElementById(`zone_${key}`);
+  return { key, name, other, el, rows: DATA.rows.filter((r) => isMine(r.t)),
+    nTerm: Object.keys(TN).filter(isMine).length,
+    q: "", terms: new Set(), period: "21", limit: FIRST, qAll: false, qMiss: 0,
+    $: (sel) => el.querySelector(sel), $$: (sel) => el.querySelectorAll(sel) };
+}
+const ZONES = {
+  bs: mkZone("bs", "부산항", "ic", (t) => !IC_LIST.includes(t)),
+  ic: mkZone("ic", "인천항", "bs", (t) => IC_LIST.includes(t)),
+};
+const zoneOf = (t) => (IC_LIST.includes(t) ? ZONES.ic : ZONES.bs);
+const qMatch = (r, q) => norm(r.vessel).includes(q) && toDate(r.etd);
+
+function filtered(z) {
+  const q = norm(z.q);
+  let rows = z.rows.filter((r) => !z.terms.size || z.terms.has(r.t));
+  z.qMiss = 0;
   if (q) {
     // 선명 검색도 고른 기간(기본 21일 전후) 안에서 찾고, [전체 일정에서 찾기]를 누르면 전체 일정에서
-    rows = rows.filter((r) => norm(r.vessel).includes(q) && toDate(r.etd));
-    if (!ui.qAll) { const hit = rows.filter(inPeriod); ui.qMiss = hit.length ? 0 : rows.length; rows = hit; }
+    rows = rows.filter((r) => qMatch(r, q));
+    if (!z.qAll) { const hit = rows.filter((r) => inPeriod(r, z)); z.qMiss = hit.length ? 0 : rows.length; rows = hit; }
   } else {
-    rows = rows.filter(inPeriod);
+    rows = rows.filter((r) => inPeriod(r, z));
   }
   // 출항 전 배는 가까운 순, 출항한 배는 그 아래 최근 출항 순
   return [...rows.filter(upcoming).sort(byEtd), ...rows.filter((r) => !upcoming(r)).sort((a, b) => byEtd(b, a))];
 }
 
-function render() {
-  const rows = filtered();
-  const q = ui.q.trim().toUpperCase();
-  const pTitle = ui.period === "21" ? "21일 안에 출항 · 최근 21일 출항한 배"
-    : ui.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
-  const one = ui.terms.size === 1 ? [...ui.terms][0] : "";
-  $("#capTitle").textContent = (q ? `"${q}" 검색 결과 · ${ui.qAll ? "전체 일정" : pTitle}` : pTitle)
+function render(z) {
+  if (!z) { render(ZONES.bs); render(ZONES.ic); return; }
+  const rows = filtered(z);
+  const q = z.q.trim().toUpperCase();
+  const pTitle = z.period === "21" ? "21일 안에 출항 · 최근 21일 출항한 배"
+    : z.period === "gone" ? "이미 출항한 배 (최근 출항 순)" : "전체 일정 (출항한 배 포함)";
+  const one = z.terms.size === 1 ? [...z.terms][0] : "";
+  z.$(".capTitle").textContent = (q ? `"${q}" 검색 결과 · ${z.qAll ? "전체 일정" : pTitle}` : pTitle)
     + (one && BOND[one] ? ` · ${one} 장치장 ${bondAll(one)}` : "");
   const gone = rows.filter((r) => !upcoming(r)).length;
-  $("#capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${ui.terms.size ? " · " + [...ui.terms].join(", ") : ""}`;
+  z.$(".capCount").textContent = `${rows.length}척${gone ? ` (출항함 ${gone}척)` : ""}${z.terms.size ? " · " + [...z.terms].join(", ") : ""}`;
+  z.$(".back").hidden = !(q || z.terms.size || z.period !== "21");
+  const tb = z.$(".rows");
   if (!rows.length) {
-    $("#rows").innerHTML = q && ui.qMiss
-      ? `<tr><td colspan="6" class="empty">"${esc(q)}"은(는) ${ui.period === "gone" ? "출항한 배 목록" : "21일 전후"}에 없어요. 전체 일정에서 찾아볼까요?<br><br>
-          <button type="button" class="go" id="qAllBtn">전체 일정에서 찾기</button></td></tr>`
+    const o = ZONES[z.other], oHas = q && o.rows.some((r) => qMatch(r, norm(q)));
+    const sw = `<button type="button" class="go zswitch" data-z="${z.key}">${o.name}에서 찾아볼까요?</button>${oHas ? `<br><span class="muted">${o.name} 일정에 "${esc(q)}"이(가) 있어요</span>` : ""}`;
+    tb.innerHTML = q && z.qMiss
+      ? `<tr><td colspan="6" class="empty">"${esc(q)}"은(는) ${z.period === "gone" ? "출항한 배 목록" : "21일 전후"}에 없어요. 전체 일정에서 찾아볼까요?<br><br>
+          <button type="button" class="go qAllBtn" data-z="${z.key}">전체 일정에서 찾기</button></td></tr>`
       : q
-      ? `<tr><td colspan="6" class="empty"><span class="badge b-warn">수동 확인 필요</span><br><br>"${esc(q)}"을(를) ${Object.keys(TN).length}개 터미널 일정에서 찾지 못했어요.<br>선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.</td></tr>`
+      ? `<tr><td colspan="6" class="empty">${oHas ? "" : `<span class="badge b-warn">수동 확인 필요</span><br><br>`}"${esc(q)}"을(를) ${z.name} ${z.nTerm}개 터미널 일정에서 찾지 못했어요.<br>${oHas ? "" : "선명 철자를 확인하거나 선사·터미널에 직접 확인해 주세요.<br>"}${sw}</td></tr>`
       : `<tr><td colspan="6" class="empty">조건에 맞는 일정이 없어요.</td></tr>`;
-    $("#moreWrap").hidden = true;
+    z.$(".more").hidden = true;
     return;
   }
-  $("#rows").innerHTML = rows.slice(0, ui.limit).map((r, i) => `${!upcoming(r) && (i === 0 || upcoming(rows[i - 1]))
+  tb.innerHTML = rows.slice(0, z.limit).map((r, i) => `${!upcoming(r) && (i === 0 || upcoming(rows[i - 1]))
       ? `<tr class="divider"><td colspan="6">⬇ 이미 출항한 배</td></tr>` : ""}<tr class="${upcoming(r) ? "" : "past"}">
     <td class="no">${i + 1}</td>
     <td><div class="vessel">${vesselName(r)}${vesselTools(r)}</div><div class="muted">${esc(r.voyages.filter(Boolean).join(" · "))}${r.operator ? " · " + esc(r.operator) : ""}</div></td>
@@ -1041,8 +1115,8 @@ function render() {
     <td>${fmt(r.etd)}${upcoming(r) ? dday(r.etd) : ""}</td>
     <td>${yardCell(r)}</td>
   </tr>`).join("");
-  $("#moreWrap").hidden = rows.length <= ui.limit;
-  $("#moreBtn").textContent = `더 보기 (${rows.length - ui.limit}척 남음)`;
+  z.$(".more").hidden = rows.length <= z.limit;
+  z.$(".moreBtn").textContent = `더 보기 (${rows.length - z.limit}척 남음)`;
 }
 
 // ---------------------------------------------------------------- 맨 아래: 미주·중동·홍해·지중해 운임 추이 (KCCI 주간)
@@ -1180,33 +1254,42 @@ function summary() {
     + "선명만 입력하면 터미널 · 도착 · 출항 · 반입 일정을 찾아드려요";
 }
 
-// 첫 화면은 터미널별 픽업 가능 컨테이너, 선명 검색·필터·터미널 카드를 누르면 선박 표
-function showSched(on) { $("#schedPanel").hidden = !on; $("#pickup").hidden = on; }
-function setTerms(list) {
-  ui.terms = new Set(list);
-  document.querySelectorAll(".fchip[data-t]").forEach((x) =>
-    x.setAttribute("aria-pressed", String(x.dataset.t === "ALL" ? !ui.terms.size : ui.terms.has(x.dataset.t))));
+// 구역마다 선명 검색·필터·더 보기 (픽업 카드를 누르면 그 터미널이 속한 구역의 표로)
+function setTerms(z, list) {
+  z.terms = new Set(list);
+  z.$$(".fchip[data-t]").forEach((x) =>
+    x.setAttribute("aria-pressed", String(x.dataset.t === "ALL" ? !z.terms.size : z.terms.has(x.dataset.t))));
 }
-$("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); ui.q = $("#q").value; ui.qAll = false; ui.limit = PAGE; showSched(true); render(); });
-$("#q").addEventListener("input", (e) => { ui.q = e.target.value; ui.qAll = false; ui.limit = PAGE; if (ui.q.trim()) showSched(true); render(); });
-$("#backBtn").addEventListener("click", () => {
-  ui.q = ""; ui.qAll = false; $("#q").value = ""; setTerms([]); ui.limit = PAGE; render(); showSched(false);
-  $("#pickup").scrollIntoView({ behavior: "smooth", block: "start" });
+const goSched = (z) => z.$(".zsched").scrollIntoView({ behavior: "smooth", block: "start" });
+Object.values(ZONES).forEach((z) => {
+  const inp = z.$(".zq");
+  z.$("form.search").addEventListener("submit", (e) => { e.preventDefault(); z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
+  inp.addEventListener("input", () => { z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
+  z.$(".back").addEventListener("click", () => {
+    z.q = ""; z.qAll = false; inp.value = ""; setTerms(z, []); z.period = "21";
+    z.$$(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.p === "21")));
+    z.limit = FIRST; render(z);
+  });
+  z.$$(".fchip[data-t]").forEach((b) => b.addEventListener("click", () => {
+    const t = b.dataset.t;
+    if (t === "ALL") z.terms.clear(); else z.terms.has(t) ? z.terms.delete(t) : z.terms.add(t);
+    setTerms(z, [...z.terms]); z.limit = FIRST; render(z);
+  }));
+  z.$$(".fchip[data-p]").forEach((b) => b.addEventListener("click", () => {
+    z.period = b.dataset.p; z.qAll = false;
+    z.$$(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    z.limit = FIRST; render(z);
+  }));
+  z.$(".moreBtn").addEventListener("click", () => { z.limit += PAGE; render(z); });
 });
-document.querySelectorAll(".fchip[data-t]").forEach((b) => b.addEventListener("click", () => {
-  const t = b.dataset.t;
-  if (t === "ALL") ui.terms.clear(); else ui.terms.has(t) ? ui.terms.delete(t) : ui.terms.add(t);
-  document.querySelectorAll(".fchip[data-t]").forEach((x) =>
-    x.setAttribute("aria-pressed", String(x.dataset.t === "ALL" ? !ui.terms.size : ui.terms.has(x.dataset.t))));
-  ui.limit = PAGE; showSched(true); render();
-}));
-document.querySelectorAll(".fchip[data-p]").forEach((b) => b.addEventListener("click", () => {
-  ui.period = b.dataset.p; ui.qAll = false;
-  document.querySelectorAll(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-  ui.limit = PAGE; showSched(true); render();
-}));
-$("#moreBtn").addEventListener("click", () => { ui.limit += PAGE; render(); });
-document.addEventListener("click", (e) => { if (e.target.id === "qAllBtn") { ui.qAll = true; ui.limit = PAGE; render(); } });
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".qAllBtn, .zswitch"); if (!b) return;
+  const z = ZONES[b.dataset.z];
+  if (b.classList.contains("qAllBtn")) { z.qAll = true; z.limit = FIRST; render(z); return; }
+  // 다른 구역에서 같은 선명으로 찾기
+  const o = ZONES[z.other];
+  o.q = z.q; o.$(".zq").value = z.q; o.qAll = false; o.limit = FIRST; render(o); goSched(o);
+});
 
 const TAG_CLS = { "파업": "b-bad", "기상": "b-blue", "사고": "b-warn", "운영": "b-warn", "스케줄": "b-ok", "항로": "b-warn" };
 const ALERT_TAGS = ["파업", "기상", "사고", "운영", "스케줄", "항로"];
@@ -1307,8 +1390,8 @@ function renderPickup() {
   $("#pickupHelp").innerHTML = `픽업 가능 = 터미널에서 지금 반출(픽업)할 수 있는 공컨테이너 수예요. 40FT에는 40HC·45 포함, 특수는 냉동·OT·FR 등이에요.
     공개(로그인 불필요): ${esc(ok.join(" · ") || "-")} · 나머지는 정보미제공(로그인 필요)이라 카드를 누르면 터미널 로그인 화면으로 가요${errs ? ` · <b>${esc(errs)}</b> 조회 실패` : ""}`;
   document.querySelectorAll("button.pcard").forEach((b) => b.addEventListener("click", () => {
-    setTerms([b.dataset.t]); ui.limit = PAGE; showSched(true); render();
-    $("#schedPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    const z = zoneOf(b.dataset.t);
+    setTerms(z, [b.dataset.t]); z.limit = FIRST; render(z); goSched(z);
   }));
 }
 
@@ -1878,7 +1961,8 @@ $("#yaniMute").addEventListener("click", (e) => { e.stopPropagation(); setMute(!
 }
 
 summary();
-render();
+render(ZONES.bs);
+render(ZONES.ic);
 renderPickup();
 renderNews();
 </script>
