@@ -345,6 +345,13 @@
   .zbs .zsched { border-color: var(--open-line); }
   .stat .l small { font-size: 11.5px; opacity: .85; }
   .zswitch { margin-top: 10px; }
+  /* 검색 전 요약 한 줄 (표는 선명 검색·터미널 버튼·[전체 목록 보기]로 펼침) */
+  .zsum { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); font-size: 13.5px; }
+  .zbs .zsum { border-color: var(--open-line); } .zic .zsum { border-color: var(--ic-line); }
+  .zsum-t { flex: 1; min-width: 0; color: var(--muted); } .zsum-t b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ztoggle { flex: none; font-size: 12.5px; font-weight: 700; padding: 4px 12px; }
+  .zbs .ztoggle { background: var(--open-bg); border-color: var(--open-line); color: var(--open-ink); }
+  .zic .ztoggle { background: var(--ic-bg); border-color: var(--ic-line); color: var(--ic-ink); }
   /* 목적지 검색 자동완성 목록이 칸 밖으로 잘리지 않게 */
   .panel.dest { overflow: visible; position: relative; }
   .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
@@ -603,7 +610,8 @@
       <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
       <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
     </div>
-    <section class="panel zsched" aria-label="부산 선박 스케줄">
+    <div class="zsum"><span class="zsum-t"></span><button type="button" class="ztoggle" aria-expanded="false">전체 목록 보기</button></div>
+    <section class="panel zsched" hidden aria-label="부산 선박 스케줄">
       <div class="caption"><b class="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted capCount"></span>
         <button type="button" class="back" hidden>↺ 검색·필터 지우기</button></div>
       <div class="table-wrap">
@@ -680,7 +688,8 @@
       <button type="button" class="fchip per" data-p="all" aria-pressed="false">전체 일정</button>
       <button type="button" class="fchip per" data-p="gone" aria-pressed="false">출항한 배</button>
     </div>
-    <section class="panel zsched" aria-label="인천 선박 스케줄">
+    <div class="zsum"><span class="zsum-t"></span><button type="button" class="ztoggle" aria-expanded="false">전체 목록 보기</button></div>
+    <section class="panel zsched" hidden aria-label="인천 선박 스케줄">
       <div class="caption"><b class="capTitle">21일 안에 출항 · 최근 21일 출항한 배</b><span class="muted capCount"></span>
         <button type="button" class="back" hidden>↺ 검색·필터 지우기</button></div>
       <div class="table-wrap">
@@ -1054,13 +1063,13 @@ const inPeriod = (r, z) => (z.period === "21" ? within21(r) || departed21(r)
 const byEtd = (a, b) => (a.etd || "9").localeCompare(b.etd || "9");
 
 // 부산항·인천항 구역: 선명 검색·터미널 필터·기간·선박 표를 구역마다 따로 (부산 칸은 부산 터미널만, 인천 칸은 인천 터미널만)
-const FIRST = 15;  // 처음엔 가까운 15척만, [더 보기]로 120척씩
+const FIRST = 20, MORE = 20;  // 표를 펼치면 처음 20척, [더 보기]로 20척씩
 const IC_LIST = DATA.incheon || [];
 function mkZone(key, name, other, isMine) {
   const el = document.getElementById(`zone_${key}`);
   return { key, name, other, el, rows: DATA.rows.filter((r) => isMine(r.t)),
     nTerm: Object.keys(TN).filter(isMine).length,
-    q: "", terms: new Set(), period: "21", limit: FIRST, qAll: false, qMiss: 0,
+    q: "", terms: new Set(), period: "21", limit: FIRST, qAll: false, qMiss: 0, open: false,
     $: (sel) => el.querySelector(sel), $$: (sel) => el.querySelectorAll(sel) };
 }
 const ZONES = {
@@ -1087,6 +1096,15 @@ function filtered(z) {
 
 function render(z) {
   if (!z) { render(ZONES.bs); render(ZONES.ic); return; }
+  // 검색 전엔 표를 숨기고 요약 한 줄만: 선명 검색 · 터미널 버튼 · [전체 목록 보기]일 때만 표
+  const shown = !!(z.q.trim() || z.terms.size || z.open);
+  const up = z.rows.filter(upcoming);
+  const nDep = z.rows.filter(within21).length;
+  const nClose = up.filter((r) => { const c = toDate(r.yard_close); return c && c > now && c - now < 48 * 3600e3; }).length;
+  z.$(".zsum-t").innerHTML = `21일 안 출항 <b>${nDep}</b>척 · 48시간 안 반입 마감 <b>${nClose}</b>척 · 선명을 검색하거나 터미널을 눌러 보세요`;
+  const tg = z.$(".ztoggle"); tg.textContent = shown ? "접기" : "전체 목록 보기"; tg.setAttribute("aria-expanded", String(shown));
+  z.$(".zsched").hidden = !shown;
+  if (!shown) return;
   const rows = filtered(z);
   const q = z.q.trim().toUpperCase();
   const pTitle = z.period === "21" ? "21일 안에 출항 · 최근 21일 출항한 배"
@@ -1269,15 +1287,20 @@ const goSched = (z) => z.$(".zsched").scrollIntoView({ behavior: "smooth", block
 Object.values(ZONES).forEach((z) => {
   const inp = z.$(".zq");
   z.$("form.search").addEventListener("submit", (e) => { e.preventDefault(); z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
-  inp.addEventListener("input", () => { z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
+  inp.addEventListener("input", () => { z.q = inp.value; z.qAll = false; z.limit = FIRST; if (!z.q.trim()) z.open = false; render(z); });
+  z.$(".ztoggle").addEventListener("click", () => {
+    if (z.$(".zsched").hidden) { z.open = true; z.limit = FIRST; render(z); return; }
+    // 접기: 검색어·터미널 선택도 지우고 요약 한 줄로
+    z.open = false; z.q = ""; z.qAll = false; inp.value = ""; setTerms(z, []); z.limit = FIRST; render(z);
+  });
   z.$(".back").addEventListener("click", () => {
-    z.q = ""; z.qAll = false; inp.value = ""; setTerms(z, []); z.period = "21";
+    z.q = ""; z.qAll = false; inp.value = ""; setTerms(z, []); z.period = "21"; z.open = false;
     z.$$(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.p === "21")));
     z.limit = FIRST; render(z);
   });
   z.$$(".fchip[data-t]").forEach((b) => b.addEventListener("click", () => {
     const t = b.dataset.t;
-    if (t === "ALL") z.terms.clear(); else z.terms.has(t) ? z.terms.delete(t) : z.terms.add(t);
+    if (t === "ALL") { z.terms.clear(); z.open = false; } else z.terms.has(t) ? z.terms.delete(t) : z.terms.add(t);
     setTerms(z, [...z.terms]); z.limit = FIRST; render(z);
   }));
   z.$$(".fchip[data-p]").forEach((b) => b.addEventListener("click", () => {
@@ -1285,7 +1308,7 @@ Object.values(ZONES).forEach((z) => {
     z.$$(".fchip[data-p]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     z.limit = FIRST; render(z);
   }));
-  z.$(".moreBtn").addEventListener("click", () => { z.limit += PAGE; render(z); });
+  z.$(".moreBtn").addEventListener("click", () => { z.limit += MORE; render(z); });
 });
 document.addEventListener("click", (e) => {
   const b = e.target.closest(".qAllBtn, .zswitch"); if (!b) return;
