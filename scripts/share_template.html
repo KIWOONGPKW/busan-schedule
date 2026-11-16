@@ -7,7 +7,7 @@
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
     --bg: #ffffff; --panel: #ffffff; color-scheme: light; --ink: #2d2838; --muted: #7b7389; --line: #ece3ee;
-    --open-bg: #fff4e8; --open-line: #f2a65a; --open-hover: #e07b1a; --open-tag: #fde3c6; --open-ink: #b5560c;
+    --open-bg: #fff4e8; --open-line: #f2a65a; --open-hover: #e07b1a; --open-tag: #fde3c6; --open-ink: #b5560c; --open-off: #fffcf8;
     --head: #f7f0ff; --zebra: #fdfaff; --hover: #fff3e6; --field: #fff8f2; --find: #e4f6e8; --find-line: #a6dbb4;
     --news: #fff6e0; --news-line: #f0d9a0;  /* 부산항 소식란: 연한 노랑으로 따로 구분 */
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
@@ -323,7 +323,11 @@
   .panel.icdest { background: var(--ic-off); border-color: var(--ic-line); }
   .icdest input { background: var(--ic-bg); border-color: var(--ic-line); }
   .icdest input:focus { border-color: var(--ic-hover); }
-  .icdest .caption .rtag { margin-left: 6px; vertical-align: 2px; }
+  .dest .caption .rtag { margin-left: 6px; vertical-align: 2px; }
+  /* 부산발 검색 칸: 인천발과 같은 방식, 색만 부산 주황(--open-*) */
+  .panel.bsdest { background: var(--open-off); border-color: var(--open-line); }
+  .bsdest input { background: var(--open-bg); border-color: var(--open-line); }
+  .bsdest input:focus { border-color: var(--open-hover); }
   /* 부산항·인천항 구역: 위아래로 나누고 배경·띠 색으로 구분 (부산 주황 --open-*, 인천 푸른 --ic-*) */
   .zone { display: flex; flex-direction: column; gap: 14px; padding: 0 14px 16px; border-radius: 22px; border: 1px solid; margin-top: 18px; }
   .zone + .zone { margin-top: 34px; }
@@ -401,6 +405,7 @@
   .pickup .pgroup.ic { color: var(--ic-ink); margin-top: 10px; }
   .rtag { font-size: 11px; font-weight: 800; line-height: 1; padding: 3px 7px; border-radius: 6px; white-space: nowrap;
           background: var(--open-tag); color: var(--open-ink); border: 1px solid var(--open-line); }
+  .rtag.bs { background: var(--open-tag); color: var(--open-ink); border-color: var(--open-line); }
   .rtag.ic { background: var(--ic-tag); color: var(--ic-ink); border-color: var(--ic-line); }
   .pcard.ic { border-color: var(--ic-line); }
   .pcard.ic:hover { border-color: var(--ic-hover); }
@@ -537,8 +542,8 @@
 
   <section class="zone zbs" id="zone_bs" data-z="bs" aria-label="부산 구역">
     <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>부산항 · 신항/북항 8개 터미널</h2>
-    <section class="panel dest" aria-label="부산발 목적지 검색">
-      <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
+    <section class="panel dest bsdest" aria-label="부산발 목적지 검색">
+      <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><span class="rtag bs">부산</span><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
       <div class="dcount muted" id="destCount"></div>
       <form id="destForm" autocomplete="off" role="search">
         <div class="dq-wrap">
