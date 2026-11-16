@@ -1,34 +1,34 @@
 {
- "date": "2026-11-16",
- "prev_date": "2026-11-13",
+ "date": "2026-11-17",
+ "prev_date": "2026-11-16",
  "source": "하나은행",
  "round": 1,
- "time": "08:23",
+ "time": "08:24",
  "rates": [
   {
    "code": "USD",
    "label": "USD",
-   "tts": 1346.7,
+   "tts": 1348.0,
    "diff": 1.3
   },
   {
    "code": "EUR",
    "label": "EUR",
-   "tts": 1484.84,
-   "diff": -2.85
+   "tts": 1483.31,
+   "diff": -1.53
   },
   {
    "code": "CNY",
    "label": "CNY",
-   "tts": 201.77,
-   "diff": -0.2
+   "tts": 202.12,
+   "diff": 0.35
   },
   {
    "code": "JPY",
    "label": "JPY(100엔)",
-   "tts": 842.54,
-   "diff": 0.93
+   "tts": 845.37,
+   "diff": 2.83
   }
  ],
- "fetched_at": "2026-11-17 07:47"
+ "fetched_at": "2026-11-17 08:43"
 }
