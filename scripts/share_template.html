@@ -22,8 +22,8 @@
        bg 연한 배경 · line 테두리 · hover 진한 테두리 · tag 꼬리표 · ink 글씨·숫자·점 · off 거의 흰색 · off-line 흐린 테두리 */
     --ic-bg: #e6f1ff; --ic-line: #7aa8e6; --ic-hover: #3f78c9; --ic-tag: #d3e5ff; --ic-ink: #1f5fb4; --ic-off: #f6faff; --ic-off-line: #c4d9f5;
     --zbs-bg: #f6fcf7; --zic-bg: #f5f9ff;  /* 구역 배경: 부산 아주 연한 녹색 · 인천 아주 연한 푸른색 */
-    /* ★ 부산항 구역 색 (구역 박스만, 픽업 카드 등은 --open-* 주황 그대로): line 테두리 · tag 띠·꼬리표 배경 · ink 진한 글씨 · soft 버튼 배경 · off 검색 칸 배경 */
-    --zbs-line: #7cc596; --zbs-tag: #d6f0de; --zbs-ink: #1d7a43; --zbs-soft: #e8f7ec; --zbs-off: #fbfefc;
+    /* ★ 부산 녹색 (부산항 구역 박스 + 픽업 카드 부산 묶음, 장비표·필터 등은 --open-* 주황 그대로): line 테두리 · hover 진한 테두리 · tag 띠·꼬리표 배경 · ink 진한 글씨 · soft 연한 배경 · off 거의 흰색 · off-line 흐린 테두리 */
+    --zbs-line: #7cc596; --zbs-hover: #3f9e63; --zbs-tag: #d6f0de; --zbs-ink: #1d7a43; --zbs-soft: #e8f7ec; --zbs-off: #fbfefc; --zbs-off-line: #cfe9d7;
     /* ★ 입력창 색 (부산 구역 연한 녹색 · 인천 구역 연한 푸른색): bg 배경 · line 테두리 · focus 클릭했을 때 테두리 */
     --bs-in-bg: var(--find); --bs-in-line: var(--find-line); --bs-in-focus: #2f9e5a;
     --ic-in-bg: var(--ic-bg); --ic-in-line: var(--ic-line); --ic-in-focus: var(--ic-hover);
@@ -432,6 +432,15 @@
           background: var(--open-tag); color: var(--open-ink); border: 1px solid var(--open-line); }
   .rtag.bs { background: var(--zbs-tag); color: var(--zbs-ink); border-color: var(--zbs-line); }
   .rtag.ic { background: var(--ic-tag); color: var(--ic-ink); border-color: var(--ic-line); }
+  /* 픽업 카드 부산 묶음: 부산항 구역과 같은 녹색 (--zbs-*) */
+  .pickup .pgroup.bs .rtag, .pcard:not(.ic) .rtag { background: var(--zbs-tag); color: var(--zbs-ink); border-color: var(--zbs-line); }
+  .pcard.open:not(.ic) { background: var(--zbs-soft); border-color: var(--zbs-line); }
+  .pcard.open:not(.ic):hover { border-color: var(--zbs-hover); }
+  .pcard.open:not(.ic) .pn { color: var(--zbs-ink); }
+  .pcard:not(.ic) .ptag { background: var(--zbs-tag); color: var(--zbs-ink); border-color: var(--zbs-line); }
+  .pcard.off:not(.ic) { background: var(--zbs-off); border-color: var(--zbs-off-line); }
+  .pcard.off:not(.ic):hover { border-color: var(--zbs-line); }
+  .pcard.off:not(.ic) > * { opacity: .55; }
   .pcard.ic { border-color: var(--ic-line); }
   .pcard.ic:hover { border-color: var(--ic-hover); }
   .pcard.ic.open { background: var(--ic-bg); border-color: var(--ic-line); }
