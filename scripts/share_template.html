@@ -494,11 +494,16 @@
   table.eq { min-width: 560px; }
   table.eq th, table.eq td { padding: 7px 12px; text-align: right; font-variant-numeric: tabular-nums; }
   table.eq th:first-child, table.eq td:first-child { text-align: left; }
-  table.eq thead th { position: sticky; top: 0; }
+  /* 머리글 고정: 불투명 배경 + 맨 위(z-index) — 스크롤할 때 아래 행 글자('로그인 필요 ↗' 등)가 비치지 않게 */
+  table.eq thead th { position: sticky; top: 0; z-index: 3; background: var(--head); background-clip: padding-box; }
   table.eq thead th small { display: block; font-weight: 400; color: var(--muted); }
   table.eq td.z { color: var(--muted); }
   table.eq td.sum, table.eq th.sum { font-weight: 700; background: var(--head); }
   table.eq tr.total td { font-weight: 700; background: var(--head); border-bottom: 2px solid var(--accent2); }
+  /* ★ 합계 열 보라: 머리글과 같은 연한 보라(--head) — 부산 녹색·인천 파랑·로그인 필요·전체 주황 행 모두 합계 칸만 보라 */
+  table.eq tbody tr td.sum, table.eq tbody tr.ic td.sum, table.eq tbody tr.ic.off td.sum,
+  table.eq tbody tr.open:not(.ic) td.sum, table.eq tbody tr.total.all td.sum { background: var(--head); font-weight: 700; }
+  table.eq tbody tr.total.all td.sum { font-weight: 800; }
   .eqscroll { max-height: 420px; overflow: auto; }
   .back { font: inherit; font-size: 12.5px; color: var(--accent2); background: none; border: 0; cursor: pointer; font-weight: 700; padding: 0; margin-left: auto; }
   .thelp { padding: 0 16px 14px; font-size: 12.5px; color: var(--muted); }
