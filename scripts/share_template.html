@@ -25,7 +25,7 @@
     --zbs-bg: #f6fcf7; --zic-bg: #f5f9ff;  /* 구역 배경: 부산 아주 연한 녹색 · 인천 아주 연한 푸른색 */
     /* ★ 부산 녹색: 이 한 줄만 고치면 부산 화면 전체(구역 박스·픽업 카드·장비표·탭·말풍선·꼬리표)가 바뀜: line 테두리 · hover 진한 테두리 · tag 띠·꼬리표 배경 · ink 진한 글씨 · soft 연한 배경 · off 거의 흰색 · off-line 흐린 테두리 */
     --zbs-line: #7cc596; --zbs-hover: #3f9e63; --zbs-tag: #d6f0de; --zbs-ink: #1d7a43; --zbs-soft: #e8f7ec; --zbs-off: #fbfefc; --zbs-off-line: #cfe9d7;
-    /* ★ 전체 합계 보라: 부산·인천 어느 쪽도 아닌 '전체' 색 (장비 현황표 '공개 터미널 전체' 행 · 합계 열) — bg 배경(머리글과 같은 연한 보라) · line 위쪽 구분선 · ink 굵은 글씨·숫자 */
+    /* ★ 전체 합계 보라: 부산·인천 어느 쪽도 아닌 '전체' 색 (장비 현황표 머리글 '합계' 칸 · '공개 터미널 전체' 행) — bg 배경(머리글과 같은 연한 보라) · line 위쪽 구분선 · ink 굵은 글씨·숫자 */
     --sum-bg: var(--head); --sum-line: var(--accent2); --sum-ink: #4c3aa8;
     /* ★ 입력창 색 (부산 구역 연한 녹색 · 인천 구역 연한 푸른색): bg 배경 · line 테두리 · focus 클릭했을 때 테두리 */
     --bs-in-bg: var(--find); --bs-in-line: var(--find-line); --bs-in-focus: #2f9e5a;
@@ -498,11 +498,10 @@
   table.eq thead th { position: sticky; top: 0; z-index: 3; background: var(--head); background-clip: padding-box; }
   table.eq thead th small { display: block; font-weight: 400; color: var(--muted); }
   table.eq td.z { color: var(--muted); }
-  table.eq td.sum, table.eq th.sum { font-weight: 700; background: var(--head); }
+  /* 합계 열: 숫자만 굵게 — 배경은 그 행 색(부산 녹색·인천 파랑)을 그대로 따름. 보라는 머리글 '합계' 칸과 전체 합계 행에만 */
+  table.eq td.sum, table.eq th.sum { font-weight: 700; }
+  table.eq th.sum { background: var(--head); }
   table.eq tr.total td { font-weight: 700; background: var(--head); border-bottom: 2px solid var(--accent2); }
-  /* ★ 합계 열 보라: 머리글·전체 합계 행과 같은 연한 보라(--head) — 부산 녹색·인천 파랑·로그인 필요·전체 주황 행 모두 합계 칸만 보라 */
-  table.eq tbody tr td.sum, table.eq tbody tr.ic td.sum, table.eq tbody tr.ic.off td.sum,
-  table.eq tbody tr.open:not(.ic) td.sum, table.eq tbody tr.total.all td.sum { background: var(--head); font-weight: 700; }
   table.eq tbody tr.total.all td.sum { font-weight: 800; color: var(--sum-ink); }
   .eqscroll { max-height: 420px; overflow: auto; }
   .back { font: inherit; font-size: 12.5px; color: var(--accent2); background: none; border: 0; cursor: pointer; font-weight: 700; padding: 0; margin-left: auto; }
