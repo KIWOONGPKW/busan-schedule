@@ -144,8 +144,9 @@
                  font-weight: 800; font-size: 18px; letter-spacing: 0; padding: 14px 18px; border-radius: 14px;
                  box-shadow: 0 8px 22px rgba(0,0,0,.28); opacity: 0; transform: translateY(-50%) scaleX(.25);
                  transform-origin: left center; pointer-events: none; transition: transform .35s ease, opacity .25s ease; }
-  .cmfmark:hover img, .cmfmark:focus img, .cmfmark:hover .lvid, .cmfmark:focus .lvid { opacity: 0; transform: rotate(-90deg) scale(.5); }
-  .cmfmark:hover .co, .cmfmark:focus .co { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  /* 마우스·포커스: 로고 영상을 처음부터 한 번 더 재생 → 끝나면(named) 로고가 돌며 사라지고 회사 이름표 */
+  .cmfmark.named img, .cmfmark.named .lvid { opacity: 0; transform: rotate(-90deg) scale(.5); }
+  .cmfmark.named .co { opacity: 1; transform: translateY(-50%) scaleX(1); }
   @media (max-width: 640px) { .cmfmark, .cmfmark img, .cmfmark .lvid { width: 56px; height: 56px; } .cmfmark .co { font-size: 15px; padding: 11px 14px; } }
   @media (prefers-reduced-motion: reduce) { .cmfmark img, .cmfmark .lvid, .cmfmark .co { transition: none; } }
   h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(24px, 4vw, 32px); margin: 0; line-height: 1.15; text-wrap: balance; }
@@ -2157,6 +2158,15 @@ renderNews();
 (() => { const v = document.querySelector(".cmfmark .lvid"); if (!v) return;
   const rm = matchMedia("(prefers-reduced-motion: reduce)");
   if (rm.matches) { v.removeAttribute("autoplay"); v.pause(); v.preload = "none"; v.load(); }
+  const m = v.closest(".cmfmark"); let over = false;
+  const enter = () => { if (over) return; over = true;
+    const vid = m.querySelector(".lvid");
+    if (!vid || rm.matches) { m.classList.add("named"); return; }  // 영상이 없거나 움직임 줄이기면 바로 이름표
+    vid.currentTime = 0; vid.play().catch(() => m.classList.add("named")); };
+  const leave = () => { over = false; m.classList.remove("named"); };
+  v.addEventListener("ended", () => { if (over) m.classList.add("named"); });
+  m.addEventListener("mouseenter", enter); m.addEventListener("mouseleave", leave);
+  m.addEventListener("focus", enter); m.addEventListener("blur", leave);
   const lastSrc = v.querySelector("source:last-of-type");  // webm·mp4 모두 못 열면(단독 파일로 열 때) 노란 로고 이미지가 보이게
   if (lastSrc) lastSrc.addEventListener("error", () => v.remove());
 })();
