@@ -2159,7 +2159,7 @@ renderNews();
   setInterval(show, 60e3);  // 열어 둔 채로 12시·0시가 지나면 새 문구로
 })();
 // 로고: 페이지를 열면 합체 그림을 한 번(약 10초) → 끝나면 넘실거림(bob).
-// 마우스를 올리면 넘실거림을 멈추고 합체를 처음부터(src?t=현재시간으로 다시 불러오기) → 끝나면 다시 넘실거림. 움직임 줄이기면 정지 이미지만
+// 마우스를 올리면 넘실거림을 멈추고 합체를 처음부터(목소리 없이) → 끝나면 다시 넘실거림. 움직임 줄이기면 정지 이미지만
 (() => { const img = document.querySelector(".cmfmark .lanim"); if (!img) return;
   const m = img.closest(".cmfmark"), rm = matchMedia("(prefers-reduced-motion: reduce)");
   const base = img.getAttribute("src"), dur = +img.dataset.dur || 10000;
@@ -2168,13 +2168,31 @@ renderNews();
   const startPlay = () => { playing = true; m.classList.remove("bob"); bobAfter(dur); };
   img.addEventListener("error", () => { img.remove(); clearTimeout(timer); playing = false; if (!rm.matches) m.classList.add("bob"); });  // 그림이 없으면(단독 파일로 열 때) 노란 로고로 바로 넘실
   if (!rm.matches) { if (img.complete && img.naturalWidth) startPlay(); else img.addEventListener("load", startPlay, { once: true }); }
-  const replay = () => {
-    if (rm.matches || playing || !img.isConnected) return;
+  // 다시 합체: 그림을 한 번 받아 둔 사본(blob)으로 바꿔 끼워 바로 처음부터(목소리와 박자 맞춤). 못 받으면 ?t=로 다시 불러오기
+  let blob = null, blobUrl = "";
+  fetch(base).then(r => r.ok ? r.blob() : null).then(b => { blob = b; }).catch(() => {});
+  const restart = () => {
+    if (rm.matches || !img.isConnected) return;
     playing = true; m.classList.remove("bob"); clearTimeout(timer);
     img.addEventListener("load", startPlay, { once: true });
-    img.src = `${base}?t=${Date.now()}`;
+    if (blob) { if (blobUrl) URL.revokeObjectURL(blobUrl); blobUrl = URL.createObjectURL(blob); img.src = blobUrl; }
+    else img.src = `${base}?t=${Date.now()}`;
   };
+  const replay = () => { if (!playing) restart(); };
   m.addEventListener("mouseenter", replay); m.addEventListener("focus", replay);
+  // 로고 목소리(cmf_logo_voice, Kling AI 직접 제작, 약 10초 = 합체 길이): 브라우저는 클릭 전엔 소리를 못 내므로
+  // 화면을 처음 클릭(또는 키 입력)할 때 합체를 처음부터 다시 하며 목소리 재생. 로고를 클릭해도 다시 재생. 크기는 VOICE_VOL
+  const VOICE_VOL = 0.7;
+  const voice = new Audio(); voice.preload = "auto"; voice.volume = VOICE_VOL;
+  voice.src = voice.canPlayType('audio/ogg; codecs="opus"') ? "cmf_logo_voice.ogg" : "cmf_logo_voice.mp3";
+  let lastSay = 0;
+  const say = () => { const now = Date.now(); if (now - lastSay < 1500) return; lastSay = now;
+    try { voice.currentTime = 0; } catch (e) {}
+    const p = voice.play(); if (p && p.catch) p.catch(() => {});
+    restart(); };
+  const first = () => { removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true); say(); };
+  addEventListener("pointerdown", first, true); addEventListener("keydown", first, true);
+  m.addEventListener("click", say);
 })();
 // 헤더 영상: 움직임 줄이기 설정이면 영상을 아예 빼서(내려받지도 않게) 정지 이미지만
 (() => { const v = document.querySelector(".hvideo"); if (!v) return;
