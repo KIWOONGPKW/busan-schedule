@@ -99,15 +99,6 @@
                  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   /* 오른쪽 아래 필기체 문구 (좁은 화면에서는 숨김) */
   /* 바다 문구(sea_quotes.json): 하루 두 번 바뀜. 영문은 필기체, 한글 속담은 붓글씨. 길면 두 줄, 카드와 겹치지 않게 폭 제한 */
-  /* 파도 소리 버튼 (헤더 왼쪽 아래). 소리는 Web Audio로 직접 만든 잔잔한 파도(파일 없음) */
-  .surf { position: absolute !important; left: 24px; bottom: 14px; display: inline-flex; align-items: center; gap: 6px;
-          padding: 5px 11px 5px 9px; border-radius: 999px; font: 12px/1 var(--f-body); cursor: pointer;
-          color: var(--hero-cream); background: var(--hero-card); border: 1px solid var(--hero-card-line);
-          -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-  .surf:hover { transform: none; }
-  .surf[aria-pressed="false"] { opacity: .75; }
-  .surf .ico { font-size: 14px; }
-  @media (max-width: 640px) { .surf { left: 18px; bottom: 12px; } }
   .motto { position: absolute !important; right: 26px; bottom: 10px; max-width: min(46%, 520px); text-align: right; line-height: 1.1; pointer-events: none;
            text-shadow: 0 1px 2px rgba(5, 10, 25, .9), 0 0 12px rgba(10, 18, 40, .95); }
   .motto .en { display: block; font-family: "Parisienne", cursive; font-size: 24px; line-height: 1.15; text-wrap: balance; }
@@ -619,7 +610,6 @@
     </video>
     <i class="hdeco hveil" aria-hidden="true"></i>
     <div class="motto"><span class="en" lang="en">A smooth sea never made a skilled sailor</span><span class="ko">잔잔한 바다는 숙련된 뱃사람을 만들지 못한다</span></div>
-    <button type="button" class="surf" id="surfBtn" aria-pressed="false" title="잔잔한 파도 소리 켜기/끄기"><span class="ico" aria-hidden="true">🌊</span><span id="surfTxt">파도 소리 켜기</span></button>
   </header>
 
   <div class="warnbar" id="stale" hidden></div>
@@ -2185,43 +2175,6 @@ renderNews();
     img.src = `${base}?t=${Date.now()}`;
   };
   m.addEventListener("mouseenter", replay); m.addEventListener("focus", replay);
-})();
-// 파도 소리: 브라우저는 사용자가 누르기 전엔 소리를 못 내므로, 첫 클릭·키 입력 때 작게 시작(버튼으로 끄면 기억해서 다음에도 꺼 둠).
-// 소리 파일 없이 갈색 잡음 + 저음 필터 + 불규칙한(6~11초) 밀려왔다 빠지는 크기 변화로 나지막한 파도를 만듦
-(() => { const btn = document.getElementById("surfBtn"), txt = document.getElementById("surfTxt");
-  const AC = window.AudioContext || window.webkitAudioContext; if (!btn || !AC) { if (btn) btn.remove(); return; }
-  let off = false; try { off = localStorage.getItem("surfOff") === "1"; } catch (e) {}
-  let ctx = null, master = null, timer = 0, on = false;
-  const VOL = 0.22;
-  const build = () => {
-    ctx = new AC(); const sr = ctx.sampleRate, len = sr * 6, buf = ctx.createBuffer(2, len, sr);
-    for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); let last = 0;
-      for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
-      const f = sr; for (let i = 0; i < f; i++) { const k = i / f; d[i] = d[i] * k + d[len - f + i] * (1 - k); } }  // 이음새 부드럽게
-    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.loopEnd = len / sr - 1;
-    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380; lp.Q.value = 0.4;
-    const swell = ctx.createGain(); swell.gain.value = 0.15;
-    master = ctx.createGain(); master.gain.value = 0;
-    src.connect(lp).connect(swell).connect(master).connect(ctx.destination); src.start();
-    const wave = () => { const t = ctx.currentTime, rise = 2.5 + Math.random() * 2, fall = 3.5 + Math.random() * 3.5, peak = 0.55 + Math.random() * 0.45;
-      swell.gain.cancelScheduledValues(t); swell.gain.setValueAtTime(swell.gain.value, t);
-      swell.gain.linearRampToValueAtTime(peak, t + rise); swell.gain.linearRampToValueAtTime(0.12 + Math.random() * 0.1, t + rise + fall);
-      lp.frequency.cancelScheduledValues(t); lp.frequency.setValueAtTime(lp.frequency.value, t);
-      lp.frequency.linearRampToValueAtTime(520 + peak * 380, t + rise); lp.frequency.linearRampToValueAtTime(320, t + rise + fall);
-      timer = setTimeout(wave, (rise + fall - 0.3) * 1000); };
-    wave();
-  };
-  const set = (v, remember) => { on = v;
-    btn.setAttribute("aria-pressed", String(v)); txt.textContent = v ? "파도 소리 끄기" : "파도 소리 켜기";
-    if (remember) { try { localStorage.setItem("surfOff", v ? "0" : "1"); } catch (e) {} off = !v; }
-    if (v) { if (!ctx) build(); ctx.resume(); const t = ctx.currentTime;
-      master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(VOL, t + 3); }
-    else if (ctx) { const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
-      master.gain.linearRampToValueAtTime(0, t + 0.8); setTimeout(() => { if (!on) ctx.suspend(); }, 900); } };
-  btn.addEventListener("click", (e) => { e.stopPropagation(); set(!on, true); });
-  const first = (e) => { if (e.target && e.target.closest && e.target.closest("#surfBtn")) return; removeEventListener("pointerdown", first, true); removeEventListener("keydown", first, true); if (!off && !on) set(true, false); };
-  addEventListener("pointerdown", first, true); addEventListener("keydown", first, true);
-  document.addEventListener("visibilitychange", () => { if (!ctx || !on) return; document.hidden ? ctx.suspend() : ctx.resume(); });
 })();
 // 헤더 영상: 움직임 줄이기 설정이면 영상을 아예 빼서(내려받지도 않게) 정지 이미지만
 (() => { const v = document.querySelector(".hvideo"); if (!v) return;
