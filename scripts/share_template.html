@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Parisienne&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Parisienne&family=Nanum+Brush+Script&display=swap">
 <style>
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
@@ -98,10 +98,16 @@
   .hero .stamp { background: var(--hero-card); border-color: var(--hero-card-line); color: var(--hero-cream);
                  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   /* 오른쪽 아래 필기체 문구 (좁은 화면에서는 숨김) */
-  .motto { position: absolute !important; right: 26px; bottom: 10px; text-align: right; line-height: 1.1; pointer-events: none;
+  /* 바다 문구(sea_quotes.json): 하루 두 번 바뀜. 영문은 필기체, 한글 속담은 붓글씨. 길면 두 줄, 카드와 겹치지 않게 폭 제한 */
+  .motto { position: absolute !important; right: 26px; bottom: 10px; max-width: min(46%, 520px); text-align: right; line-height: 1.1; pointer-events: none;
            text-shadow: 0 1px 2px rgba(5, 10, 25, .9), 0 0 12px rgba(10, 18, 40, .95); }
-  .motto .en { font-family: "Parisienne", cursive; font-size: 25px; }
-  .motto .ko { display: block; margin-top: 3px; font-size: 11px; letter-spacing: .04em; opacity: .9; }
+  .motto .en { display: block; font-family: "Parisienne", cursive; font-size: 24px; line-height: 1.15; text-wrap: balance; }
+  .motto .en:lang(ko) { font-family: "Nanum Brush Script", cursive; font-size: 30px; line-height: 1.05; }
+  .motto .ko { display: block; margin-top: 3px; font-size: 11px; letter-spacing: .04em; opacity: .9; text-wrap: balance; }
+  .motto .ko .src { opacity: .8; }
+  .motto.fade { animation: mottoIn 1.6s ease-out both; }
+  @keyframes mottoIn { from { opacity: 0; transform: translateY(6px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+  @media (prefers-reduced-motion: reduce) { .motto.fade { animation: none; } }
   @media (max-width: 760px) { .motto { display: none; } }
   .cmfmark { animation: markBob 6s ease-in-out infinite; }
   @keyframes markBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
@@ -2123,6 +2129,24 @@ render(ZONES.bs);
 render(ZONES.ic);
 renderPickup();
 renderNews();
+// 헤더 바다 문구: 한국 시간 날짜 + 아침(0~12시)/오후(12~24시)로 목록에서 순서대로 → 같은 때엔 누가 열어도 같은 문구
+(() => {
+  const box = document.querySelector(".motto"), list = (DATA.sea_quotes || []).filter((q) => q && q.text);
+  if (!box || !list.length) return;
+  let shown = -1;
+  const slot = () => { const k = new Date(Date.now() + 9 * 3600e3);  // 한국 시간 (UTC+9)
+    return Math.floor(k.getTime() / 86400e3) * 2 + (k.getUTCHours() >= 12 ? 1 : 0); };
+  const show = (first) => {
+    const i = ((slot() % list.length) + list.length) % list.length;
+    if (i === shown) return; shown = i;
+    const q = list[i], ko = /[가-힣]/.test(q.text) && !/[A-Za-z]{3,}/.test(q.text);
+    box.innerHTML = `<span class="en" lang="${ko ? "ko" : "en"}">${esc(q.text)}</span><span class="ko">${esc(q.ko || "")}${q.source ? ` <span class="src">· ${esc(q.source)}</span>` : ""}</span>`;
+    box.title = `${q.text}${q.source ? " — " + q.source : ""}`;
+    box.classList.remove("fade"); void box.offsetWidth; box.classList.add("fade");
+  };
+  show(true);
+  setInterval(show, 60e3);  // 열어 둔 채로 12시·0시가 지나면 새 문구로
+})();
 // 헤더 영상: 움직임 줄이기 설정이면 영상을 아예 빼서(내려받지도 않게) 정지 이미지만
 (() => { const v = document.querySelector(".hvideo"); if (!v) return;
   const rm = matchMedia("(prefers-reduced-motion: reduce)");

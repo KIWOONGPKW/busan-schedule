@@ -114,7 +114,14 @@ def main():
     except Exception as e:  # noqa: BLE001
         incheon_dest, incheon_dest_err = {}, f"incheon_transit_times.json 읽기 실패: {e}"[:160]
 
-    data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    try:  # 헤더 바다 문구 (사용자 편집): 문구가 있는 항목만
+        sea_quotes = [{k: str(q.get(k, "")).strip() for k in ("text", "ko", "source")}
+                      for q in json.loads((ROOT / "sea_quotes.json").read_text(encoding="utf-8")).get("quotes", [])
+                      if isinstance(q, dict) and str(q.get("text", "")).strip()]
+    except Exception:  # noqa: BLE001
+        sea_quotes = []
+
+    data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"), "sea_quotes": sea_quotes,
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
             "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
