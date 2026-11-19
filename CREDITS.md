@@ -6,4 +6,4 @@
   - 사이트용 파일: `header_wave.webm`, `header_wave.mp4`, `header_wave_poster.jpg`
   - 원본 0~14초를 1280×720·소리 없음으로 줄이고, 끝 1.5초를 처음 장면으로 겹쳐 이어 반복 재생 때 끊기지 않게 만듦(12.5초)
 - 헤더 로고 영상: Kling AI로 제작(천일 로고), 2026-11-19
-  - 사이트용 파일: `logo_anim.webm`, `logo_anim.mp4`, `logo_anim_poster.jpg` (가운데 정사각형으로 잘라 144px로 줄임, 소리 없음)
+  - 사이트용 파일: `cmf_logo_anim.webp`(한 번 재생 후 완성된 로고에서 멈추는 움직이는 그림), `cmf_logo_poster.png`(완성된 로고 정지 이미지). 원본 가운데를 정사각형으로 잘라 144px로 줄임
