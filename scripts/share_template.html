@@ -33,8 +33,8 @@
     --c-snct: var(--ic-ink); --c-snct-bg: var(--ic-tag); --c-hjit: var(--ic-ink); --c-hjit-bg: var(--ic-tag);
     --c-ict: var(--ic-ink); --c-ict-bg: var(--ic-tag); --c-e1ct: var(--ic-ink); --c-e1ct-bg: var(--ic-tag);
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
-    /* ★ 헤더: navy 바탕 · cream 제목·문구 글씨 · card 환율/기준 시각 카드 배경 · wave 오른쪽 큰 파도(hi 꼭대기 → mid → deep 아래) · foam 물거품 */
-    --wave-hi: #c9efff; --wave-mid: #4aa9ea; --wave-deep: #1a5bb0; --wave-tube: #123f86; --wave-foam: #ffffff; --wave-line: #e3f6ff;
+    /* ★ 헤더 영상 위 남색 반투명 막: 왼쪽(글씨 쪽) → 가운데 → 오른쪽 진하기 */
+    --hero-veil-l: rgba(14, 24, 50, .75); --hero-veil-m: rgba(14, 24, 50, .55); --hero-veil-r: rgba(14, 24, 50, .40);
     --hero-navy: #16254a; --hero-cream: #f4e7c9; --hero-card: rgba(14, 24, 50, .84); --hero-card-line: rgba(244, 231, 201, .38);
     --shadow: 0 6px 22px rgba(123, 104, 238, .10);
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
@@ -83,46 +83,20 @@
           display: flex; flex-direction: column; gap: 16px; }
 
   .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 24px 86px; color: var(--hero-cream);
-          background: var(--hero-navy); box-shadow: var(--shadow);
+          background: var(--hero-navy) url("header_wave_poster.jpg") center / cover no-repeat; box-shadow: var(--shadow);
           display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  /* 헤더 바다: 남색 바탕 + 오른쪽에 직접 그린 큰 파도(SVG, 그림 파일 없음) + 아래 물결 3겹이 왼쪽 끝까지 (모두 같은 파랑 그라데이션) */
-  .hero > :not(.hwave):not(.hsw) { position: relative; z-index: 2; }
+  /* 헤더 배경 영상 (header_wave.webm → mp4, 정지 이미지 header_wave_poster.jpg) + 남색 반투명 막. 출처는 CREDITS.md */
+  .hero > :not(.hdeco) { position: relative; z-index: 2; }
   .hero .stamp { z-index: 3; }
-  /* 아래 물결 3겹: 색은 그라데이션 배경, 모양은 이어 붙인 물결 마스크. 옆으로 흐르면서(가운데 겹은 반대로) 위아래로 출렁 */
-  .hsw { position: absolute; left: 0; right: 0; bottom: -16px; pointer-events: none; z-index: 0;
-         -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-position: 0 0; mask-position: 0 0; }
-  .hsw.s1 { height: 80px; opacity: .55; background: linear-gradient(180deg, var(--wave-hi), var(--wave-mid) 45%, var(--wave-deep));
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 80' preserveAspectRatio='none'%3E%3Cpath d='M0 22 Q90 -18 180 22 T360 22 V80 H0Z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 80' preserveAspectRatio='none'%3E%3Cpath d='M0 22 Q90 -18 180 22 T360 22 V80 H0Z'/%3E%3C/svg%3E"); -webkit-mask-size: 360px 100%; mask-size: 360px 100%;
-            --tile: 360px; animation: swFlow 16s linear infinite, swBob 6s ease-in-out infinite; }
-  .hsw.s2 { height: 66px; opacity: .8; background: linear-gradient(180deg, var(--wave-mid), var(--wave-deep) 70%);
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 66' preserveAspectRatio='none'%3E%3Cpath d='M0 20 Q75 -14 150 20 T300 20 V66 H0Z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 66' preserveAspectRatio='none'%3E%3Cpath d='M0 20 Q75 -14 150 20 T300 20 V66 H0Z'/%3E%3C/svg%3E"); -webkit-mask-size: 300px 100%; mask-size: 300px 100%;
-            --tile: -300px; animation: swFlow 11s linear infinite, swBob 4.5s ease-in-out -1.6s infinite; z-index: 1; }
-  .hsw.s3 { height: 52px; background: linear-gradient(180deg, var(--wave-mid), var(--wave-deep) 60%);
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 52' preserveAspectRatio='none'%3E%3Cpath d='M0 16 Q60 -10 120 16 T240 16 V52 H0Z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 52' preserveAspectRatio='none'%3E%3Cpath d='M0 16 Q60 -10 120 16 T240 16 V52 H0Z'/%3E%3C/svg%3E"); -webkit-mask-size: 240px 100%; mask-size: 240px 100%;
-            --tile: 240px; animation: swFlow 8s linear infinite, swBob 3.5s ease-in-out -.9s infinite; z-index: 1; }
-  @keyframes swFlow { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: var(--tile) 0; mask-position: var(--tile) 0; } }
-  @keyframes swBob { 0%, 100% { transform: translateY(5px); } 50% { transform: translateY(-7px); } }
-  /* 오른쪽 큰 파도: 바닥에 붙이고, 솟아도 위가 잘리지 않게 헤더 높이보다 44px 낮게 */
-  .hwave { position: absolute; right: 0; bottom: 0; width: 36%; min-width: 280px; height: calc(100% - 44px); pointer-events: none; overflow: visible; z-index: 0; }
-  .hwave .g-hi { stop-color: var(--wave-hi); } .hwave .g-mid { stop-color: var(--wave-mid); } .hwave .g-deep { stop-color: var(--wave-deep); }
-  .hwave .tube { fill: var(--wave-tube); } .hwave .foam, .hwave .drop { fill: var(--wave-foam); }
-  .hwave .lines path { fill: none; stroke: var(--wave-line); stroke-linecap: round; }
-  /* 4초 주기: 솟을 때 위로 26px · 1.08배 · 꼭대기가 왼쪽으로 더 말림(-6도), 내려앉으며 제자리 */
-  .hwave .surge { transform-box: view-box; transform-origin: 400px 220px; animation: waveRise 4s ease-in-out infinite; }
-  @keyframes waveRise { 0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
-                        50% { transform: translateY(-26px) scale(1.08) rotate(-6deg); } }
-  /* 솟을 때 꼭대기에서 흰 물방울이 왼쪽 위로 크게 튀었다 떨어짐 */
-  .hwave .fly { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: dropFly 4s ease-out infinite; }
-  @keyframes dropFly { 0%, 34% { opacity: 0; transform: translate(0, 0) scale(.5); }
-                       42% { opacity: 1; transform: translate(calc(var(--dx) * .35), calc(var(--dy) * .7)) scale(1); }
-                       58% { opacity: 1; transform: translate(calc(var(--dx) * .75), var(--dy)) scale(1); }
-                       80% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) * -.2 + 18px)) scale(.7); }
-                       100% { opacity: 0; transform: translate(0, 0) scale(.5); } }
-  @media (prefers-reduced-motion: reduce) { .hsw, .hwave .surge { animation: none; } .hwave .fly { animation: none; opacity: 0; } }
-  @media (max-width: 640px) { .hwave { width: 58%; min-width: 0; height: 62%; opacity: .45; } }
-  .hero h1, .hero .hello { text-shadow: 0 1px 2px rgba(5, 10, 25, .85), 0 0 14px rgba(10, 18, 40, .9), 0 0 4px rgba(10, 18, 40, .9); }
+  .hdeco { pointer-events: none; }
+  .hvideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+  .hveil { position: absolute; inset: 0; z-index: 1;
+           background: linear-gradient(90deg, var(--hero-veil-l), var(--hero-veil-m) 50%, var(--hero-veil-r)); }
+  @media (prefers-reduced-motion: reduce) { .hvideo { display: none; } }
+  /* 제목·부제: 흰 글씨 + 그림자 */
+  .hero h1, .hero .hello { color: #ffffff; text-shadow: 0 1px 2px rgba(0, 0, 0, .6), 0 2px 12px rgba(0, 0, 0, .45); }
   .hero .stamp { background: var(--hero-card); border-color: var(--hero-card-line); color: var(--hero-cream);
-                 -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+                 -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   /* 오른쪽 아래 필기체 문구 (좁은 화면에서는 숨김) */
   .motto { position: absolute !important; right: 26px; bottom: 10px; text-align: right; line-height: 1.1; pointer-events: none;
            text-shadow: 0 1px 2px rgba(5, 10, 25, .9), 0 0 12px rgba(10, 18, 40, .95); }
@@ -613,51 +587,11 @@
       <div class="fx-n" id="fxNote">환율 불러오는 중</div>
     </div>
     <div class="stamp">조회 기준 시각<br><b id="genAt">-</b><div id="genAgo"></div></div>
-    <i class="hsw s1" aria-hidden="true"></i>
-    <svg class="hwave" viewBox="0 0 400 220" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
-      <defs>
-        <linearGradient id="hwG" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="300">
-          <stop offset="0" class="g-hi"/><stop offset=".4" class="g-mid"/><stop offset=".75" class="g-deep"/>
-        </linearGradient>
-      </defs>
-      <g class="surge">
-        <!-- 파도 몸통: 오른쪽 아래에서 솟아 꼭대기가 왼쪽으로 말려 넘어감 (아래는 헤더 바닥 밖까지 늘려 솟아도 바닥이 비지 않게) -->
-        <path fill="url(#hwG)" d="M420 300 L420 64 C398 22 350 4 298 8 C246 12 198 38 178 78 C168 100 176 124 200 126
-          C222 128 236 110 228 94 C222 82 206 84 206 96 C232 92 252 112 252 140 C252 176 214 206 150 214 C110 220 60 240 0 300Z"/>
-        <path class="tube" opacity=".55" d="M206 96 C232 92 252 112 252 140 C252 160 240 176 222 188 C236 166 236 128 206 96Z"/>
-        <g class="lines">
-          <path stroke-width="1.6" opacity=".75" d="M392 200 C384 140 372 84 318 40 C292 22 250 26 222 46"/>
-          <path stroke-width="1.1" opacity=".6" d="M372 210 C362 160 352 104 306 64 C284 46 252 46 232 60"/>
-          <path stroke-width="1.3" opacity=".55" d="M350 214 C340 172 330 128 294 92 C276 74 256 70 240 76"/>
-          <path stroke-width=".9" opacity=".5" d="M324 216 C318 182 306 148 280 120 C268 108 258 102 250 100"/>
-          <path stroke-width="1.2" opacity=".45" d="M296 218 C292 192 284 168 266 148"/>
-          <path stroke-width="1" opacity=".55" d="M396 120 C394 90 384 60 360 40"/>
-        </g>
-        <g class="foam">
-          <circle cx="186" cy="74" r="13"/><circle cx="204" cy="56" r="15"/><circle cx="226" cy="40" r="14"/>
-          <circle cx="250" cy="28" r="13"/><circle cx="276" cy="18" r="12"/><circle cx="302" cy="13" r="10"/>
-          <circle cx="174" cy="92" r="9"/><circle cx="196" cy="88" r="8"/><circle cx="216" cy="70" r="9"/>
-          <circle cx="240" cy="52" r="8"/><circle cx="168" cy="62" r="7"/><circle cx="190" cy="42" r="7"/>
-          <circle cx="324" cy="12" r="7"/><circle cx="214" cy="30" r="6"/>
-        </g>
-        <g class="drop">
-          <circle cx="150" cy="70" r="5"/><circle cx="160" cy="44" r="3.5"/><circle cx="176" cy="26" r="4.5"/>
-          <circle cx="138" cy="96" r="3"/><circle cx="128" cy="62" r="2"/>
-        </g>
-        <!-- 솟을 때 튀는 물방울 (--dx, --dy: 튀어 가는 거리) -->
-        <g class="drop">
-          <circle class="fly" cx="180" cy="60" r="7" style="--dx: -90px; --dy: -34px"/>
-          <circle class="fly" cx="196" cy="44" r="5" style="--dx: -120px; --dy: -46px; animation-delay: .1s"/>
-          <circle class="fly" cx="172" cy="80" r="4" style="--dx: -70px; --dy: -18px; animation-delay: .15s"/>
-          <circle class="fly" cx="214" cy="32" r="4.5" style="--dx: -60px; --dy: -50px; animation-delay: .05s"/>
-          <circle class="fly" cx="188" cy="70" r="3" style="--dx: -140px; --dy: -24px; animation-delay: .2s"/>
-          <circle class="fly" cx="230" cy="26" r="3" style="--dx: -100px; --dy: -54px; animation-delay: .12s"/>
-          <circle class="fly" cx="176" cy="54" r="2.5" style="--dx: -160px; --dy: -38px; animation-delay: .25s"/>
-        </g>
-      </g>
-    </svg>
-    <i class="hsw s2" aria-hidden="true"></i>
-    <i class="hsw s3" aria-hidden="true"></i>
+    <video class="hdeco hvideo" autoplay muted loop playsinline poster="header_wave_poster.jpg" aria-hidden="true" tabindex="-1">
+      <source src="header_wave.webm" type="video/webm">
+      <source src="header_wave.mp4" type="video/mp4">
+    </video>
+    <i class="hdeco hveil" aria-hidden="true"></i>
     <div class="motto"><span class="en" lang="en">A smooth sea never made a skilled sailor</span><span class="ko">잔잔한 바다는 숙련된 뱃사람을 만들지 못한다</span></div>
   </header>
 
@@ -2189,5 +2123,10 @@ render(ZONES.bs);
 render(ZONES.ic);
 renderPickup();
 renderNews();
+// 헤더 영상: 움직임 줄이기 설정이면 영상을 아예 빼서(내려받지도 않게) 정지 이미지만
+(() => { const v = document.querySelector(".hvideo"); if (!v) return;
+  const rm = matchMedia("(prefers-reduced-motion: reduce)");
+  const apply = () => { if (rm.matches) { v.pause(); v.removeAttribute("autoplay"); v.preload = "none"; } else if (v.paused) { v.play().catch(() => {}); } };
+  apply(); rm.addEventListener && rm.addEventListener("change", apply); })();
 
 </script>
