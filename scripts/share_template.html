@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Parisienne&display=swap">
 <style>
   /* Layout: 노을빛 항구 배너 → 검색 → 필터 칩 → 칸이 또렷한 일정표. 밝고 따뜻한 톤, 표는 선과 줄무늬로 확실히 구분 */
   :root {
@@ -33,7 +33,9 @@
     --c-snct: var(--ic-ink); --c-snct-bg: var(--ic-tag); --c-hjit: var(--ic-ink); --c-hjit-bg: var(--ic-tag);
     --c-ict: var(--ic-ink); --c-ict-bg: var(--ic-tag); --c-e1ct: var(--ic-ink); --c-e1ct-bg: var(--ic-tag);
     --hero-a: #34467a; --hero-b: #6d7fb8; --hero-c: #f2b48f; --hero-ink: #ffffff;
-    --sea-top: #182654; --sea-mid: #24497f; --sea-low: #2f78ad;  /* 헤더 바다 그라데이션 (위 → 아래) */
+    /* ★ 헤더: navy 바탕 · cream 제목·문구 글씨 · card 환율/기준 시각 카드 배경 · wave 오른쪽 큰 파도(hi 꼭대기 → mid → deep 아래) · foam 물거품 */
+    --wave-hi: #c9efff; --wave-mid: #4aa9ea; --wave-deep: #1a5bb0; --wave-tube: #123f86; --wave-foam: #ffffff; --wave-line: #e3f6ff;
+    --hero-navy: #16254a; --hero-cream: #f4e7c9; --hero-card: rgba(14, 24, 50, .74); --hero-card-line: rgba(244, 231, 201, .38);
     --shadow: 0 6px 22px rgba(123, 104, 238, .10);
     --f-display: "Jua", "IBM Plex Sans KR", "Malgun Gothic", sans-serif;
     --f-body: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
@@ -80,23 +82,37 @@
           padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
           display: flex; flex-direction: column; gap: 16px; }
 
-  .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 24px 54px; color: var(--hero-ink);
-          background: linear-gradient(180deg, var(--sea-top) 0%, var(--sea-mid) 55%, var(--sea-low) 100%); box-shadow: var(--shadow);
+  .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 22px 24px 74px; color: var(--hero-cream);
+          background: var(--hero-navy); box-shadow: var(--shadow);
           display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  /* 헤더 바다: 위 진한 남색 → 아래 바다색, 오른쪽 위 은은한 빛, 아래 물결 3겹 (뒤 26초 · 가운데 18초 · 앞 12초, 맨 앞은 페이지 흰색) · 뒤·가운데 물마루에 하얀 거품 */
-  .hero > :not(.hwaves) { position: relative; z-index: 1; }
-  .hero::before { content: ""; position: absolute; right: -8%; top: -60%; width: 60%; height: 160%; pointer-events: none;
-                  background: radial-gradient(closest-side, rgba(255, 236, 200, .38), rgba(255, 236, 200, 0)); animation: heroGlow 9s ease-in-out infinite alternate; }
-  @keyframes heroGlow { from { opacity: .35; } to { opacity: 1; } }
-  .hwaves { position: absolute; left: 0; right: 0; bottom: -1px; height: 64px; pointer-events: none; }
-  .hwaves i { position: absolute; left: 0; right: 0; bottom: 0; background-repeat: repeat-x; animation: heroWave linear infinite; }
-  .hwaves .w1 { height: 60px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 27 Q150 11 300 27 T600 27 T900 27 T1200 27 V60 H0Z' fill='rgba(120,180,235,.5)'/%3E%3Cpath d='M110 25.0 Q138 16.0 164 19.0 q12 1 9 6 q-5 3 -8 -1' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M122 28.0 q10 -4 20 -1' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.3' stroke-linecap='round'/%3E%3Ccircle cx='180' cy='17.0' r='1.5' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='188' cy='21.0' r='1.1' fill='rgba(255,255,255,0.6)'/%3E%3Cpath d='M710 25.0 Q738 16.0 764 19.0 q12 1 9 6 q-5 3 -8 -1' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M722 28.0 q10 -4 20 -1' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.3' stroke-linecap='round'/%3E%3Ccircle cx='780' cy='17.0' r='1.5' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='788' cy='21.0' r='1.1' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E"); background-size: 1200px 60px; animation-duration: 26s; --tile: 1200px; }
-  .hwaves .w2 { height: 46px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 50' preserveAspectRatio='none'%3E%3Cpath d='M0 22 Q112 10 225 22 T450 22 T675 22 T900 22 V50 H0Z' fill='rgba(180,220,248,.7)'/%3E%3Cpath d='M78 22.5 Q102 13.5 124 16.5 q10 1 7 6 q-4 3 -7 -1' fill='none' stroke='rgba(255,255,255,0.95)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M89 25.5 q8 -4 17 -1' fill='none' stroke='rgba(255,255,255,0.95)' stroke-width='1.7' stroke-linecap='round'/%3E%3Ccircle cx='138' cy='14.5' r='1.5' fill='rgba(255,255,255,0.95)'/%3E%3Ccircle cx='145' cy='18.5' r='1.1' fill='rgba(255,255,255,0.95)'/%3E%3Cpath d='M528 22.5 Q552 13.5 574 16.5 q10 1 7 6 q-4 3 -7 -1' fill='none' stroke='rgba(255,255,255,0.95)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M539 25.5 q8 -4 17 -1' fill='none' stroke='rgba(255,255,255,0.95)' stroke-width='1.7' stroke-linecap='round'/%3E%3Ccircle cx='588' cy='14.5' r='1.5' fill='rgba(255,255,255,0.95)'/%3E%3Ccircle cx='595' cy='18.5' r='1.1' fill='rgba(255,255,255,0.95)'/%3E%3C/svg%3E"); background-size: 900px 46px; animation-duration: 18s; --tile: 900px; }
-  .hwaves .w3 { height: 28px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 34' preserveAspectRatio='none'%3E%3Cpath d='M0 15 Q88 8 175 15 T350 15 T525 15 T700 15 V34 H0Z' fill='%23ffffff'/%3E%3C/svg%3E"); background-size: 700px 28px; animation-duration: 12s; --tile: 700px; }
-  @keyframes heroWave { from { background-position-x: 0; } to { background-position-x: var(--tile); } }
+  /* 헤더 바다: 남색 바탕 + 오른쪽 1/3에 직접 그린 큰 파도(SVG, 그림 파일 없음) + 아래 잔물결이 왼쪽까지 */
+  .hero > :not(.hwave):not(.hripple) { position: relative; z-index: 1; }
+  .hwave { position: absolute; right: 0; bottom: 0; width: 36%; min-width: 300px; height: 100%; pointer-events: none; overflow: visible; }
+  .hripple { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 26px; pointer-events: none; }
+  .hwave .g-hi { stop-color: var(--wave-hi); } .hwave .g-mid, .hripple .g-mid { stop-color: var(--wave-mid); }
+  .hwave .g-deep, .hripple .g-deep { stop-color: var(--wave-deep); }
+  .hwave .tube { fill: var(--wave-tube); } .hwave .foam, .hwave .drop, .hripple .foam { fill: var(--wave-foam); }
+  .hwave .lines path { fill: none; stroke: var(--wave-line); stroke-linecap: round; }
+  /* 움직임: 파도 전체 3.6초 주기로 살짝 앞뒤 출렁 · 물방울이 가끔 튀었다 사라짐 */
+  .hwave .surge { transform-box: fill-box; transform-origin: 100% 100%; animation: waveSurge 3.6s ease-in-out infinite alternate; }
+  @keyframes waveSurge { from { transform: rotate(0deg) translateX(0); } to { transform: rotate(-1.6deg) translateX(-5px); } }
+  .hwave .pop { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: dropPop 6s ease-out infinite; }
+  @keyframes dropPop { 0%, 70% { opacity: 0; transform: translate(0, 6px) scale(.4); } 78% { opacity: 1; transform: translate(-3px, -6px) scale(1); }
+                       92%, 100% { opacity: 0; transform: translate(-7px, -2px) scale(.6); } }
+  @media (prefers-reduced-motion: reduce) { .hwave .surge { animation: none; } .hwave .pop { animation: none; opacity: .9; transform: none; } }
+  @media (max-width: 640px) { .hwave { width: 60%; min-width: 0; height: 70%; opacity: .45; } }
+  .hero h1, .hero .hello { text-shadow: 0 1px 2px rgba(5, 10, 25, .85), 0 0 14px rgba(10, 18, 40, .9), 0 0 4px rgba(10, 18, 40, .9); }
+  .hero .stamp { background: var(--hero-card); border-color: var(--hero-card-line); color: var(--hero-cream);
+                 -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  /* 오른쪽 아래 필기체 문구 (좁은 화면에서는 숨김) */
+  .motto { position: absolute !important; right: 26px; bottom: 10px; text-align: right; line-height: 1.1; pointer-events: none;
+           text-shadow: 0 1px 2px rgba(5, 10, 25, .9), 0 0 12px rgba(10, 18, 40, .95); }
+  .motto .en { font-family: "Parisienne", cursive; font-size: 25px; }
+  .motto .ko { display: block; margin-top: 3px; font-size: 11px; letter-spacing: .04em; opacity: .9; }
+  @media (max-width: 760px) { .motto { display: none; } }
   .cmfmark { animation: markBob 6s ease-in-out infinite; }
   @keyframes markBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
-  @media (prefers-reduced-motion: reduce) { .hwaves i, .hero::before, .cmfmark { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .cmfmark { animation: none; } }
   .yani { position: relative; margin: 0; flex: none; }
   .yani img { display: block; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
               border: 3px solid #fffaf2; box-shadow: 0 4px 14px rgba(20, 24, 50, .3); }
@@ -548,7 +564,7 @@
     .news { display: flex; flex-direction: column; position: sticky; top: 16px; margin-top: 24px; max-height: calc(100vh - 32px); }
     .newsbar { display: none; }
   }
-  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px 18px 48px; } }
+  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .go { padding: 10px 14px; } .hero { padding: 18px 18px 40px; } }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } button:hover { transform: none; } }
 </style>
 
@@ -578,7 +594,57 @@
       <div class="fx-n" id="fxNote">환율 불러오는 중</div>
     </div>
     <div class="stamp">조회 기준 시각<br><b id="genAt">-</b><div id="genAgo"></div></div>
-    <div class="hwaves" aria-hidden="true"><i class="w1"></i><i class="w2"></i><i class="w3"></i></div>
+    <svg class="hripple" viewBox="0 0 240 26" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="hrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-mid"/><stop offset="1" class="g-deep"/></linearGradient></defs>
+      <path d="M0 14 Q10 7 20 13 T40 13 T60 13 T80 13 T100 13 T120 13 T140 13 T160 13 T180 13 T200 13 T220 13 T240 13 V26 H0Z" fill="url(#hrG)" opacity=".9"/>
+      <path class="foam" d="M0 14 Q10 7 20 13 Q10 10 0 15Z M40 13 Q50 7 60 13 Q50 10 40 14Z M80 13 Q90 7 100 13 Q90 10 80 14Z M120 13 Q130 7 140 13 Q130 10 120 14Z M160 13 Q170 7 180 13 Q170 10 160 14Z M200 13 Q210 7 220 13 Q210 10 200 14Z" opacity=".7"/>
+    </svg>
+    <svg class="hwave" viewBox="0 0 400 220" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+      <defs>
+        <linearGradient id="hwG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" class="g-hi"/><stop offset=".45" class="g-mid"/><stop offset="1" class="g-deep"/>
+        </linearGradient>
+      </defs>
+      <g class="surge">
+        <!-- 파도 몸통: 오른쪽 아래에서 솟아 꼭대기가 왼쪽으로 말려 넘어감 -->
+        <path fill="url(#hwG)" d="M400 222 L400 64 C392 26 350 4 298 8 C246 12 198 38 178 78 C168 100 176 124 200 126
+          C222 128 236 110 228 94 C222 82 206 84 206 96 C232 92 252 112 252 140 C252 176 214 206 150 214 C116 218 84 220 40 222Z"/>
+        <!-- 말린 안쪽(그늘) -->
+        <path class="tube" opacity=".55" d="M206 96 C232 92 252 112 252 140 C252 160 240 176 222 188 C236 166 236 128 206 96Z"/>
+        <!-- 몸통의 가는 결 -->
+        <g class="lines">
+          <path stroke-width="1.6" opacity=".75" d="M392 200 C384 140 372 84 318 40 C292 22 250 26 222 46"/>
+          <path stroke-width="1.1" opacity=".6" d="M372 210 C362 160 352 104 306 64 C284 46 252 46 232 60"/>
+          <path stroke-width="1.3" opacity=".55" d="M350 214 C340 172 330 128 294 92 C276 74 256 70 240 76"/>
+          <path stroke-width=".9" opacity=".5" d="M324 216 C318 182 306 148 280 120 C268 108 258 102 250 100"/>
+          <path stroke-width="1.2" opacity=".45" d="M296 218 C292 192 284 168 266 148"/>
+          <path stroke-width="1" opacity=".55" d="M396 120 C394 90 384 60 360 40"/>
+        </g>
+        <!-- 꼭대기 물거품 덩어리 -->
+        <g class="foam">
+          <circle cx="186" cy="74" r="13"/><circle cx="204" cy="56" r="15"/><circle cx="226" cy="40" r="14"/>
+          <circle cx="250" cy="28" r="13"/><circle cx="276" cy="18" r="12"/><circle cx="302" cy="13" r="10"/>
+          <circle cx="174" cy="92" r="9"/><circle cx="196" cy="88" r="8"/><circle cx="216" cy="70" r="9"/>
+          <circle cx="240" cy="52" r="8"/><circle cx="168" cy="62" r="7"/><circle cx="190" cy="42" r="7"/>
+          <circle cx="324" cy="12" r="7"/><circle cx="214" cy="30" r="6"/>
+        </g>
+        <!-- 늘 떠 있는 물방울 -->
+        <g class="drop">
+          <circle cx="150" cy="70" r="5"/><circle cx="160" cy="44" r="3.5"/><circle cx="176" cy="26" r="4.5"/>
+          <circle cx="138" cy="96" r="3"/><circle cx="204" cy="12" r="3"/><circle cx="246" cy="6" r="2.5"/>
+          <circle cx="128" cy="62" r="2"/>
+        </g>
+        <!-- 가끔 튀었다 사라지는 물방울 -->
+        <g class="drop">
+          <circle class="pop" cx="140" cy="80" r="4" style="animation-delay: 0s"/>
+          <circle class="pop" cx="168" cy="30" r="3" style="animation-delay: 1.4s"/>
+          <circle class="pop" cx="122" cy="76" r="2.5" style="animation-delay: 2.7s"/>
+          <circle class="pop" cx="190" cy="18" r="3.5" style="animation-delay: 3.9s"/>
+          <circle class="pop" cx="150" cy="54" r="2" style="animation-delay: 5.1s"/>
+        </g>
+      </g>
+    </svg>
+    <div class="motto"><span class="en" lang="en">A smooth sea never made a skilled sailor</span><span class="ko">잔잔한 바다는 숙련된 뱃사람을 만들지 못한다</span></div>
   </header>
 
   <div class="warnbar" id="stale" hidden></div>
@@ -2109,4 +2175,129 @@ render(ZONES.bs);
 render(ZONES.ic);
 renderPickup();
 renderNews();
+
+  const cream = (a) => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  let W = 0, H = 0, dpr = 1;
+  // 고정된 난수 (거품 위치가 프레임마다 흔들리지 않게)
+  const rnd = (seed) => { let x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); };
+
+  function size() {
+    const r = hero.getBoundingClientRect();
+    dpr = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  }
+  // 흐린 가로 물결 결
+  function grain(t) {
+    ctx.lineWidth = 0.7; ctx.strokeStyle = cream(0.06);
+    for (let y = 6; y < H; y += 7) {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 12) {
+        const yy = y + Math.sin(x * 0.018 + y * 0.31 + t * 0.15) * 1.3;
+        x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy);
+      }
+      ctx.stroke();
+    }
+  }
+  // 파도 한 개: 뒤쪽 비탈 → 말린 꼭대기(나선) → 앞면. k번째 선은 안쪽으로 조금씩 작게
+  function curlPath(cx, base, h, w, k, gap) {
+    const R = h * 0.27 * Math.max(0.25, 1 - k * 0.11);
+    const cy = base - h + h * 0.27;            // 말림 중심
+    const tx = cx, ty = cy - R;                // 꼭대기
+    const lx = cx - w * 0.62 + k * gap * 1.6;  // 뒤쪽 비탈 시작
+    ctx.moveTo(lx, base);
+    ctx.bezierCurveTo(cx - w * 0.3 + k * gap, base - k * gap * 0.2, cx - R * 1.9, ty + k * gap * 0.15, tx, ty);
+    // 나선: 위 → 오른쪽 → 아래 → 안쪽으로 1.3바퀴
+    const turns = 1.3, steps = 40;
+    for (let i = 1; i <= steps; i++) {
+      const f = i / steps, a = -Math.PI / 2 + f * turns * Math.PI * 2, r = R * (1 - f * 0.78);
+      ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+    return { R, cy };
+  }
+  function wave(cx, base, h, w, alpha, lines, seed, t) {
+    const gap = Math.max(2.2, h * 0.045);
+    const R0 = h * 0.27, cy0 = base - h + R0;
+    // 몸통을 남색으로 채워 뒤 선을 가림
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.62, base);
+    ctx.bezierCurveTo(cx - w * 0.3, base, cx - R0 * 1.9, cy0 - R0, cx, cy0 - R0);
+    ctx.arc(cx, cy0, R0, -Math.PI / 2, Math.PI * 0.55);
+    ctx.bezierCurveTo(cx - R0 * 0.9, cy0 + R0 * 1.6, cx + R0 * 0.2, base - h * 0.12, cx + w * 0.42, base);
+    ctx.closePath(); ctx.fillStyle = NAVY; ctx.fill();
+    // 나란한 선 (바깥은 굵고 진하게, 안쪽은 가늘고 흐리게)
+    for (let k = 0; k < lines; k++) {
+      ctx.beginPath(); curlPath(cx, base, h, w, k, gap);
+      ctx.lineWidth = k ? 0.85 : 1.7; ctx.strokeStyle = cream(alpha * (k ? 0.8 - k * 0.045 : 1)); ctx.stroke();
+    }
+    // 앞면: 말림 아래에서 바닥까지 오목하게 떨어지는 선 몇 줄
+    for (let k = 0; k < Math.ceil(lines / 2); k++) {
+      ctx.beginPath();
+      const sx = cx + Math.cos(Math.PI * 0.55) * R0, sy = cy0 + Math.sin(Math.PI * 0.55) * R0;
+      ctx.moveTo(sx + k * gap * 0.9, sy + k * gap * 0.5);
+      ctx.bezierCurveTo(cx - R0 * 0.9 + k * gap * 1.4, cy0 + R0 * 1.6, cx + R0 * 0.2 + k * gap * 1.5, base - h * 0.12, cx + w * 0.42 + k * gap * 2, base);
+      ctx.lineWidth = k ? 0.8 : 1.4; ctx.strokeStyle = cream(alpha * (k ? 0.55 - k * 0.06 : 0.9)); ctx.stroke();
+    }
+    // 거품: 말린 꼭대기 앞쪽에 작은 원호 뭉치
+    ctx.lineWidth = 1; ctx.strokeStyle = cream(alpha * 0.9);
+    const n = Math.round(6 + h * 0.06);
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI * 0.35 + rnd(seed + i) * Math.PI * 0.9;
+      const d = R0 * (1.05 + rnd(seed + i * 7) * 0.7);
+      const fx = cx + Math.cos(a) * d + R0 * 0.25, fy = cy0 + Math.sin(a) * d * 0.8 + Math.sin(t * 0.8 + i) * 0.6;
+      const r = 1.4 + rnd(seed + i * 13) * Math.max(2, h * 0.025);
+      ctx.beginPath(); ctx.arc(fx, fy, r, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    }
+  }
+  // 헤더 맨 아래 거품: 작은 원호를 줄지어
+  function foamBottom(off) {
+    ctx.lineWidth = 1; ctx.strokeStyle = cream(0.55);
+    const step = 11;
+    for (let row = 0; row < 3; row++) {
+      const y = H - 3 - row * 6, sh = (off * (0.6 + row * 0.15) + row * 5) % step;
+      for (let x = -step + sh; x < W + step; x += step) {
+        const i = Math.round((x - sh) / step) + row * 1000;
+        if (rnd(i) < 0.25 + row * 0.2) continue;
+        const r = 2.2 + rnd(i * 3) * 2.6 - row * 0.4;
+        ctx.beginPath(); ctx.arc(x + rnd(i * 5) * 4, y, r, Math.PI, Math.PI * 2); ctx.stroke();
+      }
+    }
+  }
+  function draw(t) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = NAVY; ctx.fillRect(0, 0, W, H);
+    grain(t);
+    const narrow = W < 640;
+    // 뒤쪽 작고 흐린 파도 (느리게)
+    const bh = H * 0.34, bw = bh * 2.4, bn = Math.ceil(W / (bw * 0.9)) + 2, bspan = bn * bw * 0.9;
+    for (let i = 0; i < bn; i++) {
+      const x = ((i * bw * 0.9 + t * 4) % bspan) - bw * 0.5;
+      wave(x, H * 0.72, bh * (1 + 0.05 * Math.sin(t * 0.5 + i * 1.7)), bw, 0.3, 4, 100 + i, t);
+    }
+    // 앞쪽 크게 솟은 파도 2~3개
+    const fn = narrow ? 2 : 3, fh = H * (narrow ? 0.62 : 0.74), fw = fh * 2.3;
+    const span = Math.max(W + fw, fn * fw * 1.05);
+    for (let i = 0; i < fn; i++) {
+      const x = ((i * span / fn + t * 9) % span) - fw * 0.45;
+      wave(x, H + 2, fh * (1 + 0.04 * Math.sin(t * 0.6 + i * 2.1)), fw, 0.62, 9, 1 + i * 37, t);
+    }
+    foamBottom(t * 9);
+  }
+  let raf = 0, t0 = 0, visible = true, last = 0;
+  function frame(ts) {
+    raf = 0; if (!visible || document.hidden || reduce.matches) return;
+    if (!t0) t0 = ts;
+    if (ts - last > 33) { last = ts; draw((ts - t0) / 1000); }  // 약 30fps
+    raf = requestAnimationFrame(frame);
+  }
+  function start() {
+    size(); draw(t0 && !reduce.matches ? (performance.now() - t0) / 1000 : 0);
+    if (!reduce.matches && !raf) raf = requestAnimationFrame(frame);
+  }
+  new ResizeObserver(() => start()).observe(hero);
+  new IntersectionObserver((es) => { visible = es[0].isIntersecting; if (visible) start(); }).observe(hero);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) start(); });
+  reduce.addEventListener && reduce.addEventListener("change", start);
+  start();
+})();
 </script>
