@@ -293,7 +293,7 @@
   .ct { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
   .ct svg { height: 26px; width: auto; color: var(--accent2); flex: none; }
 
-  /* 부산발 목적지 검색: 영문 항구명·UN/LOCODE(한글도) → ① 요약 ② 이용 가능한 선사 ③ 40일 스케줄 */
+  /* 부산발 목적지 검색: 영문 항구명·UN/LOCODE(한글도) → ① 요약 ② 이용 가능한 선사 ③ 28일 스케줄 */
   .dest .caption { align-items: center; }
   .dest form { display: flex; gap: 8px; padding: 12px 16px 12px; }
   .dq-wrap { position: relative; flex: 1; min-width: 0; }
@@ -329,8 +329,15 @@
   .cchip a:hover { background: var(--hover); }
   .cchip button:focus-visible, .cchip a:focus-visible { outline: 3px solid var(--accent2); outline-offset: -3px; }
   .cchip:hover { border-color: var(--accent2); }
-  .cchip.live { background: var(--ok-soft); border-color: transparent; } .cchip.live button { color: var(--ok); }
+  .cchip.live button small { color: var(--ok); opacity: 1; }  /* 배가 있는 선사: 숫자만 초록 (배경은 그대로라 선택된 칩과 헷갈리지 않게) */
   .cchip.on { background: var(--ink); border-color: var(--ink); } .cchip.on button { color: var(--bg); } .cchip.on a { color: var(--bg); }
+  /* 목적지 스케줄: 주차 구분선 · 터미널 배정 전 예상 줄(점선·회색, 실제 배 줄과 구분) */
+  .dtable tr.wsep th { position: static; text-align: left; background: var(--gray-soft); color: var(--ink); font-size: 12.5px; font-weight: 700; padding: 6px 12px; border-top: 2px solid var(--line); }
+  .dtable tr.wsep .wl { color: var(--accent2); margin-right: 4px; }
+  .dtable tr.wsep .wn { float: right; color: var(--muted); font-weight: 400; }
+  .dtable tr.west td { background: var(--bg); color: var(--muted); font-size: 12.5px; padding: 8px 12px; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); }
+  .dtable tr.west .wc { display: inline-block; margin: 0 10px 0 6px; white-space: nowrap; }
+  .dtable tr.west .wc b { color: var(--muted); }
   .dsec.sched { padding: 0; } .dsec.sched h3 { padding: 10px 16px 0; }
   .dsec.sched .table-wrap { margin-top: 8px; border-top: 1px solid var(--line); }
   .dempty { margin: 4px 16px 12px; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
@@ -606,8 +613,8 @@
         <div class="dinfo" id="destNote" hidden></div>
         <div class="dsum" id="destSum"></div>
         <div class="dsec"><h3>이용 가능한 선사<small>부산발 서비스 주요 선사 (직항·환적 포함)</small></h3><div class="ccarr" id="destCarr"></div></div>
-        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
-          <div class="dempty" id="destEmpty" hidden>40일 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
+        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="destSchedN">앞으로 28일 · 출항일 빠른 순</small></h3>
+          <div class="dempty" id="destEmpty" hidden>28일 안에 확인된 배가 없어요. 위 선사의 공개 스케줄을 확인해 주세요</div>
           <div class="table-wrap" id="destTableWrap">
             <table class="dtable">
               <thead><tr>
@@ -622,6 +629,7 @@
               <tbody id="destRows"></tbody>
             </table>
           </div>
+          <div class="more" id="destMore" hidden><button type="button">더 보기</button></div>
         </div>
       </div>
       <div class="thelp" id="destHelp" hidden></div>
@@ -689,7 +697,7 @@
         <div class="dinfo" id="icdNote" hidden></div>
         <div class="dsum" id="icdSum"></div>
         <div class="dsec"><h3>이용 가능한 선사<small>인천 터미널(SNCT·HJIT·ICT·E1CT)에 실제 기항하는 선사</small></h3><div class="ccarr" id="icdCarr"></div></div>
-        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="icdSchedN">앞으로 40일 · 출항일 빠른 순</small></h3>
+        <div class="dsec sched"><h3>진행 가능한 스케줄<small id="icdSchedN">앞으로 28일 · 출항일 빠른 순</small></h3>
           <div class="dempty" id="icdEmpty" hidden></div>
           <div class="table-wrap" id="icdTableWrap">
             <table class="dtable">
@@ -705,6 +713,7 @@
               <tbody id="icdRows"></tbody>
             </table>
           </div>
+          <div class="more" id="icdMore" hidden><button type="button">더 보기</button></div>
         </div>
       </div>
       <div class="dnote">인천 4개 터미널(SNCT·HJIT·ICT·E1CT) 출항 배 기준 · 예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요 · 경유항·환적항은 표시하지 않아요</div>
@@ -1510,7 +1519,7 @@ function renderEq() {
 
 // ---------------------------------------------------------------- 부산발 목적지 검색
 // 항구 표(transit_times.json): 영문 항구명·UN/LOCODE·한글로 검색, 소요일은 [최소, 최대] 범위(직항·환적 포함)
-// ① 요약  ② 이용 가능한 선사(port_carriers.json + 터미널 일정에서 확인된 선사)  ③ 40일 안 부산 출항 스케줄
+// ① 요약  ② 이용 가능한 선사(port_carriers.json + 터미널 일정에서 확인된 선사)  ③ 앞으로 28일 부산 출항 스케줄
 // ③은 터미널 항로 코드를 routes.json(노선 → 목적항, 출처 있는 것만)으로 판단. 경유·환적항은 표시하지 않음
 const REPO_EDIT = "https://github.com/KIWOONGPKW/busan-schedule/edit/main/scripts/";
 const PORTS = (DATA.transit || []).filter((p) => p && p.code && p.name);
@@ -1526,8 +1535,7 @@ function withDefaults(p) {
            byRegion: !!reg && (!own || !(PCARR[p.code] || []).length) };
 }
 const ROUTES = Object.fromEntries(Object.entries(DATA.routes || {}).map(([k, v]) => [k.trim().toUpperCase(), v]));
-const DEST_DAYS = 40;  // 부산발 목적지 검색: 오늘부터 40일 뒤 출항까지
-const TS_PER_CARRIER = 3;  // 환적 가능(예상): 선사별로 보여줄 가까운 부산 출항 수
+const DEST_DAYS = 28;  // 목적지 검색(부산발·인천발): 오늘부터 28일(4주) 안 출항, 선사별 개수 제한 없이 모두
 // 터미널 선사 약자 → 영문 선사명, 선사명 → 공식 스케줄 페이지 (carrier_codes.json)
 const CARRIER = {}, CSCHED = {}, CP2P = {};
 Object.entries(DATA.carriers || {}).forEach(([name, v]) => {
@@ -1602,11 +1610,65 @@ function findPort(q) {
   return exact[0] || suggest(q, 1)[0] || null;
 }
 const dayFmt = (d) => `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}(${WD[d.getDay()]})`;
-const destUi = { q: "", carrier: "" };
+// 목적지 검색 공통: 기간 끝(오늘 0시 + 28일, 그날 미포함) · 주차 구분 · 터미널 자료가 없는 주의 예상 줄 · 더 보기
+const destEnd = () => new Date(today.getTime() + DEST_DAYS * 86400e3);
+const WEEK_LBL = ["이번 주", "2주 차", "3주 차", "4주 차"];
+const WD_ORDER = [1, 2, 3, 4, 5, 6, 0];
+// 터미널별 선석 자료의 마지막 출항일 → 선사별로 기항 터미널 중 가장 늦은 날까지를 "자료 있음"으로
+function termCoverage(list) {
+  const tmax = {}, cterm = {};
+  list.forEach((r) => { const d = toDate(r.etd); if (!d) return;
+    if (!tmax[r.t] || d > tmax[r.t]) tmax[r.t] = d;
+    const c = carrierName(r.operator); (cterm[c] = cterm[c] || new Set()).add(r.t); });
+  const cov = {};
+  Object.entries(cterm).forEach(([c, ts]) => { cov[c] = new Date(Math.max(...[...ts].map((t) => tmax[t]))); });
+  const vals = Object.values(tmax).sort((a, b) => a - b);
+  return { cov, horizon: vals.length ? vals[Math.floor(vals.length / 2)] : today };
+}
+// 선사별 주 운항 횟수·출항 요일: 자료가 있는 기간의 실제 배로 추정
+function carrierStats(rows, cov) {
+  const by = {};
+  rows.forEach((r) => { const c = carrierName(r.operator); (by[c] = by[c] || []).push(toDate(r.etd)); });
+  const out = {}, end = destEnd();
+  Object.entries(by).forEach(([c, ds]) => {
+    const until = new Date(Math.min(end, cov[c] || end));
+    const weeks = Math.max(1, (until - now) / (7 * 86400e3));
+    const weekly = Math.max(1, Math.round(ds.length / weeks));
+    const wd = {}; ds.forEach((d) => { wd[d.getDay()] = (wd[d.getDay()] || 0) + 1; });
+    const days = Object.entries(wd).sort((a, b) => b[1] - a[1]).slice(0, weekly).map(([k]) => +k)
+      .sort((a, b) => WD_ORDER.indexOf(a) - WD_ORDER.indexOf(b));
+    out[c] = { weekly, days };
+  });
+  return out;
+}
+// 표 본문: 주차 구분선 + 실제 배 + (자료 없는 주) 회색 예상 줄, 실제 배 limit척까지
+function schedBody({ all, shown, carrier, cov, horizon, weeklyAvg, rowHtml, limit }) {
+  const stats = carrierStats(all, cov), end = destEnd(), items = [];
+  for (let w = 0; w < 4; w++) {
+    const ws = new Date(today.getTime() + w * 7 * 86400e3), we = new Date(Math.min(end, ws.getTime() + 7 * 86400e3));
+    const ships = shown.filter((r) => { const d = toDate(r.etd); return d >= ws && d < we; });
+    const lastDay = new Date(we.getTime() - 86400e3);
+    const cs = (carrier ? [carrier] : Object.keys(stats)).filter((c) => stats[c] && cov[c] && cov[c] < lastDay);
+    const est = cs.map((c) => { const s = stats[c];
+      const from = cov[c] >= ws ? ` · ${dayFmt(new Date(cov[c].getTime() + 86400e3)).slice(0, 5)}부터` : "";
+      return `<span class="wc"><b>${esc(c)}</b> 주 ${s.weekly}회${s.days.length ? ` (${s.days.map((d) => WD[d]).join("·")})` : ""}${from}</span>`; });
+    const noData = !Object.keys(stats).length && ws > horizon;
+    items.push({ k: "sep", html: `<tr class="wsep"><th colspan="7"><span class="wl">${WEEK_LBL[w]}</span> ${dayFmt(ws)} ~ ${dayFmt(lastDay)}<span class="wn">${ships.length ? `${ships.length}척` : est.length || noData ? "배정 전" : "확인된 배 없음"}</span></th></tr>` });
+    ships.forEach((r) => items.push({ k: "ship", html: rowHtml(r) }));
+    if (est.length || noData) items.push({ k: "est", html: `<tr class="west"><td colspan="7"><span class="badge b-gray">예상</span> 터미널 배정 전 · ${
+      est.length ? `선사별 주 ${cs.reduce((t, c) => t + stats[c].weekly, 0)}회 예상 ${est.join("")}` : weeklyAvg ? `주 ${weeklyAvg}회 예상 (지역 평균)` : "선사 공개 스케줄 확인"}</td></tr>` });
+  }
+  const out = []; let n = 0, cut = false;
+  for (const it of items) { if (it.k === "ship") { if (n === limit) { cut = true; break; } n++; } out.push(it); }
+  while (cut && out.length && out[out.length - 1].k === "sep") out.pop();  // 잘린 자리 뒤의 빈 구분선은 빼기
+  return { html: out.map((x) => x.html).join(""), left: shown.length - n };
+}
+const BS_COV = termCoverage(BUSAN_ROWS);
+const destUi = { q: "", carrier: "", limit: FIRST };
 function renderDest(q, keepFilter) {
   const msg = $("#destMsg"), say = (html) => { msg.innerHTML = html; msg.hidden = !html; };
   $("#destResult").hidden = true; $("#destCount").textContent = "";
-  if (!keepFilter || destUi.q !== q) destUi.carrier = "";
+  if (!keepFilter || destUi.q !== q) { destUi.carrier = ""; destUi.limit = FIRST; }
   destUi.q = q;
   destUi.mode = ""; destUi.rows = 0; destUi.links = 0; destUi.code = "";
   if (!q.trim()) { say(""); return; }
@@ -1648,9 +1710,9 @@ function renderDest(q, keepFilter) {
   const ports = [port, ...PORTS.filter((p) => p.code !== port.code && port.group && p.group === port.group).map(withDefaults)];
   const codes = new Set(ports.map((p) => p.code));
   const range = dayRange(port);
-  // 기간: 오늘부터 40일 뒤(그날 포함) 출항까지
-  const end = new Date(today.getTime() + (DEST_DAYS + 1) * 86400e3);
-  const spanDays = DEST_DAYS + 1;
+  // 기간: 오늘부터 28일 (오늘 포함, 28일째 되는 날까지)
+  const end = destEnd();
+  const spanDays = DEST_DAYS;
   const spanTxt = `앞으로 ${DEST_DAYS}일`;
   const soon = (r) => { const d = toDate(r.etd); return d && d >= now && d < end; };
   const routeOf = (r) => ROUTES[(r.route || "").trim().toUpperCase()];
@@ -1658,17 +1720,14 @@ function renderDest(q, keepFilter) {
   // ① 노선이 이 항구로 연결된 배
   let rows = BUSAN_ROWS.filter((r) => { const rt = routeOf(r); return soon(r) && rt && (rt.ports || []).some((c) => codes.has(c)); }).sort(byEtd);
   let mode = rows.length ? "route" : "";
-  // ② 없으면: 이용 가능 선사의 앞으로 40일 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
+  // ② 없으면: 이용 가능 선사의 앞으로 28일 부산 출항 배 (다른 지역으로 가는 걸로 확인된 노선은 빼고) → 환적 가능(예상)
   if (!rows.length) {
     const L = new Set(listed);
     // 방향: 미주·중남미는 동향(E), 그 외(동남아·인도·중동·지중해·유럽·아프리카)는 서향·남향(W/S) 항차만. 방향 글자 없으면 포함
     const east = /^(미주|중남미)/.test(port.region || "");
     const dirOk = (r) => { const m = (r.voyages[r.voyages.length - 1] || "").trim().toUpperCase().match(/([NSEW])\s*$/);
       return !m || (east ? m[1] === "E" : m[1] === "W" || m[1] === "S"); };
-    const cand = BUSAN_ROWS.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
-    // 선사별로 가까운 3항차만
-    const per = {};
-    rows = cand.filter((r) => { const c = carrierName(r.operator); per[c] = (per[c] || 0) + 1; return per[c] <= TS_PER_CARRIER; });
+    rows = BUSAN_ROWS.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
     if (rows.length) mode = "ts";
   }
   const regWeekly = port.weekly;
@@ -1684,17 +1743,18 @@ function renderDest(q, keepFilter) {
   rows.forEach((r) => { const c = carrierName(r.operator); count[c] = (count[c] || 0) + 1; });
   const all = [...new Set([...listed, ...(mode === "route" ? Object.keys(count) : [])])];
   if (destUi.carrier && !all.includes(destUi.carrier)) destUi.carrier = "";
-  $("#destCarr").innerHTML = all.length ? all.map((c) => {
+  const allChip = `<span class="cchip call${destUi.carrier ? "" : " on"}"><button type="button" data-carrier="" aria-pressed="${!destUi.carrier}" title="모든 선사 배 보기">전체${rows.length ? ` <small>${rows.length}</small>` : ""}</button></span>`;
+  $("#destCarr").innerHTML = all.length ? allChip + all.map((c) => {
     const on = destUi.carrier === c, n = count[c] || 0;
     const url = schedUrl(c, port.code), pre = !!CP2P[c];
     return `<span class="cchip${n ? " live" : ""}${on ? " on" : ""}"><button type="button" data-carrier="${esc(c)}" aria-pressed="${on}"
-      title="${on ? "필터 해제" : `${c} 배만 보기`}">${esc(c)}${n ? ` <small>${n}</small>` : ""}</button>${url
+      title="${on ? "다시 누르면 전체" : `${c} 배만 보기`}">${esc(c)}${n ? ` <small>${n}</small>` : ""}</button>${url
       ? `<a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(c)} 공식 스케줄 ${pre ? `BUSAN → ${esc(port.name)} 조회` : "조회 화면"} (새 탭)" aria-label="${esc(c)} 공식 스케줄 조회">↗</a>` : ""}</span>`;
   }).join("") : `<span class="cchip"><button type="button" disabled>선사 정보 없음</button></span>`;
   // ③ 진행 가능한 스케줄
   const shown = destUi.carrier ? rows.filter((r) => carrierName(r.operator) === destUi.carrier) : rows;
   $("#destSchedN").textContent = mode === "route" ? `${spanTxt} · 출항일 빠른 순 · 노선 확인 ${shown.length}척`
-    : mode === "ts" ? `${spanTxt} · 출항일 빠른 순 · 환적 가능 (예상) · 선사별 가까운 ${TS_PER_CARRIER}항차 · ${shown.length}척`
+    : mode === "ts" ? `${spanTxt} · 출항일 빠른 순 · 환적 가능 (예상) · ${shown.length}척`
     : spanTxt;
   const empty = $("#destEmpty");
   if (!rows.length) {
@@ -1706,7 +1766,7 @@ function renderDest(q, keepFilter) {
   }
   empty.hidden = !!shown.length && mode !== "ts";
   $("#destTableWrap").hidden = !shown.length;
-  $("#destRows").innerHTML = shown.map((r) => {
+  const destRow = (r) => {
     const etd = toDate(r.etd);
     const add = (n) => dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + n));
     const eta = !range ? `<span class="muted">확인 필요</span>`
@@ -1721,7 +1781,12 @@ function renderDest(q, keepFilter) {
       <td>${eta}</td>
       <td>${range ? `<b>${routesTxt(port, "<br>")}</b>` : `<span class="muted">확인 필요</span>`}</td>
     </tr>`;
-  }).join("");
+  };
+  const body = schedBody({ all: rows, shown, carrier: destUi.carrier, cov: BS_COV.cov, horizon: BS_COV.horizon,
+    weeklyAvg: Number.isFinite(regWeekly) ? regWeekly : 0, rowHtml: destRow, limit: destUi.limit });
+  $("#destRows").innerHTML = body.html;
+  $("#destMore").hidden = body.left <= 0;
+  $("#destMore button").textContent = `더 보기 (${body.left}척 남음)`;
   destUi.mode = mode || "summary"; destUi.rows = shown.length; destUi.links = all.filter((c) => schedUrl(c, port.code)).length;
   $("#destCount").textContent = `BUSAN → ${port.name}`;
   $("#destResult").hidden = false;
@@ -1729,8 +1794,10 @@ function renderDest(q, keepFilter) {
 $("#destCarr").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-carrier]"); if (!b) return;
   destUi.carrier = destUi.carrier === b.dataset.carrier ? "" : b.dataset.carrier;
+  destUi.limit = FIRST;
   renderDest(destUi.q, true);
 });
+$("#destMore").addEventListener("click", () => { destUi.limit += MORE; renderDest(destUi.q, true); });
 // 자동완성 목록 (2글자 이상)
 const dac = { items: [], idx: -1 };
 function acShow(q) {
@@ -1767,7 +1834,7 @@ $("#dq").addEventListener("keydown", (e) => {
 $("#dqList").addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
 $("#dq").addEventListener("blur", () => setTimeout(() => { $("#dqList").hidden = true; }, 120));
 // ---------------------------------------------------------------- 인천발 목적지 검색 (부산발 검색의 항구 찾기·자동완성·오타 처리 함수를 그대로 사용, 부산발 동작은 그대로)
-// ① 예상 소요일·운항 빈도  ② 인천 터미널에 실제 기항하는 선사 칩  ③ 앞으로 40일 인천(SNCT·HJIT·ICT·E1CT) 출항 배
+// ① 예상 소요일·운항 빈도  ② 인천 터미널에 실제 기항하는 선사 칩  ③ 앞으로 28일 인천(SNCT·HJIT·ICT·E1CT) 출항 배
 // 소요일: incheon_transit_times.json 항구값 > (인천 직항 지역이면) 부산발 값 > (원양이면) 부산발 값 + 인천→부산 연결 일수
 const ICD = DATA.incheon_dest || {};
 const IC_SET = new Set(DATA.incheon || []);
@@ -1789,11 +1856,12 @@ function icDays(port) {
     : Object.fromEntries(Object.entries(d).map(([k, v]) => [k, add(toRange(v))]));
   return { p: { days }, src: `부산발 소요일 + 인천→부산 연결 ${rangeTxt(IC_EXTRA)} (부산 환적 가정) 참고값` };
 }
-const icdUi = { q: "", carrier: "" };
+const IC_COV = termCoverage(IC_ROWS);
+const icdUi = { q: "", carrier: "", limit: FIRST };
 function renderIcDest(q, keepFilter) {
   const msg = $("#icdMsg"), say = (html) => { msg.innerHTML = html; msg.hidden = !html; };
   $("#icdResult").hidden = true; $("#icdCount").textContent = "";
-  if (!keepFilter || icdUi.q !== q) icdUi.carrier = "";
+  if (!keepFilter || icdUi.q !== q) { icdUi.carrier = ""; icdUi.limit = FIRST; }
   icdUi.q = q; icdUi.mode = ""; icdUi.rows = 0; icdUi.code = "";
   if (!q.trim()) { say(""); return; }
   let hit = findPort(q);
@@ -1835,7 +1903,7 @@ function renderIcDest(q, keepFilter) {
   if (noIcCarrier && listed.length) notes.push("인천 터미널 일정에서 이 항로 선사가 확인되지 않아 부산발 선사 목록을 보여드려요");
   $("#icdNote").innerHTML = notes.join(`<span class="sep">·</span>`); $("#icdNote").hidden = !notes.length;
   say("");
-  const end = new Date(today.getTime() + (DEST_DAYS + 1) * 86400e3);
+  const end = destEnd();
   const spanTxt = `앞으로 ${DEST_DAYS}일`;
   const soon = (r) => { const d = toDate(r.etd); return d && d >= now && d < end; };
   const routeOf = (r) => IC_ROUTES[(r.route || "").trim().toUpperCase()];
@@ -1853,12 +1921,11 @@ function renderIcDest(q, keepFilter) {
       return !m || (east ? m[1] === "E" : m[1] === "W" || m[1] === "S");
     };
     cand = IC_ROWS.filter((r) => soon(r) && L.has(carrierName(r.operator)) && !routeOf(r) && dirOk(r)).sort(byEtd);
-    const per = {};
-    rows = cand.filter((r) => { const c = carrierName(r.operator); per[c] = (per[c] || 0) + 1; return per[c] <= TS_PER_CARRIER; });
+    rows = cand;
     if (rows.length) mode = "ts";
   }
-  // 운항 빈도: 앞으로 40일 인천 출항 배 수로 계산 (없으면 부산발 지역 평균)
-  const spanWeeks = (DEST_DAYS + 1) / 7;
+  // 운항 빈도: 앞으로 28일 인천 출항 배 수로 계산 (없으면 부산발 지역 평균)
+  const spanWeeks = DEST_DAYS / 7;
   const weekly = mode === "route" ? Math.max(1, Math.round(rows.length / spanWeeks))
     : cand.length ? Math.max(1, Math.round(cand.length / spanWeeks)) : Number.isFinite(port.weekly) ? port.weekly : 0;
   const weeklyTxt = mode === "route" ? `주 <b>${weekly}</b>회`
@@ -1873,16 +1940,17 @@ function renderIcDest(q, keepFilter) {
   rows.forEach((r) => { const c = carrierName(r.operator); count[c] = (count[c] || 0) + 1; });
   const all = [...new Set([...listed, ...(mode === "route" ? Object.keys(count) : [])])];
   if (icdUi.carrier && !all.includes(icdUi.carrier)) icdUi.carrier = "";
-  $("#icdCarr").innerHTML = all.length ? all.map((c) => {
+  const allChip = `<span class="cchip call${icdUi.carrier ? "" : " on"}"><button type="button" data-carrier="" aria-pressed="${!icdUi.carrier}" title="모든 선사 배 보기">전체${rows.length ? ` <small>${rows.length}</small>` : ""}</button></span>`;
+  $("#icdCarr").innerHTML = all.length ? allChip + all.map((c) => {
     const on = icdUi.carrier === c, n = count[c] || 0;
     const url = icSchedUrl(c, port.code), pre = !!CP2P[c];
     return `<span class="cchip${n ? " live" : ""}${on ? " on" : ""}"><button type="button" data-carrier="${esc(c)}" aria-pressed="${on}"
-      title="${on ? "필터 해제" : `${c} 배만 보기`}">${esc(c)}${n ? ` <small>${n}</small>` : ""}</button>${url
+      title="${on ? "다시 누르면 전체" : `${c} 배만 보기`}">${esc(c)}${n ? ` <small>${n}</small>` : ""}</button>${url
       ? `<a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(c)} 공식 스케줄 ${pre ? `INCHEON → ${esc(port.name)} 조회` : "조회 화면"} (새 탭)" aria-label="${esc(c)} 공식 스케줄 조회">↗</a>` : ""}</span>`;
   }).join("") : `<span class="cchip"><button type="button" disabled>선사 정보 없음</button></span>`;
   const shown = icdUi.carrier ? rows.filter((r) => carrierName(r.operator) === icdUi.carrier) : rows;
   $("#icdSchedN").textContent = mode === "route" ? `${spanTxt} · 출항일 빠른 순 · 노선 확인 ${shown.length}척`
-    : mode === "ts" ? `${spanTxt} · 출항일 빠른 순 · 이용 가능 선사의 인천 출항 배 · 선사별 가까운 ${TS_PER_CARRIER}항차 · ${shown.length}척`
+    : mode === "ts" ? `${spanTxt} · 출항일 빠른 순 · 이용 가능 선사의 인천 출항 배 · ${shown.length}척`
     : spanTxt;
   const empty = $("#icdEmpty");
   if (!rows.length) {
@@ -1894,7 +1962,7 @@ function renderIcDest(q, keepFilter) {
   }
   empty.hidden = !!shown.length && mode !== "ts";
   $("#icdTableWrap").hidden = !shown.length;
-  $("#icdRows").innerHTML = shown.map((r) => {
+  const icRow = (r) => {
     const etd = toDate(r.etd);
     const add = (n) => dayFmt(new Date(etd.getFullYear(), etd.getMonth(), etd.getDate() + n));
     const eta = !range ? `<span class="muted">확인 필요</span>`
@@ -1909,7 +1977,12 @@ function renderIcDest(q, keepFilter) {
       <td>${eta}</td>
       <td>${range ? `<b>${routesTxt(dd.p, "<br>")}</b>` : `<span class="muted">확인 필요</span>`}</td>
     </tr>`;
-  }).join("");
+  };
+  const body = schedBody({ all: rows, shown, carrier: icdUi.carrier, cov: IC_COV.cov, horizon: IC_COV.horizon,
+    weeklyAvg: Number.isFinite(port.weekly) ? port.weekly : 0, rowHtml: icRow, limit: icdUi.limit });
+  $("#icdRows").innerHTML = body.html;
+  $("#icdMore").hidden = body.left <= 0;
+  $("#icdMore button").textContent = `더 보기 (${body.left}척 남음)`;
   icdUi.mode = mode || "summary"; icdUi.rows = shown.length; icdUi.carriers = all;
   $("#icdCount").textContent = `INCHEON → ${port.name}`;
   $("#icdResult").hidden = false;
@@ -1917,8 +1990,10 @@ function renderIcDest(q, keepFilter) {
 $("#icdCarr").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-carrier]"); if (!b) return;
   icdUi.carrier = icdUi.carrier === b.dataset.carrier ? "" : b.dataset.carrier;
+  icdUi.limit = FIRST;
   renderIcDest(icdUi.q, true);
 });
+$("#icdMore").addEventListener("click", () => { icdUi.limit += MORE; renderIcDest(icdUi.q, true); });
 // 자동완성 (부산발과 같은 후보 함수, 목록·상태만 따로)
 const icac = { items: [], idx: -1 };
 function icAcShow(q) {
