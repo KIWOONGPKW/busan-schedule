@@ -740,7 +740,9 @@
   <section class="panel dest rail" id="railPanel" aria-label="수입 연계 조회 (부산신항 → 의왕ICD)">
     <div class="caption"><span class="ct"><b>수입 연계 조회 (부산신항 → 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
     <form id="railForm" autocomplete="off" role="search">
-      <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"></div>
+      <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
+        <ul class="dac" id="railList" role="listbox" hidden></ul></div>
       <button class="go" type="submit">조회</button>
     </form>
     <div class="fold" id="railFold" hidden>
@@ -2327,15 +2329,48 @@ renderNews();
       step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, span(etb, ICD), days(ICD), "end");
     pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r)));
   }
+  // 어제 이후 입항(또는 아직 접안 중)인 부산신항 배, 입항 빠른 순
+  function incoming() {
+    const from = plus(now, -1);
+    return DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && r.vessel
+        && r.status !== "출항" && (toDate(r.etb) >= from || r.status === "접안"))
+      .sort((a, b) => toDate(a.etb) - toDate(b.etb));
+  }
+  // 선명 자동완성 (2글자 이상): 같은 선명은 한 줄로, 앞글자가 맞는 배 먼저
+  const ul = $("#railList"), rac = { items: [], idx: -1 };
+  function acShow(v) {
+    const q = norm(v); rac.idx = -1; rac.items = [];
+    if (q.length >= 2) {
+      const seen = new Map();
+      for (const r of incoming()) {
+        const n = norm(r.vessel); if (!n.includes(q)) continue;
+        const it = seen.get(r.vessel) || { name: r.vessel, pre: n.startsWith(q) || String(r.vessel).split(/\s+/).some((w) => norm(w).startsWith(q)), rows: [] };
+        it.rows.push(r); seen.set(r.vessel, it);
+      }
+      rac.items = [...seen.values()].sort((a, b) => (b.pre - a.pre) || (toDate(a.rows[0].etb) - toDate(b.rows[0].etb))).slice(0, 10);
+    }
+    ul.innerHTML = rac.items.map((it, i) => {
+      const r = it.rows[0], more = it.rows.length > 1 ? ` 외 ${it.rows.length - 1}건` : "";
+      return `<li role="option" id="railOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(it.name)}</b><span>${esc(r.t)} · ${dstr(toDate(r.etb))} 입항${more}</span></li>`;
+    }).join("");
+    ul.hidden = !rac.items.length; inp.setAttribute("aria-expanded", String(!ul.hidden));
+  }
+  function acHide() { ul.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); }
+  function acPick(i) { const it = rac.items[i]; if (!it) return; inp.value = it.name; acHide(); form.requestSubmit(); }
+  function acMove(d) {
+    if (!rac.items.length) return;
+    rac.idx = (rac.idx + d + rac.items.length) % rac.items.length;
+    ul.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === rac.idx)));
+    inp.setAttribute("aria-activedescendant", `railOpt${rac.idx}`);
+  }
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!ul.hidden && rac.items.length) { acPick(rac.idx >= 0 ? rac.idx : 0); return; }
+    acHide();
     const q = norm($("#railQ").value);
     res.hidden = true; msg.hidden = true;
     if (!q) { clear(); return; }
-    const from = plus(now, -1);  // 어제 이후 입항(또는 아직 접안 중)인 배
-    hits = DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && norm(r.vessel).includes(q)
-        && r.status !== "출항" && (toDate(r.etb) >= from || r.status === "접안"))
-      .sort((a, b) => toDate(a.etb) - toDate(b.etb));
+    hits = incoming().filter((r) => norm(r.vessel).includes(q));
     if (!hits.length) {
       const any = DATA.rows.some((r) => norm(r.vessel).includes(q));
       msg.textContent = any ? "부산신항 터미널에 입항 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
@@ -2350,8 +2385,15 @@ renderNews();
     show(hits[0]); res.hidden = false; foldTo(fold, true);
   });
   // 선명을 다 지우면(✕·Esc 포함) 타임라인을 부드럽게 접고 입력창만 남김
-  function clear() { inp.value = ""; foldTo(fold, false, () => { res.hidden = true; msg.hidden = true; hits = []; }); }
-  inp.addEventListener("input", () => { if (!inp.value.trim()) clear(); });
+  function clear() { inp.value = ""; acHide(); foldTo(fold, false, () => { res.hidden = true; msg.hidden = true; hits = []; }); }
+  inp.addEventListener("input", () => { acShow(inp.value); if (!inp.value.trim()) clear(); });
+  inp.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); }
+    else if (e.key === "Escape" && !ul.hidden) { e.preventDefault(); e.stopImmediatePropagation(); acHide(); }
+  });
+  ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
+  inp.addEventListener("blur", () => setTimeout(acHide, 120));
   addClear(inp, clear);
   pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) show(hits[+b.dataset.i]); });
 })();
