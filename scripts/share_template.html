@@ -954,9 +954,10 @@ function dday(s) {
   return `<div><span class="dday ${n <= 3 ? "soon" : ""}">${n === 0 ? "D-Day" : "D-" + n}</span></div>`;
 }
 function statusBadge(r) {
+  // 터미널이 출항 처리한 배 = 출항확정, 출항 예정 시각만 지난 배 = 출항함
+  if (r.status === "출항") return `<span class="badge b-gray"><b>출항확정</b></span>`;
   if (toDate(r.etd) < now) return `<span class="badge b-gray">출항함</span>`;
   if (r.status === "접안") return `<span class="badge b-blue">접안 중</span>`;
-  if (r.status === "출항") return `<span class="badge b-gray">출항함</span>`;
   return `<span class="badge b-ok">입항 예정</span>`;
 }
 function yardCell(r) {
