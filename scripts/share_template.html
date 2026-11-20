@@ -320,6 +320,11 @@
   .dest .caption { align-items: center; }
   .dest form { display: flex; gap: 8px; padding: 12px 16px 12px; }
   .dq-wrap { position: relative; flex: 1; min-width: 0; }
+  .dq-wrap > input { width: 100%; }
+  .hasx > input { padding-right: 40px; }
+  .qx { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; padding: 0; border: none; border-radius: 50%;
+        background: var(--line); color: var(--muted); font-size: 11px; font-weight: 700; line-height: 24px; text-align: center; }
+  .qx:hover { transform: translateY(-50%); color: var(--ink); }
   .dest input { width: 100%; font: inherit; font-size: 15px; color: var(--ink); background: var(--find);
                 border: 2px solid var(--find-line); border-radius: 12px; padding: 8px 12px; text-transform: uppercase; }
   .dest input::placeholder { color: var(--muted); text-transform: none; }
@@ -659,6 +664,7 @@
         </div>
         <button class="go" type="submit">찾기</button>
       </form>
+      <div class="fold" id="destFold">
       <div class="tmsg" id="destMsg" hidden></div>
       <div id="destResult" hidden>
         <div class="dinfo" id="destNote" hidden></div>
@@ -682,6 +688,7 @@
           </div>
           <div class="more" id="destMore" hidden><button type="button">더 보기</button></div>
         </div>
+      </div>
       </div>
       <div class="thelp" id="destHelp" hidden></div>
       <div class="dnote">예상 도착일·선사는 참고용, 선사 확정 스케줄 확인 필요</div>
@@ -736,10 +743,12 @@
       <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"></div>
       <button class="go" type="submit">조회</button>
     </form>
+    <div class="fold" id="railFold" hidden>
     <div class="tmsg" id="railMsg" hidden></div>
     <div id="railResult" hidden>
       <div class="rpick" id="railPick" hidden></div>
       <ol class="rline" id="railLine"></ol>
+    </div>
     </div>
     <div class="dnote" id="railNote">예상 일정은 참고용, 실제 철송 배정·보세운송은 운송사 확인 필요</div>
   </section>
@@ -757,6 +766,7 @@
         </div>
         <button class="go" type="submit">찾기</button>
       </form>
+      <div class="fold" id="icdFold">
       <div class="tmsg" id="icdMsg" hidden></div>
       <div id="icdResult" hidden>
         <div class="dinfo" id="icdNote" hidden></div>
@@ -973,6 +983,47 @@ const toDate = (s) => (s ? new Date(s.replace(" ", "T")) : null);
 const norm = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 const now = new Date();
 const today = new Date(now); today.setHours(0, 0, 0, 0);
+
+// 검색 결과 펼치기·접기 (0.2초, 동작 줄이기 설정이면 바로)
+const MOTION = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+function foldTo(el, show, done) {
+  if (!el) return;
+  const cur = el._hiding ? false : !el.hidden;
+  if (cur === show) { if (done) done(); return; }
+  if (el._anim) { const a = el._anim; el._anim = null; a.onfinish = null; a.cancel(); }
+  el._hiding = false;
+  if (!MOTION || !el.animate) { el.hidden = !show; if (done) done(); return; }
+  const open = (h) => ({ height: h, opacity: 1, overflow: "hidden" }), shut = { height: "0px", opacity: 0, overflow: "hidden" };
+  if (show) {
+    el.hidden = false;
+    el._anim = el.animate([shut, open(el.scrollHeight + "px")], { duration: 200, easing: "ease-out" });
+    el._anim.onfinish = () => { el._anim = null; };
+  } else {
+    el._hiding = true;
+    const a = el._anim = el.animate([open(el.offsetHeight + "px"), shut], { duration: 200, easing: "ease-in", fill: "forwards" });
+    // onfinish가 안 오는 경우(백그라운드 탭 등)를 대비해 타이머로도 마무리
+    const end = () => { if (el._anim !== a) return; el._anim = null; el._hiding = false; el.hidden = true; a.cancel(); if (done) done(); };
+    a.onfinish = end; setTimeout(end, 260);
+  }
+}
+// 입력창 오른쪽 안쪽 ✕ 버튼 + Esc: 검색어 지우고 접기
+function addClear(inp, onClear) {
+  if (!inp) return;
+  let wrap = inp.parentElement;
+  if (!wrap.classList.contains("dq-wrap")) { wrap = document.createElement("div"); wrap.className = "dq-wrap"; inp.before(wrap); wrap.append(inp); }
+  wrap.classList.add("hasx");
+  const x = document.createElement("button");
+  x.type = "button"; x.className = "qx"; x.textContent = "✕"; x.hidden = true; x.setAttribute("aria-label", "검색어 지우기");
+  wrap.append(x);
+  const sync = () => { x.hidden = !inp.value; };
+  inp.addEventListener("input", sync);
+  x.addEventListener("mousedown", (e) => e.preventDefault());  // 입력창 포커스 유지
+  x.addEventListener("click", () => { onClear(); sync(); inp.focus(); });
+  inp.addEventListener("keydown", (e) => { if (e.key === "Escape" && inp.value) { e.preventDefault(); onClear(); sync(); } });
+  new MutationObserver(sync).observe(inp, { attributes: true });
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+  Object.defineProperty(inp, "value", { get() { return set.get.call(this); }, set(v) { set.set.call(this, v); sync(); } });
+}
 
 function fmt(s) {
   const d = toDate(s);
@@ -1219,7 +1270,7 @@ function render(z) {
   const nClose = up.filter((r) => { const c = toDate(r.yard_close); return c && c > now && c - now < 48 * 3600e3; }).length;
   z.$(".zsum-t").innerHTML = `21일 안 출항 <b>${nDep}</b>척 · 48시간 안 반입 마감 <b>${nClose}</b>척 · 선명을 검색하거나 터미널을 눌러 보세요`;
   const tg = z.$(".ztoggle"); tg.textContent = shown ? "접기" : "전체 목록 보기"; tg.setAttribute("aria-expanded", String(shown));
-  z.$(".zsched").hidden = !shown;
+  foldTo(z.$(".zsched"), shown);
   if (!shown) return;
   const rows = filtered(z);
   const q = z.q.trim().toUpperCase();
@@ -1403,7 +1454,10 @@ const goSched = (z) => z.$(".zsched").scrollIntoView({ behavior: "smooth", block
 Object.values(ZONES).forEach((z) => {
   const inp = z.$(".zq");
   z.$("form.search").addEventListener("submit", (e) => { e.preventDefault(); z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
-  inp.addEventListener("input", () => { z.q = inp.value; z.qAll = false; z.limit = FIRST; if (!z.q.trim()) z.open = false; render(z); });
+  // 검색어를 다 지우면(✕·Esc 포함) 터미널 선택도 풀고 처음 상태(요약 한 줄)로 접기
+  const reset = () => { z.open = false; z.q = ""; z.qAll = false; inp.value = ""; setTerms(z, []); z.limit = FIRST; render(z); };
+  inp.addEventListener("input", () => { if (!inp.value.trim()) { reset(); return; } z.q = inp.value; z.qAll = false; z.limit = FIRST; render(z); });
+  addClear(inp, reset);
   z.$(".ztoggle").addEventListener("click", () => {
     if (z.$(".zsched").hidden) { z.open = true; z.limit = FIRST; render(z); return; }
     // 접기: 검색어·터미널 선택도 지우고 요약 한 줄로
@@ -1888,7 +1942,7 @@ $("#destForm").addEventListener("submit", (e) => {
   $("#dqList").hidden = true; renderDest($("#dq").value);
 });
 $("#dq").addEventListener("input", (e) => {
-  const v = e.target.value; acShow(v); if (!v.trim()) renderDest("");
+  const v = e.target.value; acShow(v); if (!v.trim()) clearDest();
   if (!ALL.list) loadAllPorts().then(() => { if ($("#dq").value === v) acShow(v); });
 });
 $("#dq").addEventListener("focus", () => { loadAllPorts(); });
@@ -1898,6 +1952,10 @@ $("#dq").addEventListener("keydown", (e) => {
   else if (e.key === "Escape") { $("#dqList").hidden = true; }
 });
 $("#dqList").addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
+// 검색어 지우기(✕·Esc·전부 지움) → 결과 부드럽게 접고 처음 상태로
+function clearDest() { $("#dq").value = ""; acShow(""); foldTo($("#destFold"), false, () => renderDest("")); }
+{ const rd = renderDest; renderDest = (q, k) => { rd(q, k); if (String(q).trim()) foldTo($("#destFold"), true); }; }
+addClear($("#dq"), clearDest);
 $("#dq").addEventListener("blur", () => setTimeout(() => { $("#dqList").hidden = true; }, 120));
 // ---------------------------------------------------------------- 인천발 목적지 검색 (부산발 검색의 항구 찾기·자동완성·오타 처리 함수를 그대로 사용, 부산발 동작은 그대로)
 // ① 예상 소요일·운항 빈도  ② 인천 터미널에 실제 기항하는 선사 칩  ③ 앞으로 28일 인천(SNCT·HJIT·ICT·E1CT) 출항 배
@@ -2084,7 +2142,7 @@ $("#icdForm").addEventListener("submit", (e) => {
   $("#icdqList").hidden = true; renderIcDest($("#icdq").value);
 });
 $("#icdq").addEventListener("input", (e) => {
-  const v = e.target.value; icAcShow(v); if (!v.trim()) renderIcDest("");
+  const v = e.target.value; icAcShow(v); if (!v.trim()) clearIcDest();
   if (!ALL.list) loadAllPorts().then(() => { if ($("#icdq").value === v) icAcShow(v); });
 });
 $("#icdq").addEventListener("focus", () => { loadAllPorts(); });
@@ -2094,6 +2152,9 @@ $("#icdq").addEventListener("keydown", (e) => {
   else if (e.key === "Escape") { $("#icdqList").hidden = true; }
 });
 $("#icdqList").addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); icAcPick(+li.dataset.i); } });
+function clearIcDest() { $("#icdq").value = ""; icAcShow(""); foldTo($("#icdFold"), false, () => renderIcDest("")); }
+{ const rd = renderIcDest; renderIcDest = (q, k) => { rd(q, k); if (String(q).trim()) foldTo($("#icdFold"), true); }; }
+addClear($("#icdq"), clearIcDest);
 $("#icdq").addEventListener("blur", () => setTimeout(() => { $("#icdqList").hidden = true; }, 120));
 
 // 관리용 링크는 숨김 (주소 끝에 #admin을 붙여 열면 보임)
@@ -2250,7 +2311,7 @@ renderNews();
   const plus = (d, n) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + n); return x; };
   const span = (d, [a, b]) => (a === b ? dstr(plus(d, a)) : `${dstr(plus(d, a))} ~ ${dstr(plus(d, b))}`);
   const days = ([a, b]) => (a === b ? `입항 + ${a}일` : `입항 + ${a}~${b}일`);
-  const msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine");
+  const msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine"), fold = $("#railFold"), inp = $("#railQ");
   if (DATA.rail_error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(DATA.rail_error)}</b> (기본값 표시 중)`);
   let hits = [];
   function show(r) {
@@ -2270,7 +2331,7 @@ renderNews();
     e.preventDefault();
     const q = norm($("#railQ").value);
     res.hidden = true; msg.hidden = true;
-    if (!q) { msg.textContent = "선명을 입력해 주세요"; msg.hidden = false; return; }
+    if (!q) { clear(); return; }
     const from = plus(now, -1);  // 어제 이후 입항(또는 아직 접안 중)인 배
     hits = DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && norm(r.vessel).includes(q)
         && r.status !== "출항" && (toDate(r.etb) >= from || r.status === "접안"))
@@ -2279,15 +2340,19 @@ renderNews();
       const any = DATA.rows.some((r) => norm(r.vessel).includes(q));
       msg.textContent = any ? "부산신항 터미널에 입항 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
                             : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요";
-      msg.hidden = false; return;
+      msg.hidden = false; foldTo(fold, true); return;
     }
     pick.hidden = hits.length < 2;
     pick.innerHTML = hits.length < 2 ? "" : "입항 일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) => {
       const d = toDate(r.etb);
       return `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${dstr(d)}</button>`;
     }).join("");
-    show(hits[0]); res.hidden = false;
+    show(hits[0]); res.hidden = false; foldTo(fold, true);
   });
+  // 선명을 다 지우면(✕·Esc 포함) 타임라인을 부드럽게 접고 입력창만 남김
+  function clear() { inp.value = ""; foldTo(fold, false, () => { res.hidden = true; msg.hidden = true; hits = []; }); }
+  inp.addEventListener("input", () => { if (!inp.value.trim()) clear(); });
+  addClear(inp, clear);
   pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) show(hits[+b.dataset.i]); });
 })();
 </script>
