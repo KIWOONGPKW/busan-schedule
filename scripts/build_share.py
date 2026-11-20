@@ -121,6 +121,13 @@ def main():
     except Exception:  # noqa: BLE001
         sea_quotes = []
 
+    try:  # 수입 연계 조회 (부산신항 → 의왕ICD) 단계별 일수 (사용자 편집)
+        rail = json.loads((ROOT / "import_rail_leadtime.json").read_text(encoding="utf-8"))
+        rail.pop("_안내", None)
+        rail_err = ""
+    except Exception as e:  # noqa: BLE001
+        rail, rail_err = {}, f"import_rail_leadtime.json 읽기 실패: {e}"[:160]
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"), "sea_quotes": sea_quotes,
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
@@ -130,7 +137,8 @@ def main():
             "incheon_dest": incheon_dest, "incheon_dest_error": incheon_dest_err, "errors": errors, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
-            "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err}
+            "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err,
+            "rail": rail, "rail_error": rail_err}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)

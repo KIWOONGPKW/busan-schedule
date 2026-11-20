@@ -407,6 +407,26 @@
   .panel.dest { overflow: visible; position: relative; }
   .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
   .panel.dest .dnote { border-radius: 0 0 18px 18px; }
+  /* 수입 연계 조회 (부산신항 → 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
+  .panel.rail { margin-top: 18px; background: var(--zbs-off); border-color: var(--zbs-line); }
+  .rail + .zone { margin-top: 18px; }
+  .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
+  .rail input:focus { border-color: var(--bs-in-focus); }
+  .rpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 16px 10px; font-size: 12.5px; color: var(--muted); }
+  .rpick button { font: inherit; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--zbs-line); background: var(--panel); color: var(--zbs-ink); cursor: pointer; }
+  .rpick button[aria-pressed="true"] { background: var(--zbs-tag); font-weight: 700; }
+  .rline { list-style: none; margin: 0; padding: 14px 16px; border-top: 1px solid var(--line); display: flex; align-items: stretch; gap: 0; overflow-x: auto; background: var(--panel); }
+  .rline li { flex: 1 1 0; min-width: 150px; display: flex; align-items: center; }
+  .rline li + li::before { content: "→"; flex: none; margin: 0 8px; color: var(--zbs-ink); font-weight: 700; font-size: 18px; }
+  .rstep { flex: 1; min-width: 0; padding: 9px 11px; border-radius: 12px; border: 1px solid var(--zbs-line); background: var(--zbs-soft); }
+  .rstep .k { font-size: 12px; color: var(--muted); } .rstep .v { font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .rstep .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .rstep.end { background: var(--zbs-tag); }
+  @media (max-width: 720px) {
+    .rline { flex-direction: column; gap: 4px; }
+    .rline li { min-width: 0; flex-direction: column; align-items: stretch; }
+    .rline li + li::before { content: "↓"; margin: 0 0 4px; text-align: center; }
+  }
   .dnote { padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--zebra); }
 
   /* 선박 위치: VesselFinder 공식 퍼가기 지도 + 선명 옆 지도/위치 버튼 */
@@ -710,6 +730,20 @@
       <div class="more" hidden><button type="button" class="moreBtn">더 보기</button></div>
     </section>
   </section>
+  <section class="panel dest rail" id="railPanel" aria-label="수입 연계 조회 (부산신항 → 의왕ICD)">
+    <div class="caption"><span class="ct"><b>수입 연계 조회 (부산신항 → 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
+    <form id="railForm" autocomplete="off" role="search">
+      <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"></div>
+      <button class="go" type="submit">조회</button>
+    </form>
+    <div class="tmsg" id="railMsg" hidden></div>
+    <div id="railResult" hidden>
+      <div class="rpick" id="railPick" hidden></div>
+      <ol class="rline" id="railLine"></ol>
+    </div>
+    <div class="dnote" id="railNote">예상 일정은 참고용, 실제 철송 배정·보세운송은 운송사 확인 필요</div>
+  </section>
+
   <section class="zone zic" id="zone_ic" data-z="ic" aria-label="인천 구역">
     <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>인천항 · 신항/남항 4개 터미널</h2>
     <section class="panel dest icdest" aria-label="인천발 목적지 검색">
@@ -2201,4 +2235,59 @@ renderNews();
   const apply = () => { if (rm.matches) { v.pause(); v.removeAttribute("autoplay"); v.preload = "none"; } else if (v.paused) { v.play().catch(() => {}); } };
   apply(); rm.addEventListener && rm.addEventListener("change", apply); })();
 
+
+// ---------------------------------------------------------------- 수입 연계 조회 (부산신항 → 의왕ICD)
+// 단계별 일수는 scripts/import_rail_leadtime.json (사용자 편집). 고객 정보(B/L·화주)는 받지 않음
+(function railInit() {
+  const R = DATA.rail || {};
+  const form = $("#railForm"); if (!form) return;
+  const NEWPORT = new Set(R.terminals || ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT"]);
+  const rng = (o, d) => (o && Number.isFinite(+o.min) && Number.isFinite(+o.max) ? [+o.min, +o.max] : d);
+  const DIS = rng(R.discharge_days, [1, 2]), HRS = rng(R.rail_hours, [5, 8]), ICD = rng(R.icd_days, [2, 3]);
+  const FROM = R.from_station || "부산신항역", TO = R.to_station || "오봉역", ICDN = R.icd || "의왕ICD";
+  const p2 = (n) => String(n).padStart(2, "0");
+  const dstr = (d) => `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`;
+  const plus = (d, n) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + n); return x; };
+  const span = (d, [a, b]) => (a === b ? dstr(plus(d, a)) : `${dstr(plus(d, a))} ~ ${dstr(plus(d, b))}`);
+  const days = ([a, b]) => (a === b ? `입항 + ${a}일` : `입항 + ${a}~${b}일`);
+  const msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine");
+  if (DATA.rail_error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(DATA.rail_error)}</b> (기본값 표시 중)`);
+  let hits = [];
+  function show(r) {
+    const etb = toDate(r.etb);
+    const voy = (r.voyages || []).filter(Boolean).join(" · ");
+    const term = `${r.t} ${(TN[r.t] || "").replace(/^\S+\s/, "").replace(/\s*\(.*\)$/, "")}`;
+    const step = (k, v, sub, cls = "") => `<li><div class="rstep ${cls}"><div class="k">${k}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
+    line.innerHTML =
+      step("부산신항 입항 (ETB)", `${dstr(etb)} ${p2(etb.getHours())}:${p2(etb.getMinutes())}`,
+           `${esc(r.vessel)}${voy ? " · " + esc(voy) : ""}<br>${esc(term)} · 선석 ${esc(r.berth || "-")}`) +
+      step("하선·철송 반출 <span class=\"est\">예상</span>", span(etb, DIS), days(DIS)) +
+      step("철송 운행", `약 ${HRS[0] === HRS[1] ? HRS[0] : HRS[0] + "~" + HRS[1]}시간`, `${esc(FROM)} → ${esc(TO)}`) +
+      step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, span(etb, ICD), days(ICD), "end");
+    pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r)));
+  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = norm($("#railQ").value);
+    res.hidden = true; msg.hidden = true;
+    if (!q) { msg.textContent = "선명을 입력해 주세요"; msg.hidden = false; return; }
+    const from = plus(now, -1);  // 어제 이후 입항(또는 아직 접안 중)인 배
+    hits = DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && norm(r.vessel).includes(q)
+        && r.status !== "출항" && (toDate(r.etb) >= from || r.status === "접안"))
+      .sort((a, b) => toDate(a.etb) - toDate(b.etb));
+    if (!hits.length) {
+      const any = DATA.rows.some((r) => norm(r.vessel).includes(q));
+      msg.textContent = any ? "부산신항 터미널에 입항 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
+                            : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요";
+      msg.hidden = false; return;
+    }
+    pick.hidden = hits.length < 2;
+    pick.innerHTML = hits.length < 2 ? "" : "입항 일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) => {
+      const d = toDate(r.etb);
+      return `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${dstr(d)}</button>`;
+    }).join("");
+    show(hits[0]); res.hidden = false;
+  });
+  pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) show(hits[+b.dataset.i]); });
+})();
 </script>

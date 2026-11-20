@@ -1,0 +1,11 @@
+{
+  "_안내": "수입 연계 조회 (부산신항 → 의왕ICD) 단계별 소요 기간. 숫자만 고치면 30분마다 자동 빌드 때 반영됨. *_days는 신항 입항(ETB) 날짜 기준 며칠 뒤인지, rail_hours는 철송 운행 시간.",
+  "source": "사용자 지정값 (2026-11-20)",
+  "terminals": ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT"],
+  "from_station": "부산신항역",
+  "to_station": "오봉역",
+  "icd": "의왕ICD",
+  "discharge_days": { "min": 1, "max": 2 },
+  "rail_hours": { "min": 5, "max": 8 },
+  "icd_days": { "min": 2, "max": 3 }
+}
