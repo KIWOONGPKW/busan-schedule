@@ -427,6 +427,8 @@
   .rstep .k { font-size: 12px; color: var(--muted); } .rstep .v { font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .rstep .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .rstep.end { background: var(--zbs-tag); }
+  .ralt { padding: 0 16px 12px; background: var(--panel); font-size: 12.5px; color: var(--ink); }
+  .ralt b { font-weight: 700; } .ralt .muted { font-size: 12px; }
   @media (max-width: 720px) {
     .rline { flex-direction: column; gap: 4px; }
     .rline li { min-width: 0; flex-direction: column; align-items: stretch; }
@@ -750,6 +752,7 @@
     <div id="railResult" hidden>
       <div class="rpick" id="railPick" hidden></div>
       <ol class="rline" id="railLine"></ol>
+      <div class="ralt" id="railAlt" hidden></div>
     </div>
     </div>
     <div class="dnote" id="railNote">예상 일정은 참고용, 실제 철송 배정·보세운송은 운송사 확인 필요</div>
@@ -2313,17 +2316,63 @@ renderNews();
   const plus = (d, n) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + n); return x; };
   const span = (d, [a, b]) => (a === b ? dstr(plus(d, a)) : `${dstr(plus(d, a))} ~ ${dstr(plus(d, b))}`);
   const days = ([a, b]) => (a === b ? `입항 + ${a}일` : `입항 + ${a}~${b}일`);
-  const msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine"), fold = $("#railFold"), inp = $("#railQ");
+  const alt = $("#railAlt"), msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine"), fold = $("#railFold"), inp = $("#railQ");
   if (DATA.rail_error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(DATA.rail_error)}</b> (기본값 표시 중)`);
   let hits = [];
+  // ---- 열차 시간표 (scripts/rail_timetable.json): 예시 아닌 열차만 계산에 사용
+  const TT = DATA.rail_tt || {};
+  const PREP = Number.isFinite(+TT.prep_hours) ? +TT.prep_hours : 24;
+  const WDN = { "일": 0, "월": 1, "화": 2, "수": 3, "목": 4, "금": 5, "토": 6, sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+  const hm = (s) => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "").trim()); return m ? [+m[1], +m[2]] : null; };
+  const TRAINS = (TT.trains || []).filter((t) => t && !t.example && t.example !== "true" && hm(t.depart) && hm(t.arrive)).map((t) => {
+    const d = t.days, all = !d || d === "매일" || (Array.isArray(d) && d.includes("매일"));
+    const set = new Set(all ? [0, 1, 2, 3, 4, 5, 6] : (Array.isArray(d) ? d : String(d).split(/[,\s·]+/))
+      .map((x) => WDN[String(x).trim().slice(0, String(x).trim().match(/^[가-힣]/) ? 1 : 3).toLowerCase()]).filter((x) => x !== undefined));
+    return { ...t, set, dep: hm(t.depart), arr: hm(t.arrive), cut: hm(t.cutoff) || hm(t.depart), plusDays: +t.arrive_plus_days || 0 };
+  });
+  const at = (day, [h, m], addDays = 0) => { const x = new Date(day); x.setDate(x.getDate() + addDays); x.setHours(h, m, 0, 0); return x; };
+  // 상차 가능 시각 이후 상차 마감이 남은 열차, 출발 빠른 순 n편
+  function nextTrains(ready, n) {
+    const out = [], base = new Date(ready); base.setHours(0, 0, 0, 0);
+    for (let k = 0; k <= 21 && out.length < 8; k++) {
+      const day = new Date(base); day.setDate(day.getDate() + k);
+      for (const t of TRAINS) {
+        if (!t.set.has(day.getDay())) continue;
+        const dep = at(day, t.dep);
+        const cut = at(day, t.cut, (t.cut[0] * 60 + t.cut[1]) > (t.dep[0] * 60 + t.dep[1]) ? -1 : 0);
+        if (cut >= ready) out.push({ t, dep, cut, arr: at(day, t.arr, t.plusDays) });
+      }
+    }
+    return out.sort((a, b) => a.dep - b.dep).slice(0, n);
+  }
+  const dt = (d) => `${dstr(d)} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  const hhmm = (d) => `${p2(d.getHours())}:${p2(d.getMinutes())}`;
   function show(r) {
     const etb = toDate(r.etb);
     const voy = (r.voyages || []).filter(Boolean).join(" · ");
     const term = `${r.t} ${(TN[r.t] || "").replace(/^\S+\s/, "").replace(/\s*\(.*\)$/, "")}`;
     const step = (k, v, sub, cls = "") => `<li><div class="rstep ${cls}"><div class="k">${k}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
-    line.innerHTML =
-      step("부산신항 입항 (ETB)", `${dstr(etb)} ${p2(etb.getHours())}:${p2(etb.getMinutes())}`,
-           `${esc(r.vessel)}${voy ? " · " + esc(voy) : ""}<br>${esc(term)} · 선석 ${esc(r.berth || "-")}`) +
+    const s0 = step("부산신항 입항 (ETB)", `${dstr(etb)} ${p2(etb.getHours())}:${p2(etb.getMinutes())}`,
+           `${esc(r.vessel)}${voy ? " · " + esc(voy) : ""}<br>${esc(term)} · 선석 ${esc(r.berth || "-")}`);
+    const ready = new Date(etb.getTime() + PREP * 3600e3);
+    const tr = TRAINS.length ? nextTrains(ready, 2) : [];
+    alt.hidden = true;
+    if (tr.length) {  // 열차 시간표 기준
+      const [a, b] = tr;
+      line.innerHTML = s0 +
+        step("철송 상차 가능 <span class=\"est\">예상</span>", dt(ready), `입항 + ${PREP}시간 (반출 준비·보세운송 신고 등)`) +
+        step("탑승 열차", `${esc(a.t.no)} · ${dt(a.dep)} 출발`, `상차 마감 ${dt(a.cut)}<br>${esc(FROM)} → ${esc(TO)}${a.t.note ? " · " + esc(a.t.note) : ""}`) +
+        step(`${esc(ICDN)} (${esc(TO)}) 도착 <span class="est">예상</span>`, dt(a.arr), `열차 ${esc(a.t.no)} 기준`, "end");
+      if (b) {
+        alt.innerHTML = `대안 열차 <b>${esc(b.t.no)}</b> · ${dt(b.dep)} 출발 → ${esc(TO)} ${dt(b.arr)} 도착 <span class="muted">(상차 마감 ${hhmm(b.cut)}${b.t.note ? " · " + esc(b.t.note) : ""})</span>`;
+        alt.hidden = false;
+      }
+      pick.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(hits[+x.dataset.i] === r)));
+      return;
+    }
+    if (TRAINS.length) { alt.innerHTML = "시간표에서 3주 안에 탈 수 있는 열차를 찾지 못해 대략값으로 보여드려요"; alt.hidden = false; }
+    else { alt.innerHTML = (TT.error ? `<b>${esc(TT.error)}</b> · ` : "") + "열차 시간표가 아직 예시(또는 비어 있음)라 대략값으로 보여드려요"; alt.hidden = false; }
+    line.innerHTML = s0 +
       step("하선·철송 반출 <span class=\"est\">예상</span>", span(etb, DIS), days(DIS)) +
       step("철송 운행", `약 ${HRS[0] === HRS[1] ? HRS[0] : HRS[0] + "~" + HRS[1]}시간`, `${esc(FROM)} → ${esc(TO)}`) +
       step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, span(etb, ICD), days(ICD), "end");

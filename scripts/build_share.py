@@ -128,6 +128,12 @@ def main():
     except Exception as e:  # noqa: BLE001
         rail, rail_err = {}, f"import_rail_leadtime.json 읽기 실패: {e}"[:160]
 
+    try:  # 철송 열차 시간표 (사용자 편집): 예시(example) 열차는 화면에서 계산에 안 씀
+        rail_tt = json.loads((ROOT / "rail_timetable.json").read_text(encoding="utf-8"))
+        rail_tt = {"prep_hours": rail_tt.get("prep_hours", 24), "trains": [t for t in rail_tt.get("trains", []) if isinstance(t, dict)]}
+    except Exception as e:  # noqa: BLE001
+        rail_tt = {"prep_hours": 24, "trains": [], "error": f"rail_timetable.json 읽기 실패: {e}"[:160]}
+
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"), "sea_quotes": sea_quotes,
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
             "ports_v": hashlib.md5((ROOT.parent / "ports.json").read_bytes()).hexdigest()[:10] if (ROOT.parent / "ports.json").exists() else "",
@@ -138,7 +144,7 @@ def main():
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
             "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err,
-            "rail": rail, "rail_error": rail_err}
+            "rail": rail, "rail_error": rail_err, "rail_tt": rail_tt}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     page = (ROOT / "share_template.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)
     OUT.parent.mkdir(exist_ok=True)

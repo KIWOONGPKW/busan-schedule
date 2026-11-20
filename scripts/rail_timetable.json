@@ -1,0 +1,10 @@
+{
+  "_안내": "수입 철송 연계 조회용 열차 시간표 (부산신항역 → 오봉역). 실제 시간표를 받으면 trains를 바꾸고 각 열차의 \"example\"을 false로(또는 줄을 지우기). example이 true인 열차는 계산에 쓰지 않으며, 쓸 수 있는 열차가 하나도 없으면 화면은 '입항 + 2~3일' 대략값으로 표시됨.",
+  "_항목": "no=열차번호, days=운행 요일(월~일 또는 \"매일\"), depart=부산신항역 출발 HH:MM, arrive=오봉역 도착 HH:MM, arrive_plus_days=도착이 출발 다음 날이면 1, cutoff=상차 마감 HH:MM(출발 시각보다 늦으면 전날로 계산), note=비고, example=예시 여부",
+  "prep_hours": 24,
+  "_prep_hours": "하선 후 철송 반출 준비 시간(보세운송 신고 등), 시간 단위. 입항(ETB) + prep_hours = 철송 상차 가능 시각",
+  "trains": [
+    { "no": "예시-1", "days": ["월", "화", "수", "목", "금"], "depart": "10:00", "arrive": "16:30", "arrive_plus_days": 0, "cutoff": "07:00", "note": "예시 (실제 시간표 아님)", "example": true },
+    { "no": "예시-2", "days": "매일", "depart": "22:00", "arrive": "04:30", "arrive_plus_days": 1, "cutoff": "19:00", "note": "예시 (실제 시간표 아님)", "example": true }
+  ]
+}
