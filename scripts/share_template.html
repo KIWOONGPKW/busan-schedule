@@ -415,16 +415,19 @@
   /* 철송 연계 조회 (부산신항 ↔ 의왕ICD, 수입·수출 한 칸): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
   .panel.rail { margin-top: 18px; background: var(--zbs-off); border-color: var(--zbs-line); }
   .rail + .zone { margin-top: 18px; }
-  /* 수입·수출 입력창 한 줄에 나란히 (좁으면 위아래), 결과는 칸 전체 너비로 차례로 */
-  .rforms { display: flex; gap: 12px; padding: 12px 16px; }
-  .rail .rforms form { flex: 1 1 0; min-width: 0; padding: 0; align-items: center; }
+  /* 한 줄: [수입|수출] 토글 + 선명 입력 + 조회 (토글에 따라 placeholder·조회 방향 바뀜) */
+  .rail form { align-items: center; }
+  .rseg { flex: none; display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; border: 2px solid var(--bs-in-line); background: var(--bs-in-bg); }
+  .rseg button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
+  .rseg button:hover { transform: none; color: var(--zbs-ink); }
+  .rseg button[aria-pressed="true"] { background: var(--zbs-tag); color: var(--zbs-ink); box-shadow: 0 0 0 1px var(--zbs-line); }
   .rdir { flex: none; }
   .rhead { padding: 10px 16px 8px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--zbs-ink); background: var(--panel); }
   .rhead .rdir { margin-right: 6px; vertical-align: 1px; }
   .rail .fold { background: var(--panel); }
   .rail .fold .tmsg { margin: 0 16px 12px; }
   .rhead + .tmsg + div .rline { border-top: 0; padding-top: 4px; }
-  @media (max-width: 720px) { .rforms { flex-direction: column; gap: 8px; } }
+  @media (max-width: 420px) { .rseg button { padding: 6px 9px; } }
   .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
   .rail input:focus { border-color: var(--bs-in-focus); }
   .rpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 16px 10px; font-size: 12.5px; color: var(--muted); }
@@ -751,22 +754,15 @@
   </section>
   <section class="panel dest rail" id="railPanel" aria-label="철송 연계 조회 (부산신항 ↔ 의왕ICD)">
     <div class="caption"><span class="ct"><b>철송 연계 조회 (부산신항 ↔ 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
-    <div class="rforms">
-      <form id="railForm" autocomplete="off" role="search">
-        <span class="rtag bs rdir">수입</span>
-        <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (부산신항 입항 배)" aria-label="수입 선명 (부산신항 입항 배)"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
-          <ul class="dac" id="railList" role="listbox" hidden></ul></div>
-        <button class="go" type="submit">조회</button>
-      </form>
-      <form id="xrailForm" autocomplete="off" role="search">
-        <span class="rtag bs rdir">수출</span>
-        <div class="dq-wrap"><input id="xrailQ" placeholder="선명 입력 (부산신항 출항 배)" aria-label="수출 선명 (부산신항 출항 배)"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="xrailList">
-          <ul class="dac" id="xrailList" role="listbox" hidden></ul></div>
-        <button class="go" type="submit">조회</button>
-      </form>
-    </div>
+    <form id="railForm" autocomplete="off" role="search">
+      <div class="rseg" role="group" aria-label="수입·수출 선택">
+        <button type="button" data-m="rail" aria-pressed="true">수입</button><button type="button" data-m="xrail" aria-pressed="false">수출</button>
+      </div>
+      <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (부산신항 입항 배)" aria-label="수입 선명 (부산신항 입항 배)"
+               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
+        <ul class="dac" id="railList" role="listbox" hidden></ul></div>
+      <button class="go" type="submit">조회</button>
+    </form>
     <div class="fold" id="railFold" hidden>
     <div class="rhead"><span class="rtag bs rdir">수입</span>부산신항 → 의왕ICD</div>
     <div class="tmsg" id="railMsg" hidden></div>
@@ -2396,66 +2392,9 @@ const RAIL = (() => {
   return { R, TT, NEWPORT, PREP, CUT_H, TRAINS, IMP, EXP, importTrains, exportTrains, day0, dstr, dt, hhmm, runs, gap, step, term, vline };
 })();
 
-// 선명 검색칸 공통 (자동완성 2글자 이상·같은 선명 한 줄·여러 일정 고르기·지우면 접기)
-function railSearch(pre, { list, when, empty, show }) {
-  const form = $(`#${pre}Form`); if (!form) return;
-  const inp = $(`#${pre}Q`), ul = $(`#${pre}List`), fold = $(`#${pre}Fold`), msg = $(`#${pre}Msg`), res = $(`#${pre}Result`), pick = $(`#${pre}Pick`);
-  const ac = { items: [], idx: -1 };
-  let hits = [];
-  const render = (r) => { show(r); pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r))); };
-  function acShow(v) {
-    const q = norm(v); ac.idx = -1; ac.items = [];
-    if (q.length >= 2) {
-      const seen = new Map();
-      for (const r of list()) {
-        const n = norm(r.vessel); if (!n.includes(q)) continue;
-        const it = seen.get(r.vessel) || { name: r.vessel, pre: n.startsWith(q) || String(r.vessel).split(/\s+/).some((w) => norm(w).startsWith(q)), rows: [] };
-        it.rows.push(r); seen.set(r.vessel, it);
-      }
-      ac.items = [...seen.values()].sort((a, b) => (b.pre - a.pre) || (when(a.rows[0]) - when(b.rows[0]))).slice(0, 10);
-    }
-    ul.innerHTML = ac.items.map((it, i) => {
-      const r = it.rows[0], more = it.rows.length > 1 ? ` 외 ${it.rows.length - 1}건` : "";
-      return `<li role="option" id="${pre}Opt${i}" data-i="${i}" aria-selected="false"><b>${esc(it.name)}</b><span>${esc(r.t)} · ${when.label(r)}${more}</span></li>`;
-    }).join("");
-    ul.hidden = !ac.items.length; inp.setAttribute("aria-expanded", String(!ul.hidden));
-  }
-  function acHide() { ul.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); }
-  function acPick(i) { const it = ac.items[i]; if (!it) return; inp.value = it.name; acHide(); form.requestSubmit(); }
-  function acMove(d) {
-    if (!ac.items.length) return;
-    ac.idx = (ac.idx + d + ac.items.length) % ac.items.length;
-    ul.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === ac.idx)));
-    inp.setAttribute("aria-activedescendant", `${pre}Opt${ac.idx}`);
-  }
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!ul.hidden && ac.items.length) { acPick(ac.idx >= 0 ? ac.idx : 0); return; }
-    acHide();
-    const q = norm(inp.value);
-    res.hidden = true; msg.hidden = true;
-    if (!q) { clear(); return; }
-    hits = list().filter((r) => norm(r.vessel).includes(q));
-    if (!hits.length) { msg.textContent = empty(DATA.rows.some((r) => norm(r.vessel).includes(q))); msg.hidden = false; foldTo(fold, true); return; }
-    pick.hidden = hits.length < 2;
-    pick.innerHTML = hits.length < 2 ? "" : "일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) =>
-      `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${RAIL.dstr(when(r))}</button>`).join("");
-    render(hits.find((r) => when(r) >= now) || hits[0]); res.hidden = false; foldTo(fold, true);  // 아직 안 지난 일정 먼저
-  });
-  // 선명을 다 지우면(✕·Esc 포함) 결과를 부드럽게 접고 입력창만 남김
-  function clear() { inp.value = ""; acHide(); foldTo(fold, false, () => { res.hidden = true; msg.hidden = true; hits = []; }); }
-  inp.addEventListener("input", () => { acShow(inp.value); if (!inp.value.trim()) clear(); });
-  inp.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); }
-    else if (e.key === "Escape" && !ul.hidden) { e.preventDefault(); e.stopImmediatePropagation(); acHide(); }
-  });
-  ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
-  inp.addEventListener("blur", () => setTimeout(acHide, 120));
-  addClear(inp, clear);
-  pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) render(hits[+b.dataset.i]); });
-}
-
+// 철송 조회 모드 등록 (rail = 수입, xrail = 수출). 입력칸·조회 버튼은 하나를 같이 쓰고, 결과 칸(fold)은 모드별
+const RAIL_MODES = {};
+function railSearch(pre, cfg) { RAIL_MODES[pre] = cfg; }
 // ---- 수입: 부산신항 입항(ETB) + 반출 준비 24시간 → 상차 마감이 남은 가장 빠른 열차 + 대안 1편
 (function railImport() {
   const { R, TT, NEWPORT, PREP, CUT_H, IMP, importTrains, day0, dstr, dt, hhmm, runs, step, term, vline } = RAIL;
@@ -2546,5 +2485,84 @@ function railSearch(pre, { list, when, empty, show }) {
     empty: (any) => any ? "부산신항 터미널에서 반입 마감 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
                         : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요",
   });
+})();
+// ---- 한 줄 검색칸: [수입|수출] 토글로 모드 선택 → 같은 입력칸·조회 버튼으로 수입 또는 수출 조회
+// (자동완성 2글자 이상·같은 선명 한 줄·여러 일정 고르기·지우면 접기)
+(function railBind() {
+  const form = $("#railForm"); if (!form) return;
+  const inp = $("#railQ"), ul = $("#railList"), seg = form.querySelector(".rseg");
+  const PH = { rail: ["선명 입력 (부산신항 입항 배)", "수입 선명 (부산신항 입항 배)"],
+               xrail: ["선명 입력 (부산신항 출항 배)", "수출 선명 (부산신항 출항 배)"] };
+  const els = (m) => ({ fold: $(`#${m}Fold`), msg: $(`#${m}Msg`), res: $(`#${m}Result`), pick: $(`#${m}Pick`) });
+  let mode = "rail", hits = [];
+  const ac = { items: [], idx: -1 };
+  const M = () => RAIL_MODES[mode];
+  const render = (r) => { M().show(r); els(mode).pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r))); };
+  const fold = (m, done) => { const e = els(m); foldTo(e.fold, false, () => { e.res.hidden = true; e.msg.hidden = true; if (done) done(); }); };
+  function acShow(v) {
+    const q = norm(v), { list, when } = M(); ac.idx = -1; ac.items = [];
+    if (q.length >= 2) {
+      const seen = new Map();
+      for (const r of list()) {
+        const n = norm(r.vessel); if (!n.includes(q)) continue;
+        const it = seen.get(r.vessel) || { name: r.vessel, pre: n.startsWith(q) || String(r.vessel).split(/\s+/).some((w) => norm(w).startsWith(q)), rows: [] };
+        it.rows.push(r); seen.set(r.vessel, it);
+      }
+      ac.items = [...seen.values()].sort((a, b) => (b.pre - a.pre) || (when(a.rows[0]) - when(b.rows[0]))).slice(0, 10);
+    }
+    ul.innerHTML = ac.items.map((it, i) => {
+      const r = it.rows[0], more = it.rows.length > 1 ? ` 외 ${it.rows.length - 1}건` : "";
+      return `<li role="option" id="railOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(it.name)}</b><span>${esc(r.t)} · ${when.label(r)}${more}</span></li>`;
+    }).join("");
+    ul.hidden = !ac.items.length; inp.setAttribute("aria-expanded", String(!ul.hidden));
+  }
+  function acHide() { ul.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); }
+  function acPick(i) { const it = ac.items[i]; if (!it) return; inp.value = it.name; acHide(); form.requestSubmit(); }
+  function acMove(d) {
+    if (!ac.items.length) return;
+    ac.idx = (ac.idx + d + ac.items.length) % ac.items.length;
+    ul.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === ac.idx)));
+    inp.setAttribute("aria-activedescendant", `railOpt${ac.idx}`);
+  }
+  // 조회: 선택한 모드(수입/수출)의 목록·계산으로 결과 표시, 다른 모드 결과는 접음
+  function run() {
+    const { list, when, empty } = M(), { fold: f, msg, res, pick } = els(mode);
+    const q = norm(inp.value);
+    res.hidden = true; msg.hidden = true;
+    if (!q) { clear(); return; }
+    fold(mode === "rail" ? "xrail" : "rail");
+    hits = list().filter((r) => norm(r.vessel).includes(q));
+    if (!hits.length) { msg.textContent = empty(DATA.rows.some((r) => norm(r.vessel).includes(q))); msg.hidden = false; foldTo(f, true); return; }
+    pick.hidden = hits.length < 2;
+    pick.innerHTML = hits.length < 2 ? "" : "일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) =>
+      `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${RAIL.dstr(when(r))}</button>`).join("");
+    render(hits.find((r) => when(r) >= now) || hits[0]); res.hidden = false; foldTo(f, true);  // 아직 안 지난 일정 먼저
+  }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!ul.hidden && ac.items.length) { acPick(ac.idx >= 0 ? ac.idx : 0); return; }
+    acHide(); run();
+  });
+  // 토글: placeholder 바꾸고, 선명이 입력돼 있으면 바뀐 방향으로 바로 다시 조회
+  seg.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-m]"); if (!b || b.dataset.m === mode) return;
+    mode = b.dataset.m;
+    seg.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    inp.placeholder = PH[mode][0]; inp.setAttribute("aria-label", PH[mode][1]);
+    acHide(); hits = [];
+    if (inp.value.trim()) run(); else { fold("rail"); fold("xrail"); }
+  });
+  // 선명을 다 지우면(✕·Esc 포함) 결과를 부드럽게 접고 입력창만 남김
+  function clear() { inp.value = ""; acHide(); hits = []; fold("rail"); fold("xrail"); }
+  inp.addEventListener("input", () => { acShow(inp.value); if (!inp.value.trim()) clear(); });
+  inp.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); }
+    else if (e.key === "Escape" && !ul.hidden) { e.preventDefault(); e.stopImmediatePropagation(); acHide(); }
+  });
+  ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
+  inp.addEventListener("blur", () => setTimeout(acHide, 120));
+  addClear(inp, clear);
+  for (const m of ["rail", "xrail"]) els(m).pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b && m === mode) render(hits[+b.dataset.i]); });
 })();
 </script>
