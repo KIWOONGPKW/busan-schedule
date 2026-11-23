@@ -412,7 +412,7 @@
   .panel.dest { overflow: visible; position: relative; }
   .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
   .panel.dest .dnote { border-radius: 0 0 18px 18px; }
-  /* 수입 연계 조회 (부산신항 → 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
+  /* 수입 철송 연계 조회 (부산신항 → 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
   .panel.rail { margin-top: 18px; background: var(--zbs-off); border-color: var(--zbs-line); }
   .rail + .zone { margin-top: 18px; }
   .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
@@ -739,8 +739,8 @@
       <div class="more" hidden><button type="button" class="moreBtn">더 보기</button></div>
     </section>
   </section>
-  <section class="panel dest rail" id="railPanel" aria-label="수입 연계 조회 (부산신항 → 의왕ICD)">
-    <div class="caption"><span class="ct"><b>수입 연계 조회 (부산신항 → 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
+  <section class="panel dest rail" id="railPanel" aria-label="수입 철송 연계 조회 (부산신항 → 의왕ICD)">
+    <div class="caption"><span class="ct"><b>수입 철송 연계 조회 (부산신항 → 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
     <form id="railForm" autocomplete="off" role="search">
       <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
@@ -2302,7 +2302,7 @@ renderNews();
   apply(); rm.addEventListener && rm.addEventListener("change", apply); })();
 
 
-// ---------------------------------------------------------------- 수입 연계 조회 (부산신항 → 의왕ICD)
+// ---------------------------------------------------------------- 수입 철송 연계 조회 (부산신항 → 의왕ICD)
 // 단계별 일수는 scripts/import_rail_leadtime.json (사용자 편집). 고객 정보(B/L·화주)는 받지 않음
 (function railInit() {
   const R = DATA.rail || {};

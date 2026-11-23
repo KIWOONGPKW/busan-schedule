@@ -121,7 +121,7 @@ def main():
     except Exception:  # noqa: BLE001
         sea_quotes = []
 
-    try:  # 수입 연계 조회 (부산신항 → 의왕ICD) 단계별 일수 (사용자 편집)
+    try:  # 수입 철송 연계 조회 (부산신항 → 의왕ICD) 단계별 일수 (사용자 편집)
         rail = json.loads((ROOT / "import_rail_leadtime.json").read_text(encoding="utf-8"))
         rail.pop("_안내", None)
         rail_err = ""
