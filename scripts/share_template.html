@@ -412,9 +412,10 @@
   .panel.dest { overflow: visible; position: relative; }
   .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
   .panel.dest .dnote { border-radius: 0 0 18px 18px; }
-  /* 수입 철송 연계 조회 (부산신항 → 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
+  /* 수입·수출 철송 연계 조회 (부산신항 ↔ 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
   .panel.rail { margin-top: 18px; background: var(--zbs-off); border-color: var(--zbs-line); }
   .rail + .zone { margin-top: 18px; }
+  .rail + .rail { margin-top: 12px; }
   .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
   .rail input:focus { border-color: var(--bs-in-focus); }
   .rpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 16px 10px; font-size: 12.5px; color: var(--muted); }
@@ -755,7 +756,25 @@
       <div class="ralt" id="railAlt" hidden></div>
     </div>
     </div>
-    <div class="dnote" id="railNote">예상 일정은 참고용, 실제 철송 배정·보세운송은 운송사 확인 필요<br>화물열차는 수송수요 변동에 따라 평상시(3,7,8,9,12월), 비수기(1,2월)에는 일부 열차를 조정하여 운행합니다.</div>
+    <div class="dnote" id="railNote">열차 시각: 코레일 화물열차 운행시각표 기준 · 상차 마감·실제 배정은 운송사 확인 필요<br>화물열차는 수송수요 변동에 따라 평상시(3,7,8,9,12월), 비수기(1,2월)에는 일부 열차를 조정하여 운행합니다.</div>
+  </section>
+  <section class="panel dest rail" id="xrailPanel" aria-label="수출 철송 연계 조회 (의왕ICD → 부산신항)">
+    <div class="caption"><span class="ct"><b>수출 철송 연계 조회 (의왕ICD → 부산신항)</b><span class="rtag bs">부산</span></span></div>
+    <form id="xrailForm" autocomplete="off" role="search">
+      <div class="dq-wrap"><input id="xrailQ" placeholder="선명 입력 (부산신항에서 출항할 배, 일부만 입력해도 돼요)" aria-label="수출 선명 (부산신항 출항 배)"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="xrailList">
+        <ul class="dac" id="xrailList" role="listbox" hidden></ul></div>
+      <button class="go" type="submit">조회</button>
+    </form>
+    <div class="fold" id="xrailFold" hidden>
+    <div class="tmsg" id="xrailMsg" hidden></div>
+    <div id="xrailResult" hidden>
+      <div class="rpick" id="xrailPick" hidden></div>
+      <ol class="rline" id="xrailLine"></ol>
+      <div class="ralt" id="xrailAlt" hidden></div>
+    </div>
+    </div>
+    <div class="dnote" id="xrailNote">열차 시각: 코레일 화물열차 운행시각표 기준 · 상차 마감·실제 배정은 운송사 확인 필요<br>화물열차는 수송수요 변동에 따라 평상시(3,7,8,9,12월), 비수기(1,2월)에는 일부 열차를 조정하여 운행합니다.</div>
   </section>
 
   <section class="zone zic" id="zone_ic" data-z="ic" aria-label="인천 구역">
@@ -2302,138 +2321,117 @@ renderNews();
   apply(); rm.addEventListener && rm.addEventListener("change", apply); })();
 
 
-// ---------------------------------------------------------------- 수입 철송 연계 조회 (부산신항 → 의왕ICD)
-// 단계별 일수는 scripts/import_rail_leadtime.json (사용자 편집). 고객 정보(B/L·화주)는 받지 않음
-(function railInit() {
-  const R = DATA.rail || {};
-  const form = $("#railForm"); if (!form) return;
+// ---------------------------------------------------------------- 철송 연계 조회 (수입: 부산신항 → 의왕ICD · 수출: 의왕ICD → 부산신항)
+// 열차 시각은 scripts/rail_timetable.json (코레일 화물열차 운행시각표, 사용자 교체). 고객 정보(B/L·화주)는 받지 않음
+const RAIL = (() => {
+  const R = DATA.rail || {}, TT = DATA.rail_tt || {};
+  const NP = "부산항(부산신항)";                                   // 시간표의 신항 역 이름 (북항 = 부산진(북항)은 안 씀)
   const NEWPORT = new Set(R.terminals || ["PNC", "HJNC", "HPNT", "DGT", "PNIT", "BNCT"]);
-  const rng = (o, d) => (o && Number.isFinite(+o.min) && Number.isFinite(+o.max) ? [+o.min, +o.max] : d);
-  const DIS = rng(R.discharge_days, [1, 2]), HRS = rng(R.rail_hours, [5, 8]), ICD = rng(R.icd_days, [2, 3]);
-  const FROM = R.from_station || "부산신항역", TO = R.to_station || "오봉역", ICDN = R.icd || "의왕ICD";
-  const p2 = (n) => String(n).padStart(2, "0");
-  const dstr = (d) => `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`;
-  const plus = (d, n) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + n); return x; };
-  const span = (d, [a, b]) => (a === b ? dstr(plus(d, a)) : `${dstr(plus(d, a))} ~ ${dstr(plus(d, b))}`);
-  const days = ([a, b]) => (a === b ? `입항 + ${a}일` : `입항 + ${a}~${b}일`);
-  const alt = $("#railAlt"), msg = $("#railMsg"), res = $("#railResult"), pick = $("#railPick"), line = $("#railLine"), fold = $("#railFold"), inp = $("#railQ");
-  if (DATA.rail_error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(DATA.rail_error)}</b> (기본값 표시 중)`);
-  let hits = [];
-  // ---- 열차 시간표 (scripts/rail_timetable.json): 예시 아닌 열차만 계산에 사용
-  const TT = DATA.rail_tt || {};
-  const PREP = Number.isFinite(+TT.prep_hours) ? +TT.prep_hours : 24;
+  const PREP = Number.isFinite(+TT.prep_hours) ? +TT.prep_hours : 24;      // 입항 후 반출 준비 시간
+  const CUT_H = Number.isFinite(+TT.cutoff_hours) ? +TT.cutoff_hours : 3;  // 상차 마감 = 출발 3시간 전 (임시값)
   const WDN = { "일": 0, "월": 1, "화": 2, "수": 3, "목": 4, "금": 5, "토": 6, sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
   const hm = (s) => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(s || "").trim()); return m ? [+m[1], +m[2]] : null; };
+  const daySet = (d) => {
+    const all = !d || d === "매일" || (Array.isArray(d) && d.includes("매일"));
+    return new Set(all ? [0, 1, 2, 3, 4, 5, 6] : (Array.isArray(d) ? d : String(d).split(/[,\s·]+/))
+      .map((x) => WDN[String(x).trim().slice(0, /^[가-힣]/.test(String(x).trim()) ? 1 : 3).toLowerCase()]).filter((x) => x !== undefined));
+  };
+  // 새 시간표(train·run_days·next_day)와 예전 형식(no·days·arrive_plus_days) 둘 다 읽음
   const TRAINS = (TT.trains || []).filter((t) => t && !t.example && t.example !== "true" && hm(t.depart) && hm(t.arrive)).map((t) => {
-    const d = t.days, all = !d || d === "매일" || (Array.isArray(d) && d.includes("매일"));
-    const set = new Set(all ? [0, 1, 2, 3, 4, 5, 6] : (Array.isArray(d) ? d : String(d).split(/[,\s·]+/))
-      .map((x) => WDN[String(x).trim().slice(0, String(x).trim().match(/^[가-힣]/) ? 1 : 3).toLowerCase()]).filter((x) => x !== undefined));
-    return { ...t, set, dep: hm(t.depart), arr: hm(t.arrive), cut: hm(t.cutoff) || hm(t.depart), plusDays: +t.arrive_plus_days || 0 };
+    const dep = hm(t.depart), arr = hm(t.arrive);
+    const nd = t.next_day === true || t.next_day === "true" ? 1 : +t.arrive_plus_days || 0;
+    return { no: String(t.train ?? t.no ?? "?"), dir: t.direction || "수입", from: t.from || "", to: t.to || "", note: t.note || "",
+             set: daySet(t.run_days ?? t.days), dep, arr, cutHm: hm(t.cutoff), plusDays: nd };
   });
-  const at = (day, [h, m], addDays = 0) => { const x = new Date(day); x.setDate(x.getDate() + addDays); x.setHours(h, m, 0, 0); return x; };
-  // 상차 가능 시각 이후 상차 마감이 남은 열차, 출발 빠른 순 n편
-  function nextTrains(ready, n) {
-    const out = [], base = new Date(ready); base.setHours(0, 0, 0, 0);
-    for (let k = 0; k <= 21 && out.length < 8; k++) {
-      const day = new Date(base); day.setDate(day.getDate() + k);
-      for (const t of TRAINS) {
-        if (!t.set.has(day.getDay())) continue;
-        const dep = at(day, t.dep);
-        const cut = at(day, t.cut, (t.cut[0] * 60 + t.cut[1]) > (t.dep[0] * 60 + t.dep[1]) ? -1 : 0);
-        if (cut >= ready) out.push({ t, dep, cut, arr: at(day, t.arr, t.plusDays) });
-      }
+  const IMP = TRAINS.filter((t) => t.dir === "수입" && t.from === NP);
+  const EXP = TRAINS.filter((t) => t.dir === "수출" && t.to === NP);
+  const at = (day, [h, m], add = 0) => { const x = new Date(day); x.setDate(x.getDate() + add); x.setHours(h, m, 0, 0); return x; };
+  const day0 = (d, add = 0) => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() + add); return x; };
+  // day 날짜에 출발하는 열차 t 의 실제 출발·도착·상차 마감 시각
+  const inst = (t, day) => {
+    const dep = at(day, t.dep);
+    let cut = new Date(dep - CUT_H * 3600e3);
+    if (t.cutHm) { cut = at(day, t.cutHm); if (cut > dep) cut.setDate(cut.getDate() - 1); }
+    return { t, dep, cut, arr: at(day, t.arr, t.plusDays) };
+  };
+  // 수입: 상차 가능 시각(ready) 이후에도 상차 마감이 남은 열차, 출발 빠른 순 n편 (운행 요일 반영)
+  function importTrains(ready, n) {
+    const out = [];
+    for (let k = -1; k <= 21; k++) {
+      const day = day0(ready, k);
+      for (const t of IMP) if (t.set.has(day.getDay())) { const x = inst(t, day); if (x.cut >= ready) out.push(x); }
+      if (out.length >= n && k >= 0) break;
     }
     return out.sort((a, b) => a.dep - b.dep).slice(0, n);
   }
+  // 수출: 반입 마감(close) 전에 신항역에 도착하는 열차, 늦게 출발하는 순 (운행 요일 반영)
+  function exportTrains(close) {
+    const out = [];
+    for (let k = 0; k >= -14; k--) {
+      const day = day0(close, k);
+      for (const t of EXP) if (t.set.has(day.getDay())) { const x = inst(t, day); if (x.arr <= close) out.push(x); }
+    }
+    return out.sort((a, b) => b.dep - a.dep);
+  }
+  const p2 = (n) => String(n).padStart(2, "0");
+  const dstr = (d) => `${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]})`;
   const dt = (d) => `${dstr(d)} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
   const hhmm = (d) => `${p2(d.getHours())}:${p2(d.getMinutes())}`;
-  function show(r) {
-    const etb = toDate(r.etb);
-    const voy = (r.voyages || []).filter(Boolean).join(" · ");
-    const term = `${r.t} ${(TN[r.t] || "").replace(/^\S+\s/, "").replace(/\s*\(.*\)$/, "")}`;
-    const step = (k, v, sub, cls = "") => `<li><div class="rstep ${cls}"><div class="k">${k}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
-    const s0 = step("부산신항 입항 (ETB)", `${dstr(etb)} ${p2(etb.getHours())}:${p2(etb.getMinutes())}`,
-           `${esc(r.vessel)}${voy ? " · " + esc(voy) : ""}<br>${esc(term)} · 선석 ${esc(r.berth || "-")}`);
-    const ready = new Date(etb.getTime() + PREP * 3600e3);
-    const tr = TRAINS.length ? nextTrains(ready, 2) : [];
-    alt.hidden = true;
-    if (tr.length) {  // 열차 시간표 기준
-      const [a, b] = tr;
-      line.innerHTML = s0 +
-        step("철송 상차 가능 <span class=\"est\">예상</span>", dt(ready), `입항 + ${PREP}시간 (반출 준비·보세운송 신고 등)`) +
-        step("탑승 열차", `${esc(a.t.no)} · ${dt(a.dep)} 출발`, `상차 마감 ${dt(a.cut)}<br>${esc(FROM)} → ${esc(TO)}${a.t.note ? " · " + esc(a.t.note) : ""}`) +
-        step(`${esc(ICDN)} (${esc(TO)}) 도착 <span class="est">예상</span>`, dt(a.arr), `열차 ${esc(a.t.no)} 기준`, "end");
-      if (b) {
-        alt.innerHTML = `대안 열차 <b>${esc(b.t.no)}</b> · ${dt(b.dep)} 출발 → ${esc(TO)} ${dt(b.arr)} 도착 <span class="muted">(상차 마감 ${hhmm(b.cut)}${b.t.note ? " · " + esc(b.t.note) : ""})</span>`;
-        alt.hidden = false;
-      }
-      pick.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(hits[+x.dataset.i] === r)));
-      return;
-    }
-    if (TRAINS.length) { alt.innerHTML = "시간표에서 3주 안에 탈 수 있는 열차를 찾지 못해 대략값으로 보여드려요"; alt.hidden = false; }
-    else { alt.innerHTML = (TT.error ? `<b>${esc(TT.error)}</b> · ` : "") + "열차 시간표가 아직 예시(또는 비어 있음)라 대략값으로 보여드려요"; alt.hidden = false; }
-    line.innerHTML = s0 +
-      step("하선·철송 반출 <span class=\"est\">예상</span>", span(etb, DIS), days(DIS)) +
-      step("철송 운행", `약 ${HRS[0] === HRS[1] ? HRS[0] : HRS[0] + "~" + HRS[1]}시간`, `${esc(FROM)} → ${esc(TO)}`) +
-      step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, span(etb, ICD), days(ICD), "end");
-    pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r)));
-  }
-  // 어제 이후 입항(또는 아직 접안 중)인 부산신항 배, 입항 빠른 순
-  function incoming() {
-    const from = plus(now, -1);
-    return DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && r.vessel
-        && r.status !== "출항" && (toDate(r.etb) >= from || r.status === "접안"))
-      .sort((a, b) => toDate(a.etb) - toDate(b.etb));
-  }
-  // 선명 자동완성 (2글자 이상): 같은 선명은 한 줄로, 앞글자가 맞는 배 먼저
-  const ul = $("#railList"), rac = { items: [], idx: -1 };
+  const runs = (t) => (t.set.size === 7 ? "매일" : [1, 2, 3, 4, 5, 6, 0].filter((d) => t.set.has(d)).map((d) => WD[d]).join(""));
+  const gap = (a, b) => { const m = Math.round((b - a) / 60000); return m >= 60 ? `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ""}` : `${m}분`; };
+  const step = (k, v, sub, cls = "") => `<li><div class="rstep ${cls}"><div class="k">${k}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
+  const term = (r) => `${r.t} ${(TN[r.t] || "").replace(/^\S+\s/, "").replace(/\s*\(.*\)$/, "")}`;
+  const vline = (r) => { const voy = (r.voyages || []).filter(Boolean).join(" · "); return `${esc(r.vessel)}${voy ? " · " + esc(voy) : ""}`; };
+  return { R, TT, NEWPORT, PREP, CUT_H, TRAINS, IMP, EXP, importTrains, exportTrains, day0, dstr, dt, hhmm, runs, gap, step, term, vline };
+})();
+
+// 선명 검색칸 공통 (자동완성 2글자 이상·같은 선명 한 줄·여러 일정 고르기·지우면 접기)
+function railSearch(pre, { list, when, empty, show }) {
+  const form = $(`#${pre}Form`); if (!form) return;
+  const inp = $(`#${pre}Q`), ul = $(`#${pre}List`), fold = $(`#${pre}Fold`), msg = $(`#${pre}Msg`), res = $(`#${pre}Result`), pick = $(`#${pre}Pick`);
+  const ac = { items: [], idx: -1 };
+  let hits = [];
+  const render = (r) => { show(r); pick.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(hits[+b.dataset.i] === r))); };
   function acShow(v) {
-    const q = norm(v); rac.idx = -1; rac.items = [];
+    const q = norm(v); ac.idx = -1; ac.items = [];
     if (q.length >= 2) {
       const seen = new Map();
-      for (const r of incoming()) {
+      for (const r of list()) {
         const n = norm(r.vessel); if (!n.includes(q)) continue;
         const it = seen.get(r.vessel) || { name: r.vessel, pre: n.startsWith(q) || String(r.vessel).split(/\s+/).some((w) => norm(w).startsWith(q)), rows: [] };
         it.rows.push(r); seen.set(r.vessel, it);
       }
-      rac.items = [...seen.values()].sort((a, b) => (b.pre - a.pre) || (toDate(a.rows[0].etb) - toDate(b.rows[0].etb))).slice(0, 10);
+      ac.items = [...seen.values()].sort((a, b) => (b.pre - a.pre) || (when(a.rows[0]) - when(b.rows[0]))).slice(0, 10);
     }
-    ul.innerHTML = rac.items.map((it, i) => {
+    ul.innerHTML = ac.items.map((it, i) => {
       const r = it.rows[0], more = it.rows.length > 1 ? ` 외 ${it.rows.length - 1}건` : "";
-      return `<li role="option" id="railOpt${i}" data-i="${i}" aria-selected="false"><b>${esc(it.name)}</b><span>${esc(r.t)} · ${dstr(toDate(r.etb))} 입항${more}</span></li>`;
+      return `<li role="option" id="${pre}Opt${i}" data-i="${i}" aria-selected="false"><b>${esc(it.name)}</b><span>${esc(r.t)} · ${when.label(r)}${more}</span></li>`;
     }).join("");
-    ul.hidden = !rac.items.length; inp.setAttribute("aria-expanded", String(!ul.hidden));
+    ul.hidden = !ac.items.length; inp.setAttribute("aria-expanded", String(!ul.hidden));
   }
   function acHide() { ul.hidden = true; inp.setAttribute("aria-expanded", "false"); inp.removeAttribute("aria-activedescendant"); }
-  function acPick(i) { const it = rac.items[i]; if (!it) return; inp.value = it.name; acHide(); form.requestSubmit(); }
+  function acPick(i) { const it = ac.items[i]; if (!it) return; inp.value = it.name; acHide(); form.requestSubmit(); }
   function acMove(d) {
-    if (!rac.items.length) return;
-    rac.idx = (rac.idx + d + rac.items.length) % rac.items.length;
-    ul.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === rac.idx)));
-    inp.setAttribute("aria-activedescendant", `railOpt${rac.idx}`);
+    if (!ac.items.length) return;
+    ac.idx = (ac.idx + d + ac.items.length) % ac.items.length;
+    ul.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", String(i === ac.idx)));
+    inp.setAttribute("aria-activedescendant", `${pre}Opt${ac.idx}`);
   }
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!ul.hidden && rac.items.length) { acPick(rac.idx >= 0 ? rac.idx : 0); return; }
+    if (!ul.hidden && ac.items.length) { acPick(ac.idx >= 0 ? ac.idx : 0); return; }
     acHide();
-    const q = norm($("#railQ").value);
+    const q = norm(inp.value);
     res.hidden = true; msg.hidden = true;
     if (!q) { clear(); return; }
-    hits = incoming().filter((r) => norm(r.vessel).includes(q));
-    if (!hits.length) {
-      const any = DATA.rows.some((r) => norm(r.vessel).includes(q));
-      msg.textContent = any ? "부산신항 터미널에 입항 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
-                            : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요";
-      msg.hidden = false; foldTo(fold, true); return;
-    }
+    hits = list().filter((r) => norm(r.vessel).includes(q));
+    if (!hits.length) { msg.textContent = empty(DATA.rows.some((r) => norm(r.vessel).includes(q))); msg.hidden = false; foldTo(fold, true); return; }
     pick.hidden = hits.length < 2;
-    pick.innerHTML = hits.length < 2 ? "" : "입항 일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) => {
-      const d = toDate(r.etb);
-      return `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${dstr(d)}</button>`;
-    }).join("");
-    show(hits[0]); res.hidden = false; foldTo(fold, true);
+    pick.innerHTML = hits.length < 2 ? "" : "일정 " + hits.length + "건 · " + hits.slice(0, 12).map((r, i) =>
+      `<button type="button" data-i="${i}" aria-pressed="false">${esc(r.vessel)} · ${r.t} · ${RAIL.dstr(when(r))}</button>`).join("");
+    render(hits.find((r) => when(r) >= now) || hits[0]); res.hidden = false; foldTo(fold, true);  // 아직 안 지난 일정 먼저
   });
-  // 선명을 다 지우면(✕·Esc 포함) 타임라인을 부드럽게 접고 입력창만 남김
+  // 선명을 다 지우면(✕·Esc 포함) 결과를 부드럽게 접고 입력창만 남김
   function clear() { inp.value = ""; acHide(); foldTo(fold, false, () => { res.hidden = true; msg.hidden = true; hits = []; }); }
   inp.addEventListener("input", () => { acShow(inp.value); if (!inp.value.trim()) clear(); });
   inp.addEventListener("keydown", (e) => {
@@ -2444,6 +2442,98 @@ renderNews();
   ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li"); if (li) { e.preventDefault(); acPick(+li.dataset.i); } });
   inp.addEventListener("blur", () => setTimeout(acHide, 120));
   addClear(inp, clear);
-  pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) show(hits[+b.dataset.i]); });
+  pick.addEventListener("click", (e) => { const b = e.target.closest("button[data-i]"); if (b) render(hits[+b.dataset.i]); });
+}
+
+// ---- 수입: 부산신항 입항(ETB) + 반출 준비 24시간 → 상차 마감이 남은 가장 빠른 열차 + 대안 1편
+(function railImport() {
+  const { R, TT, NEWPORT, PREP, CUT_H, IMP, importTrains, day0, dstr, dt, hhmm, runs, step, term, vline } = RAIL;
+  const line = $("#railLine"), alt = $("#railAlt"); if (!line) return;
+  const rng = (o, d) => (o && Number.isFinite(+o.min) && Number.isFinite(+o.max) ? [+o.min, +o.max] : d);
+  const DIS = rng(R.discharge_days, [1, 2]), HRS = rng(R.rail_hours, [5, 8]), ICD = rng(R.icd_days, [2, 3]);
+  const ICDN = R.icd || "의왕ICD";
+  const span = (d, [a, b]) => (a === b ? dstr(day0(d, a)) : `${dstr(day0(d, a))} ~ ${dstr(day0(d, b))}`);
+  const days = ([a, b]) => (a === b ? `입항 + ${a}일` : `입항 + ${a}~${b}일`);
+  if (DATA.rail_error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(DATA.rail_error)}</b> (기본값 표시 중)`);
+  if (TT.error) $("#railNote").insertAdjacentHTML("beforeend", ` · <b>${esc(TT.error)}</b>`);
+  function show(r) {
+    const etb = toDate(r.etb);
+    const s0 = step("부산신항 입항 (ETB)", dt(etb), `${vline(r)}<br>${esc(term(r))} · 선석 ${esc(r.berth || "-")}`);
+    const ready = new Date(etb.getTime() + PREP * 3600e3);
+    const [a, b] = IMP.length ? importTrains(ready, 2) : [];
+    alt.hidden = true;
+    if (a) {
+      line.innerHTML = s0 +
+        step("철송 상차 가능 <span class=\"est\">예상</span>", dt(ready), `입항 + ${PREP}시간 (반출 준비·보세운송 신고 등)`) +
+        step("탑승 열차", `${esc(a.t.no)} · ${dt(a.dep)} 출발`,
+             `상차 마감 ${dt(a.cut)} (출발 ${CUT_H}시간 전, 임시값)<br>${esc(a.t.from)} → ${esc(a.t.to)} · 운행 ${runs(a.t)}`) +
+        step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, dt(a.arr), `열차 ${esc(a.t.no)} 기준${a.t.plusDays ? " · 다음 날 도착" : ""}`, "end");
+      if (b) {
+        alt.innerHTML = `대안 열차 <b>${esc(b.t.no)}</b> · ${dt(b.dep)} 출발 → ${dt(b.arr)} 도착 <span class="muted">(상차 마감 ${hhmm(b.cut)} · 운행 ${runs(b.t)})</span>`;
+        alt.hidden = false;
+      }
+      return;
+    }
+    alt.innerHTML = IMP.length ? "시간표에서 3주 안에 탈 수 있는 열차를 찾지 못해 대략값으로 보여드려요"
+                               : "부산신항 출발 수입 열차가 시간표에 없어 대략값으로 보여드려요";
+    alt.hidden = false;
+    line.innerHTML = s0 +
+      step("하선·철송 반출 <span class=\"est\">예상</span>", span(etb, DIS), days(DIS)) +
+      step("철송 운행", `약 ${HRS[0] === HRS[1] ? HRS[0] : HRS[0] + "~" + HRS[1]}시간`, "부산신항 → 오봉(의왕ICD)") +
+      step(`${esc(ICDN)} 도착 <span class="est">예상</span>`, span(etb, ICD), days(ICD), "end");
+  }
+  const when = (r) => toDate(r.etb);
+  when.label = (r) => `${dstr(toDate(r.etb))} 입항`;
+  railSearch("rail", {
+    // 어제 이후 입항(또는 아직 접안 중)인 부산신항 배, 입항 빠른 순
+    list: () => DATA.rows.filter((r) => NEWPORT.has(r.t) && r.etb && r.vessel && r.status !== "출항" && (toDate(r.etb) >= day0(now, -1) || r.status === "접안"))
+      .sort((a, b) => toDate(a.etb) - toDate(b.etb)),
+    when, show,
+    empty: (any) => any ? "부산신항 터미널에 입항 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
+                        : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요",
+  });
+})();
+
+// ---- 수출: 반입 마감 전에 부산신항역에 도착하는 열차 중 가장 늦게 출발해도 되는 열차 + 대안 1편
+(function railExport() {
+  const { NEWPORT, CUT_H, EXP, exportTrains, day0, dstr, dt, hhmm, runs, gap, step, term, vline } = RAIL;
+  const line = $("#xrailLine"), alt = $("#xrailAlt"), msg = $("#xrailMsg"); if (!line) return;
+  function show(r) {
+    const close = toDate(r.yard_close), etd = toDate(r.etd);
+    const tail = step("터미널 반입 마감", dt(close), `${vline(r)}<br>${esc(term(r))}`) +
+                 step("부산신항 출항 (ETD)", etd ? dt(etd) : "-", `선석 ${esc(r.berth || "-")}`, "end");
+    alt.hidden = true; msg.hidden = true;
+    const all = EXP.length ? exportTrains(close) : [];
+    const ok = all.filter((x) => x.cut >= now);       // 아직 상차 마감 전인 열차만 추천
+    const [a, b] = ok;
+    if (!a) {
+      msg.textContent = !EXP.length ? "부산신항 도착 수출 열차가 시간표에 없어요"
+        : close <= now ? "반입 마감이 이미 지났어요. 선사·터미널에 반입 가능 여부를 확인해 주세요"
+        : all.length ? `반입 마감 전에 도착하는 열차는 상차 마감이 이미 지났어요 (마지막 열차 ${all[0].t.no} · ${dt(all[0].dep)} 출발)`
+        : "2주 안에 반입 마감 전에 도착하는 열차를 찾지 못했어요";
+      msg.hidden = false;
+      line.innerHTML = tail;
+      return;
+    }
+    line.innerHTML =
+      step("의왕ICD 상차 마감 <span class=\"est\">예상</span>", dt(a.cut), `출발 ${CUT_H}시간 전 (임시값)`) +
+      step("추천 열차 (가장 늦게 출발)", `${esc(a.t.no)} · ${dt(a.dep)} 출발`, `${esc(a.t.from)} → ${esc(a.t.to)} · 운행 ${runs(a.t)}`) +
+      step("부산신항역 도착 <span class=\"est\">예상</span>", dt(a.arr), `반입 마감까지 ${gap(a.arr, close)} 여유${a.t.plusDays ? " · 다음 날 도착" : ""}`) +
+      tail;
+    if (b) {
+      alt.innerHTML = `대안 열차 (한 편 앞) <b>${esc(b.t.no)}</b> · ${dt(b.dep)} 출발 → ${dt(b.arr)} 도착 <span class="muted">(상차 마감 ${hhmm(b.cut)} · 운행 ${runs(b.t)} · 반입 마감까지 ${gap(b.arr, close)} 여유)</span>`;
+      alt.hidden = false;
+    }
+  }
+  const when = (r) => toDate(r.yard_close);
+  when.label = (r) => `${dt(toDate(r.yard_close))} 반입 마감`;
+  railSearch("xrail", {
+    // 반입 마감이 어제 이후이고 아직 출항 전인 부산신항 배, 반입 마감 빠른 순
+    list: () => DATA.rows.filter((r) => NEWPORT.has(r.t) && r.yard_close && r.vessel && r.status !== "출항" && toDate(r.yard_close) >= day0(now, -1))
+      .sort((a, b) => toDate(a.yard_close) - toDate(b.yard_close)),
+    when, show,
+    empty: (any) => any ? "부산신항 터미널에서 반입 마감 예정인 일정이 없어요 (북항 배이거나 이미 출항한 배일 수 있어요)"
+                        : "부산신항 터미널 선석 정보에서 그 선명을 찾지 못했어요. 철자를 확인해 주세요",
+  });
 })();
 </script>

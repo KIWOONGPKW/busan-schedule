@@ -1,10 +1,536 @@
 {
-  "_안내": "수입 철송 연계 조회용 열차 시간표 (부산신항역 → 오봉역). 실제 시간표를 받으면 trains를 바꾸고 각 열차의 \"example\"을 false로(또는 줄을 지우기). example이 true인 열차는 계산에 쓰지 않으며, 쓸 수 있는 열차가 하나도 없으면 화면은 '입항 + 2~3일' 대략값으로 표시됨.",
-  "_항목": "no=열차번호, days=운행 요일(월~일 또는 \"매일\"), depart=부산신항역 출발 HH:MM, arrive=오봉역 도착 HH:MM, arrive_plus_days=도착이 출발 다음 날이면 1, cutoff=상차 마감 HH:MM(출발 시각보다 늦으면 전날로 계산), note=비고, example=예시 여부",
-  "prep_hours": 24,
-  "_prep_hours": "하선 후 철송 반출 준비 시간(보세운송 신고 등), 시간 단위. 입항(ETB) + prep_hours = 철송 상차 가능 시각",
-  "trains": [
-    { "no": "예시-1", "days": ["월", "화", "수", "목", "금"], "depart": "10:00", "arrive": "16:30", "arrive_plus_days": 0, "cutoff": "07:00", "note": "예시 (실제 시간표 아님)", "example": true },
-    { "no": "예시-2", "days": "매일", "depart": "22:00", "arrive": "04:30", "arrive_plus_days": 1, "cutoff": "19:00", "note": "예시 (실제 시간표 아님)", "example": true }
-  ]
+ "source": "코레일 화물열차 운행시각표(사용자 제공 trainschedule.xlsx)",
+ "note": "상차 마감 시각은 시각표에 없음 - 운송사 확인 필요",
+ "trains": [
+  {
+   "train": "3022",
+   "direction": "수입",
+   "from": "부산진(북항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "06:45",
+   "arrive": "13:35",
+   "next_day": false,
+   "duration_min": 410,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3026",
+   "direction": "수입",
+   "from": "부산진(북항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "16:06",
+   "arrive": "21:08",
+   "next_day": false,
+   "duration_min": 302,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3028",
+   "direction": "수입",
+   "from": "부산진(북항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "20:08",
+   "arrive": "07:01",
+   "next_day": true,
+   "duration_min": 653,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  },
+  {
+   "train": "3004",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "04:37",
+   "arrive": "11:34",
+   "next_day": false,
+   "duration_min": 417,
+   "run_days": [
+    "월",
+    "수",
+    "금"
+   ],
+   "run_days_raw": "월수금"
+  },
+  {
+   "train": "3002",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "05:11",
+   "arrive": "11:11",
+   "next_day": false,
+   "duration_min": 360,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "일화수목금토"
+  },
+  {
+   "train": "3802",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "07:16",
+   "arrive": "12:16",
+   "next_day": false,
+   "duration_min": 300,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "일화수목금토"
+  },
+  {
+   "train": "3804",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "09:35",
+   "arrive": "14:29",
+   "next_day": false,
+   "duration_min": 294,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3806",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "15:38",
+   "arrive": "21:01",
+   "next_day": false,
+   "duration_min": 323,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  },
+  {
+   "train": "3006",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "16:24",
+   "arrive": "21:34",
+   "next_day": false,
+   "duration_min": 310,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "매일"
+  },
+  {
+   "train": "3808",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "17:35",
+   "arrive": "22:30",
+   "next_day": false,
+   "duration_min": 295,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3008",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "18:52",
+   "arrive": "00:48",
+   "next_day": true,
+   "duration_min": 356,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "월화수목금토"
+  },
+  {
+   "train": "3810",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "20:03",
+   "arrive": "06:32",
+   "next_day": true,
+   "duration_min": 629,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  },
+  {
+   "train": "3010",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "20:19",
+   "arrive": "06:39",
+   "next_day": true,
+   "duration_min": 620,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "월화수목금토"
+  },
+  {
+   "train": "3812",
+   "direction": "수입",
+   "from": "부산항(부산신항)",
+   "to": "오봉(의왕ICD)",
+   "depart": "20:44",
+   "arrive": "07:10",
+   "next_day": true,
+   "duration_min": 626,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  },
+  {
+   "train": "3001",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "04:26",
+   "arrive": "10:03",
+   "next_day": false,
+   "duration_min": 337,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "일화수목금토"
+  },
+  {
+   "train": "3801",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "04:50",
+   "arrive": "10:12",
+   "next_day": false,
+   "duration_min": 322,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3803",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "05:01",
+   "arrive": "10:27",
+   "next_day": false,
+   "duration_min": 326,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3805",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "07:20",
+   "arrive": "12:21",
+   "next_day": false,
+   "duration_min": 301,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "일화수목금토"
+  },
+  {
+   "train": "3021",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산진(북항)",
+   "depart": "07:38",
+   "arrive": "13:16",
+   "next_day": false,
+   "duration_min": 338,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3807",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "09:26",
+   "arrive": "14:14",
+   "next_day": false,
+   "duration_min": 288,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3023",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산진(북항)",
+   "depart": "12:20",
+   "arrive": "17:14",
+   "next_day": false,
+   "duration_min": 294,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3809",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "15:13",
+   "arrive": "20:11",
+   "next_day": false,
+   "duration_min": 298,
+   "run_days": [
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "화수목금토"
+  },
+  {
+   "train": "3003",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "15:57",
+   "arrive": "22:44",
+   "next_day": false,
+   "duration_min": 407,
+   "run_days": [
+    "화",
+    "목",
+    "토"
+   ],
+   "run_days_raw": "화목토"
+  },
+  {
+   "train": "3811",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "16:06",
+   "arrive": "21:07",
+   "next_day": false,
+   "duration_min": 301,
+   "run_days": [
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "일수목금토"
+  },
+  {
+   "train": "3005",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "17:53",
+   "arrive": "23:22",
+   "next_day": false,
+   "duration_min": 329,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+   ],
+   "run_days_raw": "매일"
+  },
+  {
+   "train": "3007",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "18:48",
+   "arrive": "23:53",
+   "next_day": false,
+   "duration_min": 305,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "월화수목금토"
+  },
+  {
+   "train": "3009",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산항(부산신항)",
+   "depart": "20:42",
+   "arrive": "07:19",
+   "next_day": true,
+   "duration_min": 637,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토"
+   ],
+   "run_days_raw": "월화수목금토"
+  },
+  {
+   "train": "3025",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산진(북항)",
+   "depart": "21:05",
+   "arrive": "09:17",
+   "next_day": true,
+   "duration_min": 732,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  },
+  {
+   "train": "3027",
+   "direction": "수출",
+   "from": "오봉(의왕ICD)",
+   "to": "부산진(북항)",
+   "depart": "21:35",
+   "arrive": "09:45",
+   "next_day": true,
+   "duration_min": 730,
+   "run_days": [
+    "월",
+    "화",
+    "수",
+    "목",
+    "금"
+   ],
+   "run_days_raw": "월화수목금"
+  }
+ ]
 }

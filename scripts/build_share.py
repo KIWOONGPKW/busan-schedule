@@ -128,11 +128,15 @@ def main():
     except Exception as e:  # noqa: BLE001
         rail, rail_err = {}, f"import_rail_leadtime.json 읽기 실패: {e}"[:160]
 
-    try:  # 철송 열차 시간표 (사용자 편집): 예시(example) 열차는 화면에서 계산에 안 씀
+    try:  # 철송 열차 시간표 (코레일 화물열차 운행시각표, 사용자 교체): 예시(example) 열차는 화면에서 계산에 안 씀
         rail_tt = json.loads((ROOT / "rail_timetable.json").read_text(encoding="utf-8"))
-        rail_tt = {"prep_hours": rail_tt.get("prep_hours", 24), "trains": [t for t in rail_tt.get("trains", []) if isinstance(t, dict)]}
+        rail_tt = {"source": rail_tt.get("source", ""),
+                   "prep_hours": rail_tt.get("prep_hours", 24),      # 입항(ETB) 후 반출 준비 시간
+                   "cutoff_hours": rail_tt.get("cutoff_hours", 3),   # 상차 마감 = 출발 N시간 전 (임시값)
+                   "trains": [{k: v for k, v in t.items() if k != "run_days_raw"}
+                              for t in rail_tt.get("trains", []) if isinstance(t, dict)]}
     except Exception as e:  # noqa: BLE001
-        rail_tt = {"prep_hours": 24, "trains": [], "error": f"rail_timetable.json 읽기 실패: {e}"[:160]}
+        rail_tt = {"prep_hours": 24, "cutoff_hours": 3, "trains": [], "error": f"rail_timetable.json 읽기 실패: {e}"[:160]}
 
     data = {"generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"), "sea_quotes": sea_quotes,
             "transit": transit, "routes": routes, "port_carriers": port_carriers, "carriers": carriers, "regions": regions, "cities": cities,
