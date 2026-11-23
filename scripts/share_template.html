@@ -412,10 +412,19 @@
   .panel.dest { overflow: visible; position: relative; }
   .panel.dest:has(.dac:not([hidden])) { z-index: 25; }
   .panel.dest .dnote { border-radius: 0 0 18px 18px; }
-  /* 수입·수출 철송 연계 조회 (부산신항 ↔ 의왕ICD): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
+  /* 철송 연계 조회 (부산신항 ↔ 의왕ICD, 수입·수출 한 칸): 부산 구역 바로 아래, 부산 녹색(--zbs-*) */
   .panel.rail { margin-top: 18px; background: var(--zbs-off); border-color: var(--zbs-line); }
   .rail + .zone { margin-top: 18px; }
-  .rail + .rail { margin-top: 12px; }
+  /* 수입·수출 입력창 한 줄에 나란히 (좁으면 위아래), 결과는 칸 전체 너비로 차례로 */
+  .rforms { display: flex; gap: 12px; padding: 12px 16px; }
+  .rail .rforms form { flex: 1 1 0; min-width: 0; padding: 0; align-items: center; }
+  .rdir { flex: none; }
+  .rhead { padding: 10px 16px 8px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--zbs-ink); background: var(--panel); }
+  .rhead .rdir { margin-right: 6px; vertical-align: 1px; }
+  .rail .fold { background: var(--panel); }
+  .rail .fold .tmsg { margin: 0 16px 12px; }
+  .rhead + .tmsg + div .rline { border-top: 0; padding-top: 4px; }
+  @media (max-width: 720px) { .rforms { flex-direction: column; gap: 8px; } }
   .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
   .rail input:focus { border-color: var(--bs-in-focus); }
   .rpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 16px 10px; font-size: 12.5px; color: var(--muted); }
@@ -740,15 +749,26 @@
       <div class="more" hidden><button type="button" class="moreBtn">더 보기</button></div>
     </section>
   </section>
-  <section class="panel dest rail" id="railPanel" aria-label="수입 철송 연계 조회 (부산신항 → 의왕ICD)">
-    <div class="caption"><span class="ct"><b>수입 철송 연계 조회 (부산신항 → 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
-    <form id="railForm" autocomplete="off" role="search">
-      <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (예: HMM EMERALD, 일부만 입력해도 돼요)" aria-label="수입 선명 (부산신항 입항 배)"
+  <section class="panel dest rail" id="railPanel" aria-label="철송 연계 조회 (부산신항 ↔ 의왕ICD)">
+    <div class="caption"><span class="ct"><b>철송 연계 조회 (부산신항 ↔ 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
+    <div class="rforms">
+      <form id="railForm" autocomplete="off" role="search">
+        <span class="rtag bs rdir">수입</span>
+        <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (부산신항 입항 배)" aria-label="수입 선명 (부산신항 입항 배)"
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
-        <ul class="dac" id="railList" role="listbox" hidden></ul></div>
-      <button class="go" type="submit">조회</button>
-    </form>
+          <ul class="dac" id="railList" role="listbox" hidden></ul></div>
+        <button class="go" type="submit">조회</button>
+      </form>
+      <form id="xrailForm" autocomplete="off" role="search">
+        <span class="rtag bs rdir">수출</span>
+        <div class="dq-wrap"><input id="xrailQ" placeholder="선명 입력 (부산신항 출항 배)" aria-label="수출 선명 (부산신항 출항 배)"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="xrailList">
+          <ul class="dac" id="xrailList" role="listbox" hidden></ul></div>
+        <button class="go" type="submit">조회</button>
+      </form>
+    </div>
     <div class="fold" id="railFold" hidden>
+    <div class="rhead"><span class="rtag bs rdir">수입</span>부산신항 → 의왕ICD</div>
     <div class="tmsg" id="railMsg" hidden></div>
     <div id="railResult" hidden>
       <div class="rpick" id="railPick" hidden></div>
@@ -756,17 +776,8 @@
       <div class="ralt" id="railAlt" hidden></div>
     </div>
     </div>
-    <div class="dnote" id="railNote">열차 시각: 코레일 화물열차 운행시각표 기준 · 상차 마감·실제 배정은 운송사 확인 필요<br>화물열차는 수송수요 변동에 따라 평상시(3,7,8,9,12월), 비수기(1,2월)에는 일부 열차를 조정하여 운행합니다.</div>
-  </section>
-  <section class="panel dest rail" id="xrailPanel" aria-label="수출 철송 연계 조회 (의왕ICD → 부산신항)">
-    <div class="caption"><span class="ct"><b>수출 철송 연계 조회 (의왕ICD → 부산신항)</b><span class="rtag bs">부산</span></span></div>
-    <form id="xrailForm" autocomplete="off" role="search">
-      <div class="dq-wrap"><input id="xrailQ" placeholder="선명 입력 (부산신항에서 출항할 배, 일부만 입력해도 돼요)" aria-label="수출 선명 (부산신항 출항 배)"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="xrailList">
-        <ul class="dac" id="xrailList" role="listbox" hidden></ul></div>
-      <button class="go" type="submit">조회</button>
-    </form>
     <div class="fold" id="xrailFold" hidden>
+    <div class="rhead"><span class="rtag bs rdir">수출</span>의왕ICD → 부산신항</div>
     <div class="tmsg" id="xrailMsg" hidden></div>
     <div id="xrailResult" hidden>
       <div class="rpick" id="xrailPick" hidden></div>
@@ -774,7 +785,7 @@
       <div class="ralt" id="xrailAlt" hidden></div>
     </div>
     </div>
-    <div class="dnote" id="xrailNote">열차 시각: 코레일 화물열차 운행시각표 기준 · 상차 마감·실제 배정은 운송사 확인 필요<br>화물열차는 수송수요 변동에 따라 평상시(3,7,8,9,12월), 비수기(1,2월)에는 일부 열차를 조정하여 운행합니다.</div>
+    <div class="dnote" id="railNote">코레일 화물열차 운행시각표 기준 · 평상시(3,7,8,9,12월)·비수기(1,2월) 일부 열차 조정 운행 · 상차 마감·실제 배정은 운송사 확인 필요</div>
   </section>
 
   <section class="zone zic" id="zone_ic" data-z="ic" aria-label="인천 구역">
