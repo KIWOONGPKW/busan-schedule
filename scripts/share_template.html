@@ -13,7 +13,7 @@
     --news: #fff6e0; --news-line: #f0d9a0;  /* 부산항 소식란: 연한 노랑으로 따로 구분 */
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
     --ok: #138a52; --ok-soft: #dcf6e8; --bad: #db3f58; --bad-soft: #ffe3e8;
-    --warn: #b86400; --warn-soft: #fff0d4; --blue: #2b74d6; --blue-soft: #e0eeff; --gray-soft: #f1eef4;
+    --warn: #b86400; --warn-soft: #fff0d4; --blue: #2b74d6; --blue-soft: #e0eeff; --sw-imp: #2b74d6; --sw-exp: #c4570a; --gray-soft: #f1eef4;
     --c-pnc: #e0532f; --c-pnc-bg: #ffe5dc; --c-hjnc: #2468c4; --c-hjnc-bg: #dfeeff;
     --c-hpnt: #1b8a50; --c-hpnt-bg: #ddf6e7; --c-bptc: #6b4bd6; --c-bptc-bg: #eee6ff;
     --c-hktl: #a86600; --c-hktl-bg: #fff0cc;
@@ -417,17 +417,25 @@
   .rail + .zone { margin-top: 18px; }
   /* 한 줄: [수입|수출] 토글 + 선명 입력 + 조회 (토글에 따라 placeholder·조회 방향 바뀜) */
   .rail form { align-items: center; }
-  .rseg { flex: none; display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; border: 2px solid var(--bs-in-line); background: var(--bs-in-bg); }
-  .rseg button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
-  .rseg button:hover { transform: none; color: var(--zbs-ink); }
-  .rseg button[aria-pressed="true"] { background: var(--zbs-tag); color: var(--zbs-ink); box-shadow: 0 0 0 1px var(--zbs-line); }
+  /* 수입/수출 밀어서 바꾸는 스위치: 왼쪽 손잡이 = 수입(파랑), 오른쪽 = 수출(주황), 0.2초 미끄러짐 */
+  .rsw { flex: none; position: relative; width: 120px; height: 42px; padding: 0; border: 0; border-radius: 999px; cursor: pointer;
+         background: var(--sw-imp); color: #fff; font: inherit; font-size: 14px; font-weight: 700; touch-action: pan-y;
+         -webkit-user-select: none; user-select: none; transition: background-color .2s ease; }
+  .rsw:hover { transform: none; }
+  .rsw[aria-checked="true"] { background: var(--sw-exp); }
+  .rsw-t { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; left: 44px; right: 10px; justify-content: center; pointer-events: none; }
+  .rsw[aria-checked="true"] .rsw-t { left: 10px; right: 44px; }
+  .rsw-k { position: absolute; top: 5px; left: 5px; width: 32px; height: 32px; border-radius: 50%; background: #fff;
+           box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s ease; pointer-events: none; }
+  .rsw[aria-checked="true"] .rsw-k { transform: translateX(78px); }
+  .rsw.drag .rsw-k { transition: none; }
+  @media (prefers-reduced-motion: reduce) { .rsw, .rsw-k { transition: none; } }
   .rdir { flex: none; }
   .rhead { padding: 10px 16px 8px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--zbs-ink); background: var(--panel); }
   .rhead .rdir { margin-right: 6px; vertical-align: 1px; }
   .rail .fold { background: var(--panel); }
   .rail .fold .tmsg { margin: 0 16px 12px; }
   .rhead + .tmsg + div .rline { border-top: 0; padding-top: 4px; }
-  @media (max-width: 420px) { .rseg button { padding: 6px 9px; } }
   .rail input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
   .rail input:focus { border-color: var(--bs-in-focus); }
   .rpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 0 16px 10px; font-size: 12.5px; color: var(--muted); }
@@ -755,9 +763,9 @@
   <section class="panel dest rail" id="railPanel" aria-label="철송 연계 조회 (부산신항 ↔ 의왕ICD)">
     <div class="caption"><span class="ct"><b>철송 연계 조회 (부산신항 ↔ 의왕ICD)</b><span class="rtag bs">부산</span></span></div>
     <form id="railForm" autocomplete="off" role="search">
-      <div class="rseg" role="group" aria-label="수입·수출 선택">
-        <button type="button" data-m="rail" aria-pressed="true">수입</button><button type="button" data-m="xrail" aria-pressed="false">수출</button>
-      </div>
+      <button type="button" class="rsw" id="railSw" role="switch" aria-checked="false" aria-label="수입/수출 전환, 현재 수입">
+        <span class="rsw-t">수입</span><span class="rsw-k" aria-hidden="true"></span>
+      </button>
       <div class="dq-wrap"><input id="railQ" placeholder="선명 입력 (부산신항 입항 배)" aria-label="수입 선명 (부산신항 입항 배)"
                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="railList">
         <ul class="dac" id="railList" role="listbox" hidden></ul></div>
@@ -2490,7 +2498,7 @@ function railSearch(pre, cfg) { RAIL_MODES[pre] = cfg; }
 // (자동완성 2글자 이상·같은 선명 한 줄·여러 일정 고르기·지우면 접기)
 (function railBind() {
   const form = $("#railForm"); if (!form) return;
-  const inp = $("#railQ"), ul = $("#railList"), seg = form.querySelector(".rseg");
+  const inp = $("#railQ"), ul = $("#railList"), sw = $("#railSw"), swT = sw.querySelector(".rsw-t"), swK = sw.querySelector(".rsw-k");
   const PH = { rail: ["선명 입력 (부산신항 입항 배)", "수입 선명 (부산신항 입항 배)"],
                xrail: ["선명 입력 (부산신항 출항 배)", "수출 선명 (부산신항 출항 배)"] };
   const els = (m) => ({ fold: $(`#${m}Fold`), msg: $(`#${m}Msg`), res: $(`#${m}Result`), pick: $(`#${m}Pick`) });
@@ -2543,14 +2551,47 @@ function railSearch(pre, cfg) { RAIL_MODES[pre] = cfg; }
     if (!ul.hidden && ac.items.length) { acPick(ac.idx >= 0 ? ac.idx : 0); return; }
     acHide(); run();
   });
-  // 토글: placeholder 바꾸고, 선명이 입력돼 있으면 바뀐 방향으로 바로 다시 조회
-  seg.addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-m]"); if (!b || b.dataset.m === mode) return;
-    mode = b.dataset.m;
-    seg.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    inp.placeholder = PH[mode][0]; inp.setAttribute("aria-label", PH[mode][1]);
+  // 스위치 (왼쪽 손잡이 = 수입, 오른쪽 = 수출): 클릭·스페이스·Enter로 전환, 손잡이를 밀어서도 전환
+  // 바뀌면 placeholder 변경, 입력한 선명은 그대로 두고 이미 조회한 결과가 있으면 바뀐 방향으로 다시 조회
+  function setMode(m) {
+    if (m === mode) return;
+    const had = !els(mode).fold.hidden && !els(mode).fold._hiding;
+    mode = m;
+    const name = m === "rail" ? "수입" : "수출";
+    sw.setAttribute("aria-checked", String(m === "xrail"));
+    sw.setAttribute("aria-label", `수입/수출 전환, 현재 ${name}`);
+    swT.textContent = name;
+    inp.placeholder = PH[m][0]; inp.setAttribute("aria-label", PH[m][1]);
     acHide(); hits = [];
-    if (inp.value.trim()) run(); else { fold("rail"); fold("xrail"); }
+    if (had && inp.value.trim()) run(); else { fold("rail"); fold("xrail"); }
+  }
+  const TRAVEL = 78;  // 손잡이 이동 거리(px) = 스위치 폭 120 - 손잡이 32 - 양쪽 여백 5
+  let drag = null, dragged = false;
+  sw.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    drag = { x: e.clientX, base: mode === "xrail" ? TRAVEL : 0, id: e.pointerId }; dragged = false;
+  });
+  sw.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (!dragged && Math.abs(dx) < 5) return;
+    if (!dragged) { dragged = true; sw.classList.add("drag"); try { sw.setPointerCapture(e.pointerId); } catch (_) {} }
+    swK.style.transform = `translateX(${Math.max(0, Math.min(TRAVEL, drag.base + dx))}px)`;
+  });
+  const endDrag = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const pos = drag.base + (e.clientX - drag.x);
+    drag = null;
+    if (!dragged) return;                 // 그냥 클릭(탭)이면 click에서 전환
+    sw.classList.remove("drag"); swK.style.transform = "";
+    if (e.type === "pointerup") setMode(pos > TRAVEL / 2 ? "xrail" : "rail");
+  };
+  sw.addEventListener("pointerup", endDrag);
+  sw.addEventListener("pointercancel", endDrag);
+  sw.addEventListener("click", (e) => {   // 마우스·탭 클릭, 키보드 스페이스·Enter(detail 0)
+    if (dragged && e.detail !== 0) { dragged = false; return; }  // 밀기 직후 따라오는 click은 무시
+    dragged = false;
+    setMode(mode === "rail" ? "xrail" : "rail");
   });
   // 선명을 다 지우면(✕·Esc 포함) 결과를 부드럽게 접고 입력창만 남김
   function clear() { inp.value = ""; acHide(); hits = []; fold("rail"); fold("xrail"); }
