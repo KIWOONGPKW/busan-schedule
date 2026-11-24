@@ -370,16 +370,13 @@
   .dsec.sched { padding: 0; } .dsec.sched h3 { padding: 10px 16px 0; }
   .dsec.sched .table-wrap { margin-top: 8px; border-top: 1px solid var(--line); }
   .dsec.sched .etdnote { margin-top: 8px; }
-  /* ETD 기간 칸 + 달력 (부산발·인천발 같은 달력 하나를 같이 씀) */
+  /* ETD 날짜 칸 + 한 달 달력 (날짜 하나 = 그날부터 4주, 부산발·인천발 같은 달력 하나를 같이 씀) */
   .etdbtn { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 8px 12px; border: 2px solid var(--line); border-radius: 12px;
             background: var(--panel); font-size: 13.5px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .etdbtn:hover, .etdbtn[aria-expanded="true"] { border-color: var(--accent2); }
   .etdbtn .ei { font-size: 15px; line-height: 1; }
   .etdcal { position: absolute; z-index: 70; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 14px;
             box-shadow: var(--shadow); padding: 12px 14px 14px; }
-  .ecq { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .ecq button { padding: 4px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
-  .ecq button:hover { border-color: var(--accent2); color: var(--accent2); }
   .ecnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
   .ecnav .ech { font-size: 12.5px; color: var(--muted); }
   .ecnav button { width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 12px; }
@@ -728,7 +725,7 @@
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dqList">
           <ul class="dac" id="dqList" role="listbox" hidden></ul>
         </div>
-        <button type="button" class="etdbtn" data-etd="bs" aria-haspopup="dialog" aria-expanded="false" title="출항일(ETD) 기간 고르기"><span class="ei" aria-hidden="true">📅</span><span class="et">ETD</span></button>
+        <button type="button" class="etdbtn" data-etd="bs" aria-haspopup="dialog" aria-expanded="false" title="출항 시작일 고르기 (그날부터 4주)"><span class="ei" aria-hidden="true">📅</span><span class="et">ETD</span></button>
         <button class="go" type="submit">찾기</button>
       </form>
       <div class="fold" id="destFold">
@@ -848,7 +845,7 @@
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="icdqList">
           <ul class="dac" id="icdqList" role="listbox" hidden></ul>
         </div>
-        <button type="button" class="etdbtn" data-etd="ic" aria-haspopup="dialog" aria-expanded="false" title="출항일(ETD) 기간 고르기"><span class="ei" aria-hidden="true">📅</span><span class="et">ETD</span></button>
+        <button type="button" class="etdbtn" data-etd="ic" aria-haspopup="dialog" aria-expanded="false" title="출항 시작일 고르기 (그날부터 4주)"><span class="ei" aria-hidden="true">📅</span><span class="et">ETD</span></button>
         <button class="go" type="submit">찾기</button>
       </form>
       <div class="fold" id="icdFold">
@@ -2256,40 +2253,41 @@ function clearIcDest() { $("#icdq").value = ""; icAcShow(""); foldTo($("#icdFold
 addClear($("#icdq"), clearIcDest);
 $("#icdq").addEventListener("blur", () => setTimeout(() => { $("#icdqList").hidden = true; }, 120));
 
-// ---------------------------------------------------------------- ETD 기간 달력 (부산발·인천발 공통)
-// 칸·📅 클릭 → 시작일 → 종료일 클릭, 두 달 나란히(휴대폰은 한 달·아래에서 올라옴), 오늘 이전은 못 고름, 고르면 닫고 바로 다시 조회
+// ---------------------------------------------------------------- ETD 날짜 달력 (부산발·인천발 공통)
+// 칸·📅 클릭 → 한 달 달력(◀ ▶) → 날짜 하나 클릭 = 그날부터 28일 뒤까지 출항하는 배로 바로 조회하고 닫힘
+// 마우스를 올린 날 ~ 28일 뒤를 연한 색으로 미리 보여줌, 오늘 이전은 못 고름, 휴대폰은 화면 아래에서 올라옴
 document.body.insertAdjacentHTML("beforeend", `<div class="etdback" id="etdBack" hidden></div>
-<div class="etdcal" id="etdCal" role="dialog" aria-label="출항일(ETD) 기간 선택" hidden>
-  <div class="ecq"><button type="button" data-q="week">이번 주</button><button type="button" data-q="2w">2주</button><button type="button" data-q="4w">4주</button><button type="button" data-q="nm">다음 달</button></div>
+<div class="etdcal" id="etdCal" role="dialog" aria-label="출항일(ETD) 시작일 선택" hidden>
   <div class="ecnav"><button type="button" class="ecp" aria-label="이전 달">◀</button><span class="ech" aria-live="polite"></span><button type="button" class="ecn" aria-label="다음 달">▶</button></div>
   <div class="ecms"></div>
 </div>`);
 const calEl = $("#etdCal"), calBack = $("#etdBack");
-const cal = { key: "", btn: null, view: KTODAY, pick: null, hover: null, sheet: false };
+const cal = { key: "", btn: null, view: KTODAY, hover: null, sheet: false };
 const calMobile = () => matchMedia("(max-width: 640px)").matches;
 const sameDay = (a, b) => !!a && !!b && a.getTime() === b.getTime();
-const etdLabel = () => document.querySelectorAll(".etdbtn").forEach((b) => { b.querySelector(".et").textContent = etdTxt(ETD[b.dataset.etd]); });
-function calMonth(y, m) {
-  const R = ETD[cal.key], s = cal.pick || R.s, e = cal.pick ? (cal.hover && cal.hover > cal.pick ? cal.hover : null) : R.e;
+const etdLabel = () => document.querySelectorAll(".etdbtn").forEach((b) => { b.querySelector(".et").textContent = `ETD ${dayFmt(ETD[b.dataset.etd].s)}부터 4주`; });
+const calDate = (b) => { const [y, m, d] = b.dataset.d.split("-").map(Number); return new Date(y, m, d); };
+// 시작일 s ~ s + 28일 칠하기 (지금 고른 날, 또는 마우스를 올린 날 기준)
+function calPaint(s) {
+  const e = addD(s, DEST_DAYS);
+  calEl.querySelectorAll("button.ecd").forEach((x) => { const d = calDate(x);
+    x.classList.toggle("on", sameDay(d, s) || sameDay(d, e));
+    x.classList.toggle("st", sameDay(d, s)); x.classList.toggle("en", sameDay(d, e));
+    x.classList.toggle("in", d > s && d < e); });
+  calEl.querySelector(".ech").textContent = `${dayFmt(s)} ~ ${dayFmt(e)}`;
+}
+function calDraw() {
+  const y = cal.view.getFullYear(), m = cal.view.getMonth();
   const n = new Date(y, m + 1, 0).getDate(), pad = new Date(y, m, 1).getDay();
   let h = `<div class="ecm"><div class="ecmt">${y}년 ${m + 1}월</div><div class="ecg">`
     + ["일", "월", "화", "수", "목", "금", "토"].map((w, i) => `<span class="ecw${i ? "" : " sun"}">${w}</span>`).join("") + "<span></span>".repeat(pad);
   for (let d = 1; d <= n; d++) {
-    const dt = new Date(y, m, d), c = ["ecd"];
-    if (sameDay(dt, KTODAY)) c.push("today");
-    if (!dt.getDay()) c.push("sun");
-    if (sameDay(dt, s)) c.push("on", ...(e ? ["st"] : []));
-    if (e && sameDay(dt, e)) c.push("on", "en");
-    if (e && dt > s && dt < e) c.push("in");
-    h += `<button type="button" class="${c.join(" ")}" data-d="${y}-${m}-${d}" aria-label="${m + 1}월 ${d}일"${dt < KTODAY ? " disabled" : ""}>${d}</button>`;
+    const dt = new Date(y, m, d);
+    h += `<button type="button" class="ecd${sameDay(dt, KTODAY) ? " today" : ""}${dt.getDay() ? "" : " sun"}" data-d="${y}-${m}-${d}" aria-label="${m + 1}월 ${d}일부터 4주"${dt < KTODAY ? " disabled" : ""}>${d}</button>`;
   }
-  return h + "</div></div>";
-}
-function calDraw() {
-  const v = cal.view, k = calMobile() ? 1 : 2;
-  calEl.querySelector(".ecms").innerHTML = Array.from({ length: k }, (_, i) => { const d = new Date(v.getFullYear(), v.getMonth() + i, 1); return calMonth(d.getFullYear(), d.getMonth()); }).join("");
-  calEl.querySelector(".ecp").disabled = v <= new Date(KTODAY.getFullYear(), KTODAY.getMonth(), 1);
-  calEl.querySelector(".ech").textContent = cal.pick ? `${dayFmt(cal.pick)}부터 · 종료일을 고르세요` : "시작일을 고르세요";
+  calEl.querySelector(".ecms").innerHTML = h + "</div></div>";
+  calEl.querySelector(".ecp").disabled = cal.view <= new Date(KTODAY.getFullYear(), KTODAY.getMonth(), 1);
+  calPaint(cal.hover || ETD[cal.key].s);
 }
 function calPlace() {
   cal.sheet = calMobile();
@@ -2300,57 +2298,36 @@ function calPlace() {
   calEl.style.top = `${scrollY + r.bottom + 6}px`;
 }
 function calOpen(btn) {
-  cal.key = btn.dataset.etd; cal.btn = btn; cal.pick = cal.hover = null;
-  const R = ETD[cal.key]; cal.view = new Date(R.s.getFullYear(), R.s.getMonth(), 1);
+  cal.key = btn.dataset.etd; cal.btn = btn; cal.hover = null;
+  const s = ETD[cal.key].s; cal.view = new Date(s.getFullYear(), s.getMonth(), 1);
   calEl.hidden = false; calDraw(); calPlace(); btn.setAttribute("aria-expanded", "true");
-  const f = calEl.querySelector(".ecd.on") || calEl.querySelector(".ecd:not(:disabled)"); if (f) f.focus({ preventScroll: true });
+  const f = calEl.querySelector(".ecd.st") || calEl.querySelector(".ecd:not(:disabled)"); if (f) f.focus({ preventScroll: true });
 }
 function calClose(refocus) {
   if (calEl.hidden) return;
   calEl.hidden = true; calBack.hidden = true;
   if (cal.btn) { cal.btn.setAttribute("aria-expanded", "false"); if (refocus) cal.btn.focus(); }
 }
-function etdApply(s, e) {
-  const key = cal.key; ETD[key] = { s, e }; calClose(true); etdLabel();
+function etdApply(s) {
+  const key = cal.key; ETD[key] = { s, e: addD(s, DEST_DAYS) }; calClose(true); etdLabel();
   if (key === "bs" && destUi.q.trim()) { destUi.limit = FIRST; renderDest(destUi.q, true); }
   if (key === "ic" && icdUi.q.trim()) { icdUi.limit = FIRST; renderIcDest(icdUi.q, true); }
 }
-const calDate = (b) => { const [y, m, d] = b.dataset.d.split("-").map(Number); return new Date(y, m, d); };
 calEl.addEventListener("click", (e) => {
-  const q = e.target.closest("[data-q]");
-  if (q) {
-    const t = KTODAY, k = q.dataset.q;
-    if (k === "week") etdApply(t, addD(t, (7 - t.getDay()) % 7));  // 오늘 ~ 이번 주 일요일
-    else if (k === "2w") etdApply(t, addD(t, 14));
-    else if (k === "4w") etdApply(t, addD(t, DEST_DAYS));
-    else etdApply(new Date(t.getFullYear(), t.getMonth() + 1, 1), new Date(t.getFullYear(), t.getMonth() + 2, 0));
-    return;
-  }
   if (e.target.closest(".ecp")) { cal.view = new Date(cal.view.getFullYear(), cal.view.getMonth() - 1, 1); calDraw(); return; }
   if (e.target.closest(".ecn")) { cal.view = new Date(cal.view.getFullYear(), cal.view.getMonth() + 1, 1); calDraw(); return; }
-  const b = e.target.closest("button.ecd"); if (!b || b.disabled) return;
-  const dt = calDate(b);
-  if (!cal.pick || dt < cal.pick) { cal.pick = dt; cal.hover = null; calDraw(); const f = calEl.querySelector(".ecd.on"); if (f) f.focus({ preventScroll: true }); }
-  else etdApply(cal.pick, dt);
+  const b = e.target.closest("button.ecd"); if (b && !b.disabled) etdApply(calDate(b));
 });
-// 시작일을 고른 뒤 마우스를 올리면 기간을 연한 색으로 미리 보여줌
-calEl.addEventListener("mouseover", (e) => {
-  if (!cal.pick) return;
-  const b = e.target.closest("button.ecd"); if (!b || b.disabled) return;
-  const dt = calDate(b); if (sameDay(dt, cal.hover)) return;
-  cal.hover = dt;
-  const after = dt > cal.pick;
-  calEl.querySelectorAll("button.ecd").forEach((x) => { const d = calDate(x);
-    x.classList.toggle("in", after && d > cal.pick && d < dt);
-    x.classList.toggle("en", after && sameDay(d, dt));
-    x.classList.toggle("on", sameDay(d, cal.pick) || (after && sameDay(d, dt)));
-    x.classList.toggle("st", after && sameDay(d, cal.pick)); });
-});
+const calHover = (e) => { const b = e.target.closest("button.ecd"); if (!b || b.disabled) return;
+  const dt = calDate(b); if (sameDay(dt, cal.hover)) return; cal.hover = dt; calPaint(dt); };
+calEl.addEventListener("mouseover", calHover);
+calEl.addEventListener("focusin", calHover);
+calEl.addEventListener("mouseleave", () => { cal.hover = null; calPaint(ETD[cal.key].s); });
 document.querySelectorAll(".etdbtn").forEach((b) => b.addEventListener("click", () => { if (!calEl.hidden && cal.btn === b) calClose(); else calOpen(b); }));
 calBack.addEventListener("click", () => calClose(true));
 document.addEventListener("mousedown", (e) => { if (!calEl.hidden && !calEl.contains(e.target) && !e.target.closest(".etdbtn") && e.target !== calBack) calClose(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !calEl.hidden) calClose(true); });
-addEventListener("resize", () => { if (calEl.hidden) return; if (cal.sheet !== calMobile()) calDraw(); calPlace(); });
+addEventListener("resize", () => { if (!calEl.hidden) calPlace(); });
 etdLabel();
 
 // 관리용 링크는 숨김 (주소 끝에 #admin을 붙여 열면 보임)
