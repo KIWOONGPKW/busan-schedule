@@ -301,6 +301,7 @@
   .notes { color: var(--muted); font-size: 12.5px; line-height: 1.8; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
   .notes b { color: var(--ink); } .notes a { color: inherit; }
   .warnbar { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 14px; font-weight: 700; font-size: 13px; }
+  .warnbar.bad { background: var(--bad-soft); color: var(--bad); }  /* 지난 자료가 6시간 넘게 갱신 안 됨 */
 
   .ct { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
   .ct svg { height: 26px; width: auto; color: var(--accent2); flex: none; }
@@ -1495,7 +1496,7 @@ function summary() {
   const up = DATA.rows.filter(upcoming);
   $("#sDep").textContent = DATA.rows.filter(within21).length;
   $("#sClose").textContent = up.filter((r) => { const c = toDate(r.yard_close); return c && c > now && c - now < 48 * 3600e3; }).length;
-  const ok = Object.keys(TN).length - Object.keys(DATA.errors).length;
+  const ok = Object.keys(TN).length - Object.keys(DATA.errors).length - Object.keys(DATA.stale || {}).length;
   $("#sTerm").textContent = `${ok} / ${Object.keys(TN).length}`;
   $("#genAt").textContent = DATA.generated_at;
   initFxNav();
@@ -1508,6 +1509,15 @@ function summary() {
   const msgs = [];
   if (hrs >= 24) msgs.push(`이 자료는 ${Math.floor(hrs / 24)}일 전에 모은 일정이에요. 최신 일정은 선사·터미널에서 확인해 주세요.`);
   if (errs.length) msgs.push(`조회 기준 시각에 ${errs.join(", ")} 사이트에 접속하지 못해 해당 터미널 일정이 빠져 있어요.`);
+  // 수집 실패 터미널은 마지막 성공 일정을 그대로 보여주고 기준 시각을 알린다 (6시간 넘으면 빨간색)
+  let oldData = false;
+  for (const [t, s] of Object.entries(DATA.stale || {})) {
+    const at = toDate(s.at), d = at && new Date(at);
+    const when = d ? `${d.getMonth() + 1}월${d.getDate()}일 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}` : "이전";
+    msgs.push(`${t} 자료 ${when} 기준 (최신 수집 실패)`);
+    if (!at || now - at > 6 * 3600e3) oldData = true;
+  }
+  $("#stale").classList.toggle("bad", oldData);
   if (msgs.length) { $("#stale").textContent = msgs.join(" "); $("#stale").hidden = false; }
   const h = now.getHours();
   $("#hello").textContent = (h < 11 ? "좋은 아침이에요! " : h < 14 ? "점심 맛있게 드셨나요? " : h < 18 ? "오후도 힘내세요! " : "오늘도 수고 많으셨어요! ")

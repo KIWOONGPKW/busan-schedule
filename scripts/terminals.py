@@ -14,6 +14,7 @@
          (자성대에서 신감만·감만1로 이전한 한국허치슨터미널)
 """
 import html
+import http.client
 import http.cookiejar
 import json
 import re
@@ -53,7 +54,15 @@ def _fetch(url, data=None, headers=None, opener=None, encoding="utf-8"):
     body = urllib.parse.urlencode(data).encode() if data else None
     req = urllib.request.Request(url, data=body, headers={"User-Agent": UA, **(headers or {})})
     with (opener or _opener()).open(req, timeout=TIMEOUT) as r:
-        return r.read().decode(encoding, "replace")
+        try:
+            raw = r.read()
+        except http.client.IncompleteRead as e:
+            # HKTL 서버는 페이지를 끝까지 보내 놓고 chunked 끝 표시(0 청크)를 빼먹는다 (2026-11-23~).
+            # 받은 내용이 </html>로 끝까지 왔으면 그대로 쓰고, 정말 중간에 끊긴 것만 실패로 본다.
+            if b"</html>" not in e.partial[-2000:].lower():
+                raise
+            raw = e.partial
+        return raw.decode(encoding, "replace")
 
 
 def _cells(row_html, tag="td"):

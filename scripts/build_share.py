@@ -5,7 +5,9 @@
 """
 import hashlib
 import json
+import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -26,19 +28,52 @@ FETCHERS = {**terminals.FETCHERS, **incheon.FETCHERS}
 TERMINALS = {**terminals.TERMINALS, **incheon.TERMINALS}
 
 
+# 접속 실패 시 재시도: 처음 포함 3번, 사이 90초 (일시 장애 대비). 로컬 시험 땐 TERMINAL_RETRY_WAIT=0
+TRIES = 3
+RETRY_WAIT = int(os.environ.get("TERMINAL_RETRY_WAIT", "90"))
+
+
+def previous_data():
+    """마지막으로 올린 index.html의 DATA. 수집 실패한 터미널은 여기 남은 일정을 계속 보여준다."""
+    try:
+        page = (ROOT.parent / "index.html").read_text(encoding="utf-8")
+        start = page.index("const DATA = ") + len("const DATA = ")
+        return json.JSONDecoder().raw_decode(page, start)[0]  # "<\/"는 JSON에서 그대로 "</"로 읽힌다
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def main():
-    rows, errors = [], {}
+    rows, errors, stale = [], {}, {}
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    prev = previous_data()
+    fetched_at = {}  # 터미널별 마지막 수집 성공 시각
 
     def grab(code):
-        try:
-            return code, FETCHERS[code]()
-        except Exception as e:  # noqa: BLE001
-            errors[code] = f"{type(e).__name__}: {e}"[:160]
-            return code, []
+        for n in range(TRIES):
+            try:
+                return code, FETCHERS[code](), None
+            except Exception as e:  # noqa: BLE001
+                err = f"{type(e).__name__}: {e}"[:160]
+                print(f"  {code} 실패 {n + 1}/{TRIES}: {err}", flush=True)
+                if n + 1 < TRIES:
+                    time.sleep(RETRY_WAIT)
+        return code, [], err
 
     with ThreadPoolExecutor(max_workers=len(FETCHERS)) as ex:
-        for code, found in ex.map(grab, FETCHERS):
-            rows += [{"t": code, **r} for r in found]
+        for code, found, err in ex.map(grab, FETCHERS):
+            if err is None:
+                fetched_at[code] = now
+                rows += [{"t": code, **r} for r in found]
+                continue
+            old = [r for r in prev.get("rows", []) if r.get("t") == code]
+            if old:  # 통째로 빼지 말고 마지막 성공 일정을 계속 보여준다
+                at = prev.get("fetched_at", {}).get(code) or prev.get("generated_at", "")
+                fetched_at[code] = at
+                stale[code] = {"at": at, "error": err, "count": len(old)}
+                rows += old
+            else:
+                errors[code] = err
 
     try:  # 뉴스가 막혀도 스케줄은 나가야 한다
         articles, news_errors = news.fetch_news()
@@ -137,7 +172,7 @@ def main():
             "dest_error": " · ".join(filter(None, [transit_err, routes_err, pc_err, cc_err, rg_err])),
             "vessel_ids": vessel_ids, "vessel_error": vessels_err,
             "terminals": TERMINALS, "incheon": list(incheon.TERMINALS),
-            "incheon_dest": incheon_dest, "incheon_dest_error": incheon_dest_err, "errors": errors, "rows": rows,
+            "incheon_dest": incheon_dest, "incheon_dest_error": incheon_dest_err, "errors": errors, "stale": stale, "fetched_at": fetched_at, "rows": rows,
             "news": articles, "news_error": ", ".join(news_errors),
             "empties": yards, "empty_error": ", ".join(empty_errors),
             "fx": fx_data, "fx_error": fx_err, "fx_hist": fx.rates_history(), "kcci": kcci_data, "kcci_error": kcci_err, "proxy_routes": proxy_routes, "proxy_error": proxy_err,
@@ -147,7 +182,7 @@ def main():
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(page, encoding="utf-8")
     print(f"{OUT}  ({len(rows)}건, 뉴스 {len(articles)}건, "
-          f"실패: {list(errors) or '없음'}, {OUT.stat().st_size // 1024}KB)")
+          f"실패: {list(errors) or '없음'}, 지난 자료 사용: {list(stale) or '없음'}, {OUT.stat().st_size // 1024}KB)")
 
     # 로그인 없이 더블클릭으로 여는 단독 파일 (카톡·메일·USB로 전달용) -> 바탕화면에도 복사
     standalone = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
