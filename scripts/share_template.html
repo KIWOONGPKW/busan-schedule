@@ -402,8 +402,8 @@
   .icdest input { background: var(--ic-in-bg); border-color: var(--ic-in-line); }
   .icdest input:focus { border-color: var(--ic-in-focus); }
   .dest .caption .rtag { margin-left: 6px; vertical-align: 2px; }
-  /* 목적지 검색 제목 옆 배: 오른쪽으로 갔다 돌아서 왼쪽으로 (왕복 4초, 끝에서 잠깐 멈추고 돌아섬, 위아래 2px 출렁) */
-  .shipway { --sway: 60px; flex: none; display: inline-flex; align-items: center; width: calc(42px + var(--sway)); }
+  /* 목적지 검색 제목 옆 배(화살표 없음, 폭 29px): 오른쪽으로 갔다 돌아서 왼쪽으로 (왕복 4초, 끝에서 잠깐 멈추고 돌아섬, 위아래 2px 출렁) */
+  .shipway { --sway: 60px; flex: none; display: inline-flex; align-items: center; width: calc(29px + var(--sway)); }
   .shipway .shipbob { display: inline-flex; animation: shipgo 4s ease-in-out infinite; }
   .shipway svg { animation: shipturn 4s linear infinite, shipbob 1s ease-in-out infinite; }
   @keyframes shipgo { 0% { transform: translateX(0); } 42.5%, 50% { transform: translateX(var(--sway)); } 92.5%, 100% { transform: translateX(0); } }
@@ -717,7 +717,7 @@
   <section class="zone zbs" id="zone_bs" data-z="bs" aria-label="부산 구역">
     <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>부산항 · 신항/북항 8개 터미널</h2>
     <section class="panel dest bsdest" aria-label="부산발 목적지 검색">
-      <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><span class="rtag bs">부산</span><span class="shipway" aria-hidden="true"><span class="shipbob"><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span></span></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
+      <div class="caption"><span class="ct"><b>부산발 목적지 검색</b><span class="rtag bs">부산</span><span class="shipway" aria-hidden="true"><span class="shipbob"><svg class="ico" viewBox="2 0 44 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/></svg></span></span></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
       <div class="dcount muted" id="destCount"></div>
       <form id="destForm" autocomplete="off" role="search">
         <div class="dq-wrap">
@@ -837,7 +837,7 @@
   <section class="zone zic" id="zone_ic" data-z="ic" aria-label="인천 구역">
     <h2 class="zbar"><span class="zpin" aria-hidden="true">■</span>인천항 · 신항/남항 4개 터미널</h2>
     <section class="panel dest icdest" aria-label="인천발 목적지 검색">
-      <div class="caption"><span class="ct"><b>인천발 목적지 검색</b><span class="rtag ic">인천</span><span class="shipway" aria-hidden="true"><span class="shipbob"><svg class="ico" viewBox="0 0 64 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><path d="M46 20h10l-3-4 2-1 6 6-6 6-2-1 3-4H46z"/></svg></span></span></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
+      <div class="caption"><span class="ct"><b>인천발 목적지 검색</b><span class="rtag ic">인천</span><span class="shipway" aria-hidden="true"><span class="shipbob"><svg class="ico" viewBox="2 0 44 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/></svg></span></span></span><span class="dwarn" role="note">⚠ 스케줄 조회와 스페이스(선복) 여부는 선사 확인 필수</span></div>
       <div class="dcount muted" id="icdCount"></div>
       <form id="icdForm" autocomplete="off" role="search">
         <div class="dq-wrap">
