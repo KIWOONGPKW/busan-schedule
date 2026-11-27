@@ -14,6 +14,8 @@
     --accent: #ff7656; --accent2: #7b68ee; --accent-soft: #ffe8df; --sea: #e6f3ff;
     --ok: #138a52; --ok-soft: #dcf6e8; --bad: #db3f58; --bad-soft: #ffe3e8;
     --warn: #b86400; --warn-soft: #fff0d4; --blue: #2b74d6; --blue-soft: #e0eeff; --sw-imp: #2b74d6; --sw-exp: #c4570a; --gray-soft: #f1eef4;
+    --wave-back: rgba(166,219,247,.85); --wave-front: rgba(58,141,224,.7); --spray: #ffffff; --spray-line: #8fcdf0; --sparkle: #ffffff;  /* 목적지 검색 배 아래 파도 */
+    --smoke: #f1f2f6; --smoke-line: #c3c7d1;  /* 철송 증기기관차 연기 */
     --c-pnc: #e0532f; --c-pnc-bg: #ffe5dc; --c-hjnc: #2468c4; --c-hjnc-bg: #dfeeff;
     --c-hpnt: #1b8a50; --c-hpnt-bg: #ddf6e7; --c-bptc: #6b4bd6; --c-bptc-bg: #eee6ff;
     --c-hktl: #a86600; --c-hktl-bg: #fff0cc;
@@ -409,16 +411,16 @@
   /* 배 아래 만화풍 파도 (그림 파일 없이 CSS 안 SVG): 뒤 연한 하늘색·앞 진한 파랑(반투명)이 옆으로 흐르며 넘실, 앞 물결은 배와 같은 1초 박자 */
   .shipway .wave { position: absolute; left: 0; right: 0; bottom: 1px; height: 10px; overflow: hidden; pointer-events: none; }
   .shipway .wave i { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background-repeat: repeat-x; }
-  .shipway .wb { z-index: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 3.2q4-2.8 8 0q4 1.7 8 0V8H0Z' fill='%23a6dbf7' fill-opacity='.85'/%3E%3C/svg%3E"); background-size: 16px 8px; animation: waveflow16 4s linear infinite, wavebob 1.6s ease-in-out infinite; }
-  .shipway .wf { z-index: 2; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8'%3E%3Cpath d='M0 4.6q5-2.4 10 0q5 1.5 10 0V8H0Z' fill='%233a8de0' fill-opacity='.7'/%3E%3C/svg%3E"); background-size: 20px 8px; animation: waveflow20 2.6s linear infinite, shipbob2 1s ease-in-out infinite; }
-  .shipway .spk { z-index: 3; left: auto; right: auto; top: 4px; bottom: auto; width: 2.5px; height: 2.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 2px #fff; opacity: 0; animation: wavespk 3s ease-in-out infinite; }
+  .shipway .wb { z-index: 0; background: var(--wave-back); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 3.2q4-2.8 8 0q4 1.7 8 0V8H0Z'/%3E%3C/svg%3E") 0 0/16px 8px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 3.2q4-2.8 8 0q4 1.7 8 0V8H0Z'/%3E%3C/svg%3E") 0 0/16px 8px repeat-x; animation: waveflow16 4s linear infinite, wavebob 1.6s ease-in-out infinite; }
+  .shipway .wf { z-index: 2; background: var(--wave-front); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8'%3E%3Cpath d='M0 4.6q5-2.4 10 0q5 1.5 10 0V8H0Z'/%3E%3C/svg%3E") 0 0/20px 8px repeat-x; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8'%3E%3Cpath d='M0 4.6q5-2.4 10 0q5 1.5 10 0V8H0Z'/%3E%3C/svg%3E") 0 0/20px 8px repeat-x; animation: waveflow20 2.6s linear infinite, shipbob2 1s ease-in-out infinite; }
+  .shipway .spk { z-index: 3; left: auto; right: auto; top: 4px; bottom: auto; width: 2.5px; height: 2.5px; border-radius: 50%; background: var(--sparkle); box-shadow: 0 0 2px var(--sparkle); opacity: 0; animation: wavespk 3s ease-in-out infinite; }
   .shipway .spk:nth-child(3) { left: 18%; }
   .shipway .spk:nth-child(4) { left: 52%; animation-delay: 1.1s; }
   .shipway .spk:nth-child(5) { left: 81%; animation-delay: 2s; }
   /* 배 뒤 물보라: 움직이는 동안만 생겼다 사라짐 (배와 함께 돌아서므로 늘 배 뒤쪽) */
-  .shipway .spray { fill: #fff; stroke: #8fcdf0; stroke-width: .7; opacity: 0; transform-box: fill-box; transform-origin: right center; animation: shipspray 4s ease-in-out infinite; }
-  @keyframes waveflow16 { to { background-position-x: -16px; } }
-  @keyframes waveflow20 { to { background-position-x: -20px; } }
+  .shipway .spray { fill: var(--spray); stroke: var(--spray-line); stroke-width: .7; opacity: 0; transform-box: fill-box; transform-origin: right center; animation: shipspray 4s ease-in-out infinite; }
+  @keyframes waveflow16 { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: -16px 0; mask-position: -16px 0; } }
+  @keyframes waveflow20 { from { -webkit-mask-position: 0 0; mask-position: 0 0; } to { -webkit-mask-position: -20px 0; mask-position: -20px 0; } }
   @keyframes wavebob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -1px; } }
   @keyframes shipbob2 { 0%, 100% { translate: 0 0; } 50% { translate: 0 -1.5px; } }
   @keyframes wavespk { 0%, 62%, 100% { opacity: 0; transform: scale(.3); } 76% { opacity: 1; transform: scale(1); } 88% { opacity: 0; transform: scale(.5); } }
@@ -437,8 +439,25 @@
   @keyframes rfdot { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: .9; } 70% { opacity: .9; } 90%, 100% { transform: translateX(17px); opacity: 0; } }
   .rflow.x .rf-a { transform: translateX(calc(var(--rfw) + 38px)); }
   .rflow.x .rf-b { transform: translateX(calc(-1 * (var(--rfw) + 38px))); }
+  /* 증기기관차(오른쪽이 앞): 굴뚝 연기 4개가 차례로 퐁퐁 (1.5초, 커지며 연해지고 뒤쪽=왼쪽으로 흐름), 차체 덜컹 1px, 바퀴·연결 막대 회전 */
+  .ct .rflow .rf-train { overflow: visible; }
+  .rf-smoke circle { fill: var(--smoke); stroke: var(--smoke-line); stroke-width: .7; opacity: 0; transform-box: fill-box; transform-origin: center; animation: rfsmoke 1.5s ease-out infinite; }
+  .rf-smoke circle:nth-child(2) { animation-delay: -.375s; } .rf-smoke circle:nth-child(3) { animation-delay: -.75s; } .rf-smoke circle:nth-child(4) { animation-delay: -1.125s; }
+  @keyframes rfsmoke { 0% { opacity: 0; transform: translate(0, 0) scale(.45); } 12% { opacity: .95; } 100% { opacity: 0; transform: translate(-10px, -12px) scale(1.9); } }
+  .rf-rattle { animation: rfrattle .5s linear infinite; }
+  @keyframes rfrattle { 0%, 40%, 100% { translate: 0 0; } 20% { translate: 0 -1.5px; } 60% { translate: 0 -.6px; } 80% { translate: 0 0; } }
+  .rf-grill, .rf-rod { fill: none; stroke: var(--panel); stroke-width: .9; stroke-linecap: round; }
+  .rf-rod { stroke-width: 1.3; }
+  .rf-pin { fill: var(--panel); }
+  .rf-wh { transform-box: view-box; animation: rfwheel 1.2s linear infinite; }
+  .rf-w1 { transform-origin: 50px 31px; } .rf-w2 { transform-origin: 61px 31px; }
+  @keyframes rfwheel { to { transform: rotate(360deg); } }
+  .rf-rodx { animation: rfrodx .6s ease-in-out infinite alternate; }
+  .rf-rody { animation: rfrody .6s ease-in-out -.3s infinite alternate; }
+  @keyframes rfrodx { from { transform: translate(2.6px, 0); } to { transform: translate(-2.6px, 0); } }
+  @keyframes rfrody { from { transform: translate(0, -2.6px); } to { transform: translate(0, 2.6px); } }
   @media (max-width: 640px) { .rflow { --rfw: 44px; } .ct .rflow svg { height: 22px; } }
-  @media (prefers-reduced-motion: reduce) { .rflow .rf-a, .rflow .rf-b { transition: none; } .rf-dot { animation: none; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .rflow .rf-a, .rflow .rf-b { transition: none; } .rf-dot { animation: none; opacity: 0; } .rf-smoke { display: none; } .rf-rattle, .rf-wh, .rf-rodx, .rf-rody { animation: none; } }
   /* 부산발 검색 칸: 인천발과 같은 방식, 색은 부산항 구역 녹색(--zbs-*) */
   .panel.bsdest { background: var(--zbs-off); border-color: var(--zbs-line); }
   .zbs .dest input, .zbs form.search input { background: var(--bs-in-bg); border-color: var(--bs-in-line); }
@@ -820,7 +839,7 @@
     </section>
   </section>
   <section class="panel dest rail" id="railPanel" aria-label="철송 연계 조회 (부산신항 ↔ 의왕ICD)">
-    <div class="caption"><span class="ct"><b>철송 연계 조회 <span id="railTtl">(부산신항 → 의왕ICD)</span></b><span class="rtag bs">부산</span><span class="rflow" id="railFlow" role="img" aria-label="수입: 배에서 내려 열차로"><span class="rf-a"><svg class="rf-ship" viewBox="0 0 46 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><rect x="33" y="10" width="5" height="14" rx="1"/></svg></span><svg class="rf-arr" viewBox="0 0 30 12" aria-hidden="true"><path d="M2 6h22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M21 1.5 27.5 6 21 10.5z" fill="currentColor"/><circle class="rf-dot" cx="3" cy="6" r="2.2"/></svg><span class="rf-b"><svg class="rf-train" viewBox="0 0 80 40" fill="currentColor" aria-hidden="true"><rect x="3" y="14" width="19" height="12" rx="1"/><rect x="24" y="14" width="19" height="12" rx="1"/><rect x="1" y="27" width="45" height="3" rx="1"/><rect x="46" y="27.5" width="5" height="2"/><path fill-rule="evenodd" d="M51 30V17l3-6h19l4 6v13zM56 13h6v5h-7.5z"/><circle cx="8" cy="33" r="3"/><circle cx="15" cy="33" r="3"/><circle cx="32" cy="33" r="3"/><circle cx="39" cy="33" r="3"/><circle cx="56" cy="33" r="3"/><circle cx="63" cy="33" r="3"/><circle cx="72" cy="33" r="3"/></svg></span></span></span></div>
+    <div class="caption"><span class="ct"><b>철송 연계 조회 <span id="railTtl">(부산신항 → 의왕ICD)</span></b><span class="rtag bs">부산</span><span class="rflow" id="railFlow" role="img" aria-label="수입: 배에서 내려 열차로"><span class="rf-a"><svg class="rf-ship" viewBox="0 0 46 40" fill="currentColor" aria-hidden="true"><path d="M4 25h40l-6 10H9z"/><rect x="14" y="15" width="8" height="9" rx="1.2"/><rect x="23" y="15" width="8" height="9" rx="1.2"/><rect x="33" y="10" width="5" height="14" rx="1"/></svg></span><svg class="rf-arr" viewBox="0 0 30 12" aria-hidden="true"><path d="M2 6h22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M21 1.5 27.5 6 21 10.5z" fill="currentColor"/><circle class="rf-dot" cx="3" cy="6" r="2.2"/></svg><span class="rf-b"><svg class="rf-train" viewBox="0 0 80 40" fill="currentColor" aria-hidden="true"><g class="rf-smoke"><circle cx="64" cy="4" r="2.6"/><circle cx="64" cy="4" r="2.6"/><circle cx="64" cy="4" r="2.6"/><circle cx="64" cy="4" r="2.6"/></g><g class="rf-rattle"><rect x="2" y="14" width="13" height="11" rx="1"/><rect x="16" y="14" width="13" height="11" rx="1"/><rect x="1" y="26" width="30" height="3" rx="1"/><rect x="30" y="27" width="5" height="1.6"/><circle cx="7" cy="32.5" r="3"/><circle cx="25" cy="32.5" r="3"/><rect x="33" y="7" width="15" height="2.6" rx="1"/><path fill-rule="evenodd" d="M34.5 9h12v19h-12zM37 12v5h7v-5z"/><rect x="46" y="15" width="22" height="12" rx="2"/><rect x="66" y="13.5" width="5" height="15" rx="2.5"/><path d="M53 15q0-3 2.5-3t2.5 3z"/><path d="M62.5 15V9h3v6zM60.2 4.6h7.6l-2.3 4.8h-3z"/><rect x="34" y="27" width="37" height="2.2" rx=".8"/><path d="M70.5 28.5h3.5l5 6h-8.5z"/><path class="rf-grill" d="M73.2 30.2v4.1M75.6 31.2v3.1"/><circle cx="40" cy="32.5" r="3"/><g class="rf-wh rf-w1"><circle cx="50" cy="31" r="5"/><circle class="rf-pin" cx="52.6" cy="31" r="1.1"/></g><g class="rf-wh rf-w2"><circle cx="61" cy="31" r="5"/><circle class="rf-pin" cx="63.6" cy="31" r="1.1"/></g><circle cx="69" cy="33" r="2.6"/><g class="rf-rodx"><g class="rf-rody"><path class="rf-rod" d="M50 31h11"/></g></g></g></svg></span></span></span></div>
     <form id="railForm" autocomplete="off" role="search">
       <button type="button" class="rsw" id="railSw" role="switch" aria-checked="false" aria-label="수입/수출 전환, 현재 수입">
         <span class="rsw-t">수입</span><span class="rsw-k" aria-hidden="true"></span>
